@@ -1,0 +1,89 @@
+# ===================================
+# Java / Maven (API & UI Test Projects)
+# ===================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.idea/
+.settings/
+.classpath
+.project
+*.iws
+*.ipr
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===================================
+# Python / Locust (Load Test Project)
+# ===================================
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ===================================
+# Test Reports & Logs
+# ===================================
+test-reports/
+test-output/
+*.log
+*.html
+report.html
+ExtentReport_*.html
+
+# ===================================
+# Screenshots & Media
+# ===================================
+# screenshots/ - screenshot'lar gidebilir
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+
+# ===================================
+# OS Specific
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ===================================
+# IDE & Editors
+# ===================================
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===================================
+# Git
+# ===================================
+.git/
