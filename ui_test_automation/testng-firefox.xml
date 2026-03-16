@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Insider Test Suite - Chrome Default">
+<suite name="Insider Test Suite - Firefox Only">
     <listeners>
         <listener class-name="utils.TestListener"/>
     </listeners>
-    <test name="Chrome Tests">
-        <parameter name="browser" value="chrome"/>
+    <test name="Firefox Tests">
+        <parameter name="browser" value="firefox"/>
         <classes>
             <class name="tests.InsiderTest"/>
         </classes>

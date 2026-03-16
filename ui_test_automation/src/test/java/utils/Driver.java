@@ -17,6 +17,12 @@ public class Driver {
         if (driverPool.get() == null) {
             String browserParam = System.getProperty("browser") != null ? System.getProperty("browser")
                     : ConfigReader.get("browser");
+            
+            // Default to chrome if browser is null or empty
+            if (browserParam == null || browserParam.trim().isEmpty()) {
+                browserParam = "chrome";
+            }
+            
             switch (browserParam.toLowerCase()) {
                 case "chrome":
                     ChromeOptions chromeOptions = new ChromeOptions();
@@ -29,6 +35,13 @@ public class Driver {
                     firefoxOptions.addArguments("--disable-notifications");
                     driverPool.set(new FirefoxDriver(firefoxOptions));
                     driverPool.get().manage().window().maximize();
+                    break;
+                default:
+                    // Default to Chrome
+                    ChromeOptions defaultChromeOptions = new ChromeOptions();
+                    defaultChromeOptions.addArguments("--disable-notifications");
+                    defaultChromeOptions.addArguments("--start-maximized");
+                    driverPool.set(new ChromeDriver(defaultChromeOptions));
                     break;
             }
             driverPool.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));

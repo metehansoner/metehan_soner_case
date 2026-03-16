@@ -10,14 +10,23 @@ public class InsiderTest extends BaseTest {
 
     @Test
     public void testInsiderOneCareersPage() throws InterruptedException {
-        // Visit careers page
-        Driver.getDriver().get("https://insiderone.com/careers/");
-        
-        // Verify page loaded
-        Assert.assertTrue(Driver.getDriver().getCurrentUrl().contains("insiderone.com/careers"));
-        Assert.assertTrue(Driver.getDriver().getTitle().contains("Insider One"));
+        // Visit home page
+        Driver.getDriver().get("https://insiderone.com/");
         
         HomePage homePage = new HomePage();
+        
+        // Verify home page is opened
+        Assert.assertTrue(homePage.isHomePageLoaded(), "Home page should be loaded");
+        
+        // Verify all main blocks are loaded
+        Assert.assertTrue(homePage.areMainBlocksLoaded(), "All main blocks should be loaded");
+        
+        // Navigate to careers page
+        Driver.getDriver().get("https://insiderone.com/careers/");
+        
+        // Verify careers page loaded
+        Assert.assertTrue(Driver.getDriver().getCurrentUrl().contains("insiderone.com/careers"));
+        Assert.assertTrue(Driver.getDriver().getTitle().contains("Insider One"));
         
         // Accept cookies
         homePage.acceptCookies();
