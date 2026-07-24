@@ -147,8 +147,8 @@ Ana menü üzerinde ilk kez gösterilir:
 | # | Ekran | İçerik |
 |---|--------|--------|
 | C1 | Ana menü | Logo + Ayarlar + Info · 2 büyük mod kartı (Klasik / Çizim) |
-| C2 | Ayarlar sheet | Dil · Bize ulaş · Gizlilik · Kullanım koşulları · Titreşim · Kullanıcı ID · Kapat |
-| C3 | Dil sheet | Dil listesi + Geri |
+| C2 | Ayarlar sheet | Detay: **`05_ayarlar_ekrani.md`** · Dil · Bize ulaş · Gizlilik · Koşullar · Titreşim · User ID · Kapat |
+| C3 | Dil sheet | 12 dil listesi + checkmark + Geri |
 | C4 | Rate Us modal | Karakter + 5 yıldız CTA |
 | C5 | Destek deneyimi | Apple destek verisi izni · Kabul et / Reddet |
 
@@ -324,7 +324,8 @@ Asset’ler: `screens/assets/` (mod kartları, kategoriler, 15 oyuncu karakteri)
 | `02_renk_paleti.md` | Onaylı | Vivid Ocean |
 | `03_tipografi_ve_haptics.md` | Tamam | Font + titreşim |
 | `04_gorsel_uretim_brief.md` | Tamam | Mod / kategori / oyuncu görselleri |
-| `localization/` | Tamam | 12 dil JSON |
+| `05_ayarlar_ekrani.md` | Tamam | Ayarlar + Dil sheet |
+| `localization/` | **Tamam (12/12)** | en default · sistem dili eşleşmesi |
 | Kodlama | Sonra | UI + oyun motoru |
 
 ---

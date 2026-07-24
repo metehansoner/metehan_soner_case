@@ -163,8 +163,9 @@ Kart UI: sol metin (lokalize) · sağ bu PNG · kilit ikonu ayrı UI.
 | 1 | Mod kartları (2) | ✅ `assets/modes/` |
 | 2 | 15 oyuncu karakteri | ✅ `assets/players/` |
 | 3 | 16 kategori ikonu | ✅ `assets/categories/` |
-| 4 | Onboarding / paywall / rate-us sahneleri | ⏳ Sonra |
+| 4 | Onboarding (3) | ✅ `assets/onboarding/` |
+| 5 | Paywall + Rate Us | ✅ `assets/marketing/` |
 
 ---
 
-*Imposter Party · 2026-07-25 · görseller üretildi*
+*Imposter Party · 2026-07-25 · görseller + lokalizasyon tamam*
