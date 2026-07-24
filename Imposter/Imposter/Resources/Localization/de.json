@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Alle waren Imposter!",
   "results.decoyPlayer": "Hatte ein Täuschungswort",
   "results.blankPlayer": "Hatte eine leere Karte",
-  "results.decoyWord": "Täuschungswort: {word}"
+  "results.decoyWord": "Täuschungswort: {word}",
+  "common.done": "Fertig",
+  "players.profileTitle": "Spieler"
 }

@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Все были Imposter!",
   "results.decoyPlayer": "Получил ложное слово",
   "results.blankPlayer": "Получил пустую карту",
-  "results.decoyWord": "Ложное слово: {word}"
+  "results.decoyWord": "Ложное слово: {word}",
+  "common.done": "Готово",
+  "players.profileTitle": "Игроки"
 }

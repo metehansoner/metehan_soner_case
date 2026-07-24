@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Toți au fost Imposteri!",
   "results.decoyPlayer": "A avut un cuvânt momeală",
   "results.blankPlayer": "A avut o carte goală",
-  "results.decoyWord": "Cuvânt momeală: {word}"
+  "results.decoyWord": "Cuvânt momeală: {word}",
+  "common.done": "Gata",
+  "players.profileTitle": "Jucători"
 }

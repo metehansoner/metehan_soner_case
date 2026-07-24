@@ -1,12 +1,18 @@
 import SwiftUI
 
+enum MainHub {
+    case players
+    case home
+}
+
 struct RootView: View {
     @Bindable var settings = AppSettingsStore.shared
     @Bindable private var store = SubscriptionStore.shared
     @State private var session = GameSession()
     @State private var path = NavigationPath()
-    @State private var showHome = false
     @State private var liveGame: LiveGame?
+    @State private var mainHub: MainHub = .players
+    @State private var showProfileEditor = false
 
     var body: some View {
         Group {
@@ -14,6 +20,7 @@ struct RootView: View {
                 OnboardingView {
                     settings.onboardingDone = true
                     session.resetPlayersForNewLaunch()
+                    mainHub = .players
                     Haptics.medium()
                 }
             } else if shouldShowPaywall {
@@ -24,35 +31,45 @@ struct RootView: View {
                 GameFlowView(live: liveGame) {
                     self.liveGame = nil
                     path = NavigationPath()
-                    session.resetPlayersForNewLaunch()
+                    // Keep player names for this session; return to mode hub.
+                    mainHub = .home
                     Haptics.medium()
                 }
             } else {
-                mainStack
+                switch mainHub {
+                case .players:
+                    AddPlayersView(
+                        session: session,
+                        presentation: .launch,
+                        onContinue: {
+                            Haptics.medium()
+                            mainHub = .home
+                        }
+                    )
+                case .home:
+                    homeStack
+                }
             }
         }
         .environment(LocalizationManager.shared)
         .preferredColorScheme(.dark)
-        .onAppear {
-            if settings.onboardingDone, liveGame == nil, !shouldShowPaywall {
-                session.resetPlayersForNewLaunch()
-            }
-        }
     }
 
     private var shouldShowPaywall: Bool {
         !store.paywallSeen && !store.isPremium
     }
 
-    private var mainStack: some View {
+    private var homeStack: some View {
         NavigationStack(path: $path) {
-            AddPlayersView(
+            HomeView(
                 session: session,
-                onOpenHome: {
+                showsCloseButton: false,
+                showsProfileButton: true,
+                onProfile: {
                     Haptics.light()
-                    showHome = true
+                    showProfileEditor = true
                 },
-                onContinue: {
+                onModeSelected: {
                     Haptics.medium()
                     path.append(AppRoute.categories)
                 }
@@ -72,15 +89,23 @@ struct RootView: View {
                         onPlay: { startLiveGame() }
                     )
                 case .home:
-                    HomeView(session: session)
+                    EmptyView()
                 }
             }
         }
-        .sheet(isPresented: $showHome) {
-            NavigationStack {
-                HomeView(session: session)
-            }
-            .presentationDetents([.large])
+        .fullScreenCover(isPresented: $showProfileEditor) {
+            AddPlayersView(
+                session: session,
+                presentation: .profile,
+                onContinue: {
+                    Haptics.medium()
+                    showProfileEditor = false
+                },
+                onClose: {
+                    Haptics.light()
+                    showProfileEditor = false
+                }
+            )
         }
     }
 

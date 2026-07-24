@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Tout le monde était Imposter !",
   "results.decoyPlayer": "Avait un mot leurre",
   "results.blankPlayer": "Avait une carte vide",
-  "results.decoyWord": "Mot leurre : {word}"
+  "results.decoyWord": "Mot leurre : {word}",
+  "common.done": "OK",
+  "players.profileTitle": "Joueurs"
 }

@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Todos eram Imposters!",
   "results.decoyPlayer": "Teve uma palavra isca",
   "results.blankPlayer": "Teve carta em branco",
-  "results.decoyWord": "Palavra isca: {word}"
+  "results.decoyWord": "Palavra isca: {word}",
+  "common.done": "Concluído",
+  "players.profileTitle": "Jogadores"
 }

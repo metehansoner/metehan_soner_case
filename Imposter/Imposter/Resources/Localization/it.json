@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Tutti erano Imposter!",
   "results.decoyPlayer": "Aveva una parola esca",
   "results.blankPlayer": "Aveva una carta vuota",
-  "results.decoyWord": "Parola esca: {word}"
+  "results.decoyWord": "Parola esca: {word}",
+  "common.done": "Fatto",
+  "players.profileTitle": "Giocatori"
 }

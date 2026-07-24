@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "¡Todos eran Imposters!",
   "results.decoyPlayer": "Tuvo una palabra señuelo",
   "results.blankPlayer": "Tuvo carta en blanco",
-  "results.decoyWord": "Palabra señuelo: {word}"
+  "results.decoyWord": "Palabra señuelo: {word}",
+  "common.done": "Listo",
+  "players.profileTitle": "Jugadores"
 }

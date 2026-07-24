@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Wszyscy byli Imposterami!",
   "results.decoyPlayer": "Miał słowo-wabik",
   "results.blankPlayer": "Miał pustą kartę",
-  "results.decoyWord": "Słowo-wabik: {word}"
+  "results.decoyWord": "Słowo-wabik: {word}",
+  "common.done": "Gotowe",
+  "players.profileTitle": "Gracze"
 }

@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Everyone was an Imposter!",
   "results.decoyPlayer": "Had a decoy word",
   "results.blankPlayer": "Had a blank card",
-  "results.decoyWord": "Decoy word: {word}"
+  "results.decoyWord": "Decoy word: {word}",
+  "common.done": "Done",
+  "players.profileTitle": "Players"
 }

@@ -1,9 +1,17 @@
 import SwiftUI
 
+enum AddPlayersPresentation {
+    /// Cold start / app relaunch — continue goes to Home.
+    case launch
+    /// Opened from Home profile — edit names, then return.
+    case profile
+}
+
 struct AddPlayersView: View {
     @Bindable var session: GameSession
-    var onOpenHome: () -> Void
+    var presentation: AddPlayersPresentation = .launch
     var onContinue: () -> Void
+    var onClose: (() -> Void)? = nil
 
     @Bindable private var l10n = LocalizationManager.shared
     @FocusState private var focusedIndex: Int?
@@ -51,7 +59,7 @@ struct AddPlayersView: View {
                         guard session.canContinuePlayers else { return }
                         onContinue()
                     } label: {
-                        Text(l10n.t("common.continue"))
+                        Text(presentation == .profile ? l10n.t("common.done") : l10n.t("common.continue"))
                     }
                     .buttonStyle(PrimaryButtonStyle(enabled: session.canContinuePlayers))
                     .disabled(!session.canContinuePlayers)
@@ -76,15 +84,30 @@ struct AddPlayersView: View {
     }
 
     private var modeChip: some View {
-        let title = session.selectedMode == .classic
-            ? l10n.t("home.classicTitle")
-            : l10n.t("home.drawingTitle")
-
-        return Button(action: onOpenHome) {
+        Menu {
+            Button {
+                session.selectedMode = .classic
+                AppSettingsStore.shared.lastGameMode = .classic
+                Haptics.selection()
+            } label: {
+                Label(l10n.t("home.classicTitle"), systemImage: "theatermasks.fill")
+            }
+            Button {
+                session.selectedMode = .drawing
+                AppSettingsStore.shared.lastGameMode = .drawing
+                Haptics.selection()
+            } label: {
+                Label(l10n.t("home.drawingTitle"), systemImage: "pencil.tip")
+            }
+        } label: {
             HStack(spacing: 8) {
                 Image(systemName: session.selectedMode == .classic ? "theatermasks.fill" : "pencil.tip")
-                Text(title)
-                    .font(AppFont.ui(14, weight: .bold))
+                Text(
+                    session.selectedMode == .classic
+                        ? l10n.t("home.classicTitle")
+                        : l10n.t("home.drawingTitle")
+                )
+                .font(AppFont.ui(14, weight: .bold))
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .bold))
             }
@@ -97,23 +120,32 @@ struct AddPlayersView: View {
                     .overlay(Capsule().stroke(AppColors.accentCyan.opacity(0.35), lineWidth: 1))
             )
         }
-        .buttonStyle(.plain)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var header: some View {
         HStack {
-            Button(action: onOpenHome) {
-                Image(systemName: "house.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppColors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(AppColors.surfaceCardElevated))
+            if presentation == .profile {
+                Button {
+                    onClose?()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppColors.textPrimary)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(AppColors.surfaceCardElevated))
+                }
+            } else {
+                Color.clear.frame(width: 40, height: 40)
             }
 
             Spacer()
 
-            ScreenTitle(text: l10n.t("players.title"))
+            ScreenTitle(
+                text: presentation == .profile
+                    ? l10n.t("players.profileTitle")
+                    : l10n.t("players.title")
+            )
 
             Spacer()
 

@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Herkes Imposter’dı!",
   "results.decoyPlayer": "Sahte kelime aldı",
   "results.blankPlayer": "Boş kart aldı",
-  "results.decoyWord": "Sahte kelime: {word}"
+  "results.decoyWord": "Sahte kelime: {word}",
+  "common.done": "Tamam",
+  "players.profileTitle": "Oyuncular"
 }

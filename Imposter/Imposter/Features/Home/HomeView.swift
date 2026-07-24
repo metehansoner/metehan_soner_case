@@ -3,6 +3,8 @@ import SwiftUI
 struct HomeView: View {
     @Bindable var session: GameSession
     var showsCloseButton: Bool = true
+    var showsProfileButton: Bool = false
+    var onProfile: (() -> Void)? = nil
     var onModeSelected: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
@@ -55,6 +57,10 @@ struct HomeView: View {
                 headerCircleButton(systemName: "xmark") {
                     Haptics.light()
                     dismiss()
+                }
+            } else if showsProfileButton {
+                headerCircleButton(systemName: "person.crop.circle.fill") {
+                    onProfile?()
                 }
             }
 

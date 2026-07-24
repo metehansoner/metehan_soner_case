@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Iedereen was een Imposter!",
   "results.decoyPlayer": "Had een afleidingswoord",
   "results.blankPlayer": "Had een lege kaart",
-  "results.decoyWord": "Afleidingswoord: {word}"
+  "results.decoyWord": "Afleidingswoord: {word}",
+  "common.done": "Klaar",
+  "players.profileTitle": "Spelers"
 }

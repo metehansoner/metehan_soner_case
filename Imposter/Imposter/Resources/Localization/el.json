@@ -157,5 +157,7 @@
   "results.twistAllImpostersBody": "Όλοι ήταν Imposter!",
   "results.decoyPlayer": "Είχε παραπλανητική λέξη",
   "results.blankPlayer": "Είχε κενή κάρτα",
-  "results.decoyWord": "Παραπλανητική λέξη: {word}"
+  "results.decoyWord": "Παραπλανητική λέξη: {word}",
+  "common.done": "Έτοιμο",
+  "players.profileTitle": "Παίκτες"
 }
