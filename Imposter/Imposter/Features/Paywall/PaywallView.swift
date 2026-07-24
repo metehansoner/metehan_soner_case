@@ -19,6 +19,7 @@ struct PaywallView: View {
                     VStack(spacing: 18) {
                         Image("paywall_hero")
                             .resizable()
+                            .interpolation(.high)
                             .scaledToFit()
                             .frame(maxHeight: 220)
                             .padding(.top, 12)
@@ -178,6 +179,7 @@ struct RateUsSheet: View {
 
             Image("rate_us")
                 .resizable()
+                .interpolation(.high)
                 .scaledToFit()
                 .frame(maxHeight: 160)
 

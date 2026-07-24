@@ -136,6 +136,7 @@ struct HomeView: View {
 
                 Image(imageName)
                     .resizable()
+                    .interpolation(.high)
                     .scaledToFit()
                     .frame(width: 118, height: 118)
                     .shadow(color: AppColors.accentCyan.opacity(0.55), radius: 16, y: 4)

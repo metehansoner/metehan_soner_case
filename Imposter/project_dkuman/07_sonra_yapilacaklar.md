@@ -34,9 +34,17 @@
 
 ## Teknik borç
 
+- [x] Asset imageset: PNG’ler yanlış `1x` kayıtlıydı → **single-scale universal** yapıldı (keskinlik)
 - [ ] Xcode uyarısı: `App-Info.plist` Copy Bundle Resources’tan çıkarılmalı
 - [ ] Settings / HowTo metinlerini oyun içi kurallarla birleştirme
 - [ ] Gerçek cihaz + TestFlight smoke test (onboarding → paywall → klasik → çizim → rate)
+
+## Görseller
+
+- [x] Clay PNG’lerden düz renk BG kaldırıldı (şeffaf alpha) — kutu/sticker hissi giderildi
+- [ ] **SVG yapılmaz** — clay 3D karakter/kategori asset’leri raster kalır
+- [ ] İleride sadece düz UI ikonları (yıldız, spark, tab ikon) SVG/PDF vektör olabilir
+- [ ] İsteğe bağlı: profesyonel rembg / yeniden üretim (daha temiz kenar)
 
 ---
 

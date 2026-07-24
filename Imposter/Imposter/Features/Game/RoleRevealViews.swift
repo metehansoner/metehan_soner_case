@@ -14,9 +14,10 @@ struct PassPhoneView: View {
 
                 Image(player.avatarImageName)
                     .resizable()
+                    .interpolation(.high)
                     .scaledToFit()
                     .frame(maxHeight: 340)
-                    .shadow(color: .black.opacity(0.2), radius: 16, y: 8)
+                    .shadow(color: .black.opacity(0.25), radius: 18, y: 10)
 
                 Text(l10n.t("pass.givePhone", ["name": player.name]))
                     .font(AppFont.display(28, weight: .bold))
@@ -88,6 +89,7 @@ struct RoleRevealView: View {
 
                 Image(player.avatarImageName)
                     .resizable()
+                    .interpolation(.high)
                     .scaledToFit()
                     .frame(maxHeight: revealed ? 200 : 300)
                     .padding(.horizontal, 24)

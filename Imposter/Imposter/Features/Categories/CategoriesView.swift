@@ -111,8 +111,10 @@ struct CategoriesView: View {
 
                 Image(category.imageName)
                     .resizable()
+                    .interpolation(.high)
                     .scaledToFit()
-                    .frame(width: 92, height: 92)
+                    .frame(width: 108, height: 108)
+                    .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
             }
             .padding(.leading, 18)
             .padding(.trailing, 10)

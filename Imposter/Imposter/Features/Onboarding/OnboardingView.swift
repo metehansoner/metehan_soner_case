@@ -63,6 +63,7 @@ private struct OnboardingPage: View {
                 if let assetName, UIImage(named: assetName) != nil {
                     Image(assetName)
                         .resizable()
+                        .interpolation(.high)
                         .scaledToFit()
                 } else {
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
