@@ -23,22 +23,22 @@
 
 | Token | Hex | Kullanım |
 |-------|-----|----------|
-| `bg.primary` | `#0B1F4A` | Ana arka plan (koyu kobalt) |
-| `bg.primaryMid` | `#123A7A` | Arka plan gradyan orta |
-| `bg.glow` | `#1A6FE8` | Merkez spotlight / enerji |
-| `bg.grid` | `#2A5BB8` @ ~12% | İnce grid çizgileri |
-| `surface.card` | `#0A1840` | Klasik mod kartı, sheet’ler |
-| `surface.cardElevated` | `#122858` | Yükseltilmiş yüzey |
+| `bg.primary` | `#0047E8` | Ana arka plan (canlı elektrik mavisi) |
+| `bg.primaryMid` | `#1A6BFF` | Arka plan gradyan orta |
+| `bg.primaryTop` | `#3D8BFF` | Arka plan üst (daha açık) |
+| `bg.glow` | `#66B3FF` | Merkez spotlight |
+| `bg.glowCyan` | `#00E5FF` | Üst cyan wash |
+| `bg.grid` | `#A8D4FF` @ ~22% | İnce grid çizgileri |
+| `surface.card` | `#001A4D` | Klasik mod kartı, sheet’ler (koyu kontrast) |
+| `surface.cardElevated` | `#0A2F7A` | Yükseltilmiş yüzey |
 | `surface.canvas` | `#F4F7FB` | Çizim tuvali |
-| `accent.cyan` | `#00E5FF` | Glow border, aktif vurgu, portal halkası |
-| `accent.cyanDeep` | `#12C4C8` | Çizim kartı gradyan başlangıcı |
-| `accent.blue` | `#2B6CFF` | Çizim kartı gradyan bitiş / CTA glow |
-| `accent.yellow` | `#FFE566` | Yıldız, küçük ikon, dekoratif spark |
-| `text.primary` | `#FFFFFF` | Başlık, buton metni |
-| `text.secondary` | `#C8D6F0` | Alt metin / açıklama |
-| `text.onLight` | `#0B1F4A` | Açık buton / tuval üzeri |
-| `mascot.fox` | `#F08A3A` | Tilki kürkü (görsel; UI token değil) |
-| `mascot.mask` | `#2B6CFF` | Tilki maske / pelerin |
+| `accent.cyan` | `#00F0FF` | Neon glow border, aktif vurgu |
+| `accent.cyanDeep` | `#00C8E8` | Çizim kartı gradyan başlangıcı |
+| `accent.blue` | `#3D7BFF` | Çizim kartı gradyan bitiş |
+| `accent.yellow` | `#FFEF00` | Cırtlak sarı · yıldız / spark |
+| `text.primary` | `#FFFFFF` | Başlık |
+| `text.secondary` | `#E8F2FF` | Alt metin |
+| `text.onLight` | `#001A4D` | Açık buton üzeri |
 
 ### Durum
 
@@ -68,10 +68,9 @@
 
 | Ad | CSS-benzeri | Nerede |
 |----|-------------|--------|
-| `grad.screen` | `linear(180deg, #123A7A → #0B1F4A)` + merkez `#1A6FE8` soft radial | Ana ekranlar |
-| `grad.drawCard` | `linear(135deg, #12C4C8 → #2B6CFF)` | Çizim modu kartı |
-| `grad.ctaGlow` | cyan outer glow `#00E5FF` 30–40% | Seçili kart / aktif portal |
-| `grad.iconBg` | `#0E8F9E → #1A6FE8` | App ikon arka planı |
+| `grad.screen` | `linear(180deg, #3D8BFF → #1A6BFF → #0047E8)` + merkez `#66B3FF` + üst cyan wash | Ana ekranlar |
+| `grad.drawCard` | `linear(135deg, #00C8E8 → #3D7BFF)` | Çizim modu kartı |
+| `grad.ctaGlow` | cyan outer glow `#00F0FF` 40–55% | Seçili kart / neon kenar |
 
 ---
 

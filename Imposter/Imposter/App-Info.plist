@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fredoka-Regular.ttf</string>
+		<string>Fredoka-SemiBold.ttf</string>
+		<string>Fredoka-Bold.ttf</string>
+		<string>Nunito-Regular.ttf</string>
+		<string>Nunito-SemiBold.ttf</string>
+		<string>Nunito-Bold.ttf</string>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>Imposter Party</string>
+</dict>
+</plist>

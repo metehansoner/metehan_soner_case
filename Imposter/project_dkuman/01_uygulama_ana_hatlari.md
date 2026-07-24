@@ -171,7 +171,7 @@ Ana menü üzerinde ilk kez gösterilir:
 
 | Ayar | Kontrol | Kural |
 |------|---------|--------|
-| Mystery Twist | Açık / Kapalı | v1’de var · varsayılan Kapalı |
+| Mystery Twist | Açık / Kapalı | **v1’de var** · varsayılan Kapalı · ~%70 ihtimalle turda sürpriz: Imposter yok · herkes Imposter · sahte kelime · boş kart |
 | Impostor sayısı | − / + stepper | Oyuncu sayısına göre önerilen; min 1 |
 | Tur süresi | − / + stepper | **Min 0:30 · Max 5:00** · adım 30 sn · varsayılan 2:00 |
 | Impostorlar için ipuçları | Açık / Kapalı | Impostora kelime hakkında ipucu |

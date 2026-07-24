@@ -1,0 +1,1954 @@
+{
+  "party": [
+    {
+      "word": {
+        "en": "Birthday Cake",
+        "tr": "Doğum Günü Pastası"
+      },
+      "hint": {
+        "en": "Wish",
+        "tr": "Dilek"
+      }
+    },
+    {
+      "word": {
+        "en": "Disco Ball",
+        "tr": "Disko Topu"
+      },
+      "hint": {
+        "en": "Sparkle",
+        "tr": "Parıltı"
+      }
+    },
+    {
+      "word": {
+        "en": "Confetti",
+        "tr": "Konfeti"
+      },
+      "hint": {
+        "en": "Scatter",
+        "tr": "Saçılmak"
+      }
+    },
+    {
+      "word": {
+        "en": "Karaoke",
+        "tr": "Karaoke"
+      },
+      "hint": {
+        "en": "Mic",
+        "tr": "Mikrofon"
+      }
+    },
+    {
+      "word": {
+        "en": "Balloon",
+        "tr": "Balon"
+      },
+      "hint": {
+        "en": "Pop",
+        "tr": "Patlamak"
+      }
+    },
+    {
+      "word": {
+        "en": "Piñata",
+        "tr": "Pinata"
+      },
+      "hint": {
+        "en": "Candy",
+        "tr": "Şeker"
+      }
+    },
+    {
+      "word": {
+        "en": "Champagne",
+        "tr": "Şampanya"
+      },
+      "hint": {
+        "en": "Toast",
+        "tr": "Kadeh"
+      }
+    },
+    {
+      "word": {
+        "en": "DJ Booth",
+        "tr": "DJ Kabini"
+      },
+      "hint": {
+        "en": "Beats",
+        "tr": "Ritim"
+      }
+    },
+    {
+      "word": {
+        "en": "Photo Booth",
+        "tr": "Fotoğraf Kabini"
+      },
+      "hint": {
+        "en": "Smile",
+        "tr": "Gülümseme"
+      }
+    },
+    {
+      "word": {
+        "en": "Party Hat",
+        "tr": "Parti Şapkası"
+      },
+      "hint": {
+        "en": "Cone",
+        "tr": "Külah"
+      }
+    },
+    {
+      "word": {
+        "en": "Glow Stick",
+        "tr": "Glow Stick"
+      },
+      "hint": {
+        "en": "Neon",
+        "tr": "Neon"
+      }
+    },
+    {
+      "word": {
+        "en": "Ice Bucket",
+        "tr": "Buz Kovası"
+      },
+      "hint": {
+        "en": "Chill",
+        "tr": "Soğuk"
+      }
+    }
+  ],
+  "football": [
+    {
+      "word": {
+        "en": "Penalty Kick",
+        "tr": "Penaltı"
+      },
+      "hint": {
+        "en": "Spot",
+        "tr": "Nokta"
+      }
+    },
+    {
+      "word": {
+        "en": "Offside",
+        "tr": "Ofsayt"
+      },
+      "hint": {
+        "en": "Flag",
+        "tr": "Bayrak"
+      }
+    },
+    {
+      "word": {
+        "en": "Goalkeeper",
+        "tr": "Kaleci"
+      },
+      "hint": {
+        "en": "Gloves",
+        "tr": "Eldiven"
+      }
+    },
+    {
+      "word": {
+        "en": "Corner Kick",
+        "tr": "Korner"
+      },
+      "hint": {
+        "en": "Flag",
+        "tr": "Bayrak"
+      }
+    },
+    {
+      "word": {
+        "en": "Red Card",
+        "tr": "Kırmızı Kart"
+      },
+      "hint": {
+        "en": "Foul",
+        "tr": "Faul"
+      }
+    },
+    {
+      "word": {
+        "en": "Hat Trick",
+        "tr": "Hat-trick"
+      },
+      "hint": {
+        "en": "Three",
+        "tr": "Üç"
+      }
+    },
+    {
+      "word": {
+        "en": "Stadium",
+        "tr": "Stadyum"
+      },
+      "hint": {
+        "en": "Crowd",
+        "tr": "Kalabalık"
+      }
+    },
+    {
+      "word": {
+        "en": "Trophy",
+        "tr": "Kupa"
+      },
+      "hint": {
+        "en": "Cup",
+        "tr": "Ödül"
+      }
+    },
+    {
+      "word": {
+        "en": "Free Kick",
+        "tr": "Serbest Vuruş"
+      },
+      "hint": {
+        "en": "Wall",
+        "tr": "Duvar"
+      }
+    },
+    {
+      "word": {
+        "en": "Captain Armband",
+        "tr": "Kaptan Pazubandı"
+      },
+      "hint": {
+        "en": "Leader",
+        "tr": "Lider"
+      }
+    },
+    {
+      "word": {
+        "en": "Var Check",
+        "tr": "VAR Kontrolü"
+      },
+      "hint": {
+        "en": "Screen",
+        "tr": "Ekran"
+      }
+    },
+    {
+      "word": {
+        "en": "Football Boots",
+        "tr": "Krampon"
+      },
+      "hint": {
+        "en": "Studs",
+        "tr": "Çivi"
+      }
+    }
+  ],
+  "food": [
+    {
+      "word": {
+        "en": "Sushi",
+        "tr": "Suşi"
+      },
+      "hint": {
+        "en": "Rice",
+        "tr": "Pirinç"
+      }
+    },
+    {
+      "word": {
+        "en": "Pizza",
+        "tr": "Pizza"
+      },
+      "hint": {
+        "en": "Slice",
+        "tr": "Dilim"
+      }
+    },
+    {
+      "word": {
+        "en": "Burger",
+        "tr": "Hamburger"
+      },
+      "hint": {
+        "en": "Bun",
+        "tr": "Ekmek"
+      }
+    },
+    {
+      "word": {
+        "en": "Taco",
+        "tr": "Taco"
+      },
+      "hint": {
+        "en": "Shell",
+        "tr": "Kabuk"
+      }
+    },
+    {
+      "word": {
+        "en": "Ice Cream",
+        "tr": "Dondurma"
+      },
+      "hint": {
+        "en": "Cone",
+        "tr": "Külah"
+      }
+    },
+    {
+      "word": {
+        "en": "Pasta",
+        "tr": "Makarna"
+      },
+      "hint": {
+        "en": "Sauce",
+        "tr": "Sos"
+      }
+    },
+    {
+      "word": {
+        "en": "Croissant",
+        "tr": "Kruvasan"
+      },
+      "hint": {
+        "en": "Flaky",
+        "tr": "Katmanlı"
+      }
+    },
+    {
+      "word": {
+        "en": "Ramen",
+        "tr": "Ramen"
+      },
+      "hint": {
+        "en": "Broth",
+        "tr": "Et suyu"
+      }
+    },
+    {
+      "word": {
+        "en": "Kebab",
+        "tr": "Kebap"
+      },
+      "hint": {
+        "en": "Skewer",
+        "tr": "Şiş"
+      }
+    },
+    {
+      "word": {
+        "en": "Avocado",
+        "tr": "Avokado"
+      },
+      "hint": {
+        "en": "Green",
+        "tr": "Yeşil"
+      }
+    },
+    {
+      "word": {
+        "en": "Chocolate",
+        "tr": "Çikolata"
+      },
+      "hint": {
+        "en": "Sweet",
+        "tr": "Tatlı"
+      }
+    },
+    {
+      "word": {
+        "en": "Popcorn",
+        "tr": "Patlamış Mısır"
+      },
+      "hint": {
+        "en": "Cinema",
+        "tr": "Sinema"
+      }
+    }
+  ],
+  "celebs": [
+    {
+      "word": {
+        "en": "Taylor Swift",
+        "tr": "Taylor Swift"
+      },
+      "hint": {
+        "en": "Pop",
+        "tr": "Pop"
+      }
+    },
+    {
+      "word": {
+        "en": "Cristiano Ronaldo",
+        "tr": "Cristiano Ronaldo"
+      },
+      "hint": {
+        "en": "Goals",
+        "tr": "Gol"
+      }
+    },
+    {
+      "word": {
+        "en": "Beyoncé",
+        "tr": "Beyoncé"
+      },
+      "hint": {
+        "en": "Queen",
+        "tr": "Kraliçe"
+      }
+    },
+    {
+      "word": {
+        "en": "Elon Musk",
+        "tr": "Elon Musk"
+      },
+      "hint": {
+        "en": "Rockets",
+        "tr": "Roket"
+      }
+    },
+    {
+      "word": {
+        "en": "Oprah Winfrey",
+        "tr": "Oprah Winfrey"
+      },
+      "hint": {
+        "en": "Talk",
+        "tr": "Sohbet"
+      }
+    },
+    {
+      "word": {
+        "en": "Leonardo DiCaprio",
+        "tr": "Leonardo DiCaprio"
+      },
+      "hint": {
+        "en": "Oscar",
+        "tr": "Oscar"
+      }
+    },
+    {
+      "word": {
+        "en": "Rihanna",
+        "tr": "Rihanna"
+      },
+      "hint": {
+        "en": "Fenty",
+        "tr": "Fenty"
+      }
+    },
+    {
+      "word": {
+        "en": "Tom Cruise",
+        "tr": "Tom Cruise"
+      },
+      "hint": {
+        "en": "Action",
+        "tr": "Aksiyon"
+      }
+    },
+    {
+      "word": {
+        "en": "Adele",
+        "tr": "Adele"
+      },
+      "hint": {
+        "en": "Voice",
+        "tr": "Ses"
+      }
+    },
+    {
+      "word": {
+        "en": "Dwayne Johnson",
+        "tr": "Dwayne Johnson"
+      },
+      "hint": {
+        "en": "Rock",
+        "tr": "Rock"
+      }
+    },
+    {
+      "word": {
+        "en": "Billie Eilish",
+        "tr": "Billie Eilish"
+      },
+      "hint": {
+        "en": "Whisper",
+        "tr": "Fısıltı"
+      }
+    },
+    {
+      "word": {
+        "en": "Zendaya",
+        "tr": "Zendaya"
+      },
+      "hint": {
+        "en": "Style",
+        "tr": "Stil"
+      }
+    }
+  ],
+  "hobbies": [
+    {
+      "word": {
+        "en": "Chess",
+        "tr": "Satranç"
+      },
+      "hint": {
+        "en": "Board",
+        "tr": "Tahta"
+      }
+    },
+    {
+      "word": {
+        "en": "Knitting",
+        "tr": "Örgü"
+      },
+      "hint": {
+        "en": "Yarn",
+        "tr": "İplik"
+      }
+    },
+    {
+      "word": {
+        "en": "Gardening",
+        "tr": "Bahçecilik"
+      },
+      "hint": {
+        "en": "Soil",
+        "tr": "Toprak"
+      }
+    },
+    {
+      "word": {
+        "en": "Photography",
+        "tr": "Fotoğrafçılık"
+      },
+      "hint": {
+        "en": "Lens",
+        "tr": "Lens"
+      }
+    },
+    {
+      "word": {
+        "en": "Hiking",
+        "tr": "Doğa Yürüyüşü"
+      },
+      "hint": {
+        "en": "Trail",
+        "tr": "Patika"
+      }
+    },
+    {
+      "word": {
+        "en": "Painting",
+        "tr": "Resim"
+      },
+      "hint": {
+        "en": "Brush",
+        "tr": "Fırça"
+      }
+    },
+    {
+      "word": {
+        "en": "Fishing",
+        "tr": "Balık Tutma"
+      },
+      "hint": {
+        "en": "Hook",
+        "tr": "İğne"
+      }
+    },
+    {
+      "word": {
+        "en": "Yoga",
+        "tr": "Yoga"
+      },
+      "hint": {
+        "en": "Mat",
+        "tr": "Mat"
+      }
+    },
+    {
+      "word": {
+        "en": "Collecting Stamps",
+        "tr": "Pul Koleksiyonu"
+      },
+      "hint": {
+        "en": "Album",
+        "tr": "Albüm"
+      }
+    },
+    {
+      "word": {
+        "en": "Pottery",
+        "tr": "Çömlekçilik"
+      },
+      "hint": {
+        "en": "Clay",
+        "tr": "Kil"
+      }
+    },
+    {
+      "word": {
+        "en": "Birdwatching",
+        "tr": "Kuş Gözlem"
+      },
+      "hint": {
+        "en": "Binoculars",
+        "tr": "Dürbün"
+      }
+    },
+    {
+      "word": {
+        "en": "Board Games",
+        "tr": "Kutu Oyunları"
+      },
+      "hint": {
+        "en": "Dice",
+        "tr": "Zar"
+      }
+    }
+  ],
+  "family": [
+    {
+      "word": {
+        "en": "Grandmother",
+        "tr": "Büyükanne"
+      },
+      "hint": {
+        "en": "Stories",
+        "tr": "Hikaye"
+      }
+    },
+    {
+      "word": {
+        "en": "Baby Cradle",
+        "tr": "Beşik"
+      },
+      "hint": {
+        "en": "Nap",
+        "tr": "Uyku"
+      }
+    },
+    {
+      "word": {
+        "en": "Family Dinner",
+        "tr": "Aile Yemeği"
+      },
+      "hint": {
+        "en": "Table",
+        "tr": "Masa"
+      }
+    },
+    {
+      "word": {
+        "en": "Wedding Ring",
+        "tr": "Alyans"
+      },
+      "hint": {
+        "en": "Promise",
+        "tr": "Söz"
+      }
+    },
+    {
+      "word": {
+        "en": "Sibling Rivalry",
+        "tr": "Kardeş Rekabeti"
+      },
+      "hint": {
+        "en": "Argue",
+        "tr": "Tartışma"
+      }
+    },
+    {
+      "word": {
+        "en": "Family Photo",
+        "tr": "Aile Fotoğrafı"
+      },
+      "hint": {
+        "en": "Frame",
+        "tr": "Çerçeve"
+      }
+    },
+    {
+      "word": {
+        "en": "House Keys",
+        "tr": "Ev Anahtarı"
+      },
+      "hint": {
+        "en": "Home",
+        "tr": "Yuva"
+      }
+    },
+    {
+      "word": {
+        "en": "Pet Dog",
+        "tr": "Ev Köpeği"
+      },
+      "hint": {
+        "en": "Loyal",
+        "tr": "Sadık"
+      }
+    },
+    {
+      "word": {
+        "en": "Sunday Brunch",
+        "tr": "Pazar Brunch"
+      },
+      "hint": {
+        "en": "Weekend",
+        "tr": "Hafta sonu"
+      }
+    },
+    {
+      "word": {
+        "en": "Lullaby",
+        "tr": "Ninni"
+      },
+      "hint": {
+        "en": "Sleep",
+        "tr": "Uyku"
+      }
+    },
+    {
+      "word": {
+        "en": "Birthday Party",
+        "tr": "Doğum Günü Partisi"
+      },
+      "hint": {
+        "en": "Cake",
+        "tr": "Pasta"
+      }
+    },
+    {
+      "word": {
+        "en": "Cousins Reunion",
+        "tr": "Kuzen Buluşması"
+      },
+      "hint": {
+        "en": "Visit",
+        "tr": "Ziyaret"
+      }
+    }
+  ],
+  "education": [
+    {
+      "word": {
+        "en": "Blackboard",
+        "tr": "Kara Tahta"
+      },
+      "hint": {
+        "en": "Chalk",
+        "tr": "Tebeşir"
+      }
+    },
+    {
+      "word": {
+        "en": "Backpack",
+        "tr": "Sırt Çantası"
+      },
+      "hint": {
+        "en": "Books",
+        "tr": "Kitap"
+      }
+    },
+    {
+      "word": {
+        "en": "Homework",
+        "tr": "Ödev"
+      },
+      "hint": {
+        "en": "Deadline",
+        "tr": "Son tarih"
+      }
+    },
+    {
+      "word": {
+        "en": "Science Lab",
+        "tr": "Fen Labı"
+      },
+      "hint": {
+        "en": "Experiment",
+        "tr": "Deney"
+      }
+    },
+    {
+      "word": {
+        "en": "Graduation Cap",
+        "tr": "Kep"
+      },
+      "hint": {
+        "en": "Degree",
+        "tr": "Diploma"
+      }
+    },
+    {
+      "word": {
+        "en": "Library Card",
+        "tr": "Kütüphane Kartı"
+      },
+      "hint": {
+        "en": "Quiet",
+        "tr": "Sessizlik"
+      }
+    },
+    {
+      "word": {
+        "en": "Calculator",
+        "tr": "Hesap Makinesi"
+      },
+      "hint": {
+        "en": "Numbers",
+        "tr": "Sayı"
+      }
+    },
+    {
+      "word": {
+        "en": "School Bus",
+        "tr": "Okul Otobüsü"
+      },
+      "hint": {
+        "en": "Yellow",
+        "tr": "Sarı"
+      }
+    },
+    {
+      "word": {
+        "en": "Pencil Case",
+        "tr": "Kalem Kutusu"
+      },
+      "hint": {
+        "en": "Eraser",
+        "tr": "Silgi"
+      }
+    },
+    {
+      "word": {
+        "en": "Recess",
+        "tr": "Teneffüs"
+      },
+      "hint": {
+        "en": "Playground",
+        "tr": "Bahçe"
+      }
+    },
+    {
+      "word": {
+        "en": "Teacher Desk",
+        "tr": "Öğretmen Masası"
+      },
+      "hint": {
+        "en": "Apple",
+        "tr": "Elma"
+      }
+    },
+    {
+      "word": {
+        "en": "Exam Paper",
+        "tr": "Sınav Kağıdı"
+      },
+      "hint": {
+        "en": "Nervous",
+        "tr": "Gergin"
+      }
+    }
+  ],
+  "nature": [
+    {
+      "word": {
+        "en": "Rainbow",
+        "tr": "Gökkuşağı"
+      },
+      "hint": {
+        "en": "Colors",
+        "tr": "Renkler"
+      }
+    },
+    {
+      "word": {
+        "en": "Volcano",
+        "tr": "Volkan"
+      },
+      "hint": {
+        "en": "Lava",
+        "tr": "Lav"
+      }
+    },
+    {
+      "word": {
+        "en": "Waterfall",
+        "tr": "Şelale"
+      },
+      "hint": {
+        "en": "Mist",
+        "tr": "Sis"
+      }
+    },
+    {
+      "word": {
+        "en": "Desert Oasis",
+        "tr": "Vaha"
+      },
+      "hint": {
+        "en": "Palm",
+        "tr": "Palmiye"
+      }
+    },
+    {
+      "word": {
+        "en": "Northern Lights",
+        "tr": "Kuzey Işıkları"
+      },
+      "hint": {
+        "en": "Glow",
+        "tr": "Parıltı"
+      }
+    },
+    {
+      "word": {
+        "en": "Coral Reef",
+        "tr": "Mercan Resifi"
+      },
+      "hint": {
+        "en": "Fish",
+        "tr": "Balık"
+      }
+    },
+    {
+      "word": {
+        "en": "Lightning",
+        "tr": "Şimşek"
+      },
+      "hint": {
+        "en": "Storm",
+        "tr": "Fırtına"
+      }
+    },
+    {
+      "word": {
+        "en": "Snowflakes",
+        "tr": "Kar Tanesi"
+      },
+      "hint": {
+        "en": "Unique",
+        "tr": "Eşsiz"
+      }
+    },
+    {
+      "word": {
+        "en": "Sunflower",
+        "tr": "Ayçiçeği"
+      },
+      "hint": {
+        "en": "Tall",
+        "tr": "Uzun"
+      }
+    },
+    {
+      "word": {
+        "en": "Cave",
+        "tr": "Mağara"
+      },
+      "hint": {
+        "en": "Echo",
+        "tr": "Yankı"
+      }
+    },
+    {
+      "word": {
+        "en": "Forest Trail",
+        "tr": "Orman Yolu"
+      },
+      "hint": {
+        "en": "Trees",
+        "tr": "Ağaç"
+      }
+    },
+    {
+      "word": {
+        "en": "Ocean Wave",
+        "tr": "Dalga"
+      },
+      "hint": {
+        "en": "Crash",
+        "tr": "Çarpmak"
+      }
+    }
+  ],
+  "characters": [
+    {
+      "word": {
+        "en": "Sherlock Holmes",
+        "tr": "Sherlock Holmes"
+      },
+      "hint": {
+        "en": "Detective",
+        "tr": "Dedektif"
+      }
+    },
+    {
+      "word": {
+        "en": "Harry Potter",
+        "tr": "Harry Potter"
+      },
+      "hint": {
+        "en": "Wand",
+        "tr": "Asa"
+      }
+    },
+    {
+      "word": {
+        "en": "Spider-Man",
+        "tr": "Örümcek Adam"
+      },
+      "hint": {
+        "en": "Web",
+        "tr": "Ağ"
+      }
+    },
+    {
+      "word": {
+        "en": "Elsa",
+        "tr": "Elsa"
+      },
+      "hint": {
+        "en": "Ice",
+        "tr": "Buz"
+      }
+    },
+    {
+      "word": {
+        "en": "Darth Vader",
+        "tr": "Darth Vader"
+      },
+      "hint": {
+        "en": "Breath",
+        "tr": "Nefes"
+      }
+    },
+    {
+      "word": {
+        "en": "Pikachu",
+        "tr": "Pikachu"
+      },
+      "hint": {
+        "en": "Electric",
+        "tr": "Elektrik"
+      }
+    },
+    {
+      "word": {
+        "en": "Batman",
+        "tr": "Batman"
+      },
+      "hint": {
+        "en": "Cave",
+        "tr": "Mağara"
+      }
+    },
+    {
+      "word": {
+        "en": "Wonder Woman",
+        "tr": "Wonder Woman"
+      },
+      "hint": {
+        "en": "Lasso",
+        "tr": "Kement"
+      }
+    },
+    {
+      "word": {
+        "en": "Mario",
+        "tr": "Mario"
+      },
+      "hint": {
+        "en": "Pipes",
+        "tr": "Boru"
+      }
+    },
+    {
+      "word": {
+        "en": "Iron Man",
+        "tr": "Iron Man"
+      },
+      "hint": {
+        "en": "Armor",
+        "tr": "Zırh"
+      }
+    },
+    {
+      "word": {
+        "en": "Cinderella",
+        "tr": "Külkedisi"
+      },
+      "hint": {
+        "en": "Slipper",
+        "tr": "Ayakkabı"
+      }
+    },
+    {
+      "word": {
+        "en": "Joker",
+        "tr": "Joker"
+      },
+      "hint": {
+        "en": "Chaos",
+        "tr": "Kaos"
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "word": {
+        "en": "Firefighter",
+        "tr": "İtfaiyeci"
+      },
+      "hint": {
+        "en": "Hose",
+        "tr": "Hortum"
+      }
+    },
+    {
+      "word": {
+        "en": "Chef",
+        "tr": "Şef"
+      },
+      "hint": {
+        "en": "Knife",
+        "tr": "Bıçak"
+      }
+    },
+    {
+      "word": {
+        "en": "Pilot",
+        "tr": "Pilot"
+      },
+      "hint": {
+        "en": "Cockpit",
+        "tr": "Kokpit"
+      }
+    },
+    {
+      "word": {
+        "en": "Doctor",
+        "tr": "Doktor"
+      },
+      "hint": {
+        "en": "Stethoscope",
+        "tr": "Stetoskop"
+      }
+    },
+    {
+      "word": {
+        "en": "Architect",
+        "tr": "Mimar"
+      },
+      "hint": {
+        "en": "Blueprint",
+        "tr": "Plan"
+      }
+    },
+    {
+      "word": {
+        "en": "Journalist",
+        "tr": "Gazeteci"
+      },
+      "hint": {
+        "en": "Interview",
+        "tr": "Röportaj"
+      }
+    },
+    {
+      "word": {
+        "en": "Mechanic",
+        "tr": "Tamirci"
+      },
+      "hint": {
+        "en": "Wrench",
+        "tr": "Anahtar"
+      }
+    },
+    {
+      "word": {
+        "en": "Lawyer",
+        "tr": "Avukat"
+      },
+      "hint": {
+        "en": "Court",
+        "tr": "Mahkeme"
+      }
+    },
+    {
+      "word": {
+        "en": "Barista",
+        "tr": "Barista"
+      },
+      "hint": {
+        "en": "Espresso",
+        "tr": "Espresso"
+      }
+    },
+    {
+      "word": {
+        "en": "Astronaut",
+        "tr": "Astronot"
+      },
+      "hint": {
+        "en": "Space",
+        "tr": "Uzay"
+      }
+    },
+    {
+      "word": {
+        "en": "Dentist",
+        "tr": "Diş Hekimi"
+      },
+      "hint": {
+        "en": "Smile",
+        "tr": "Gülümseme"
+      }
+    },
+    {
+      "word": {
+        "en": "Photographer",
+        "tr": "Fotoğrafçı"
+      },
+      "hint": {
+        "en": "Camera",
+        "tr": "Kamera"
+      }
+    }
+  ],
+  "nightlife": [
+    {
+      "word": {
+        "en": "Neon Sign",
+        "tr": "Neon Tabela"
+      },
+      "hint": {
+        "en": "Glow",
+        "tr": "Parıltı"
+      }
+    },
+    {
+      "word": {
+        "en": "Cocktail",
+        "tr": "Kokteyl"
+      },
+      "hint": {
+        "en": "Shaker",
+        "tr": "Shaker"
+      }
+    },
+    {
+      "word": {
+        "en": "Dance Floor",
+        "tr": "Dans Pisti"
+      },
+      "hint": {
+        "en": "Bass",
+        "tr": "Bas"
+      }
+    },
+    {
+      "word": {
+        "en": "VIP Lounge",
+        "tr": "VIP Lounge"
+      },
+      "hint": {
+        "en": "Rope",
+        "tr": "İp"
+      }
+    },
+    {
+      "word": {
+        "en": "DJ Set",
+        "tr": "DJ Seti"
+      },
+      "hint": {
+        "en": "Headphones",
+        "tr": "Kulaklık"
+      }
+    },
+    {
+      "word": {
+        "en": "Midnight Snack",
+        "tr": "Gece Atıştırması"
+      },
+      "hint": {
+        "en": "Late",
+        "tr": "Geç"
+      }
+    },
+    {
+      "word": {
+        "en": "Taxi Ride",
+        "tr": "Taksi"
+      },
+      "hint": {
+        "en": "Home",
+        "tr": "Eve"
+      }
+    },
+    {
+      "word": {
+        "en": "Karaoke Night",
+        "tr": "Karaoke Gecesi"
+      },
+      "hint": {
+        "en": "Mic",
+        "tr": "Mikrofon"
+      }
+    },
+    {
+      "word": {
+        "en": "Rooftop Bar",
+        "tr": "Çatı Barı"
+      },
+      "hint": {
+        "en": "Skyline",
+        "tr": "Siluet"
+      }
+    },
+    {
+      "word": {
+        "en": "Glow Party",
+        "tr": "Glow Parti"
+      },
+      "hint": {
+        "en": "UV",
+        "tr": "UV"
+      }
+    },
+    {
+      "word": {
+        "en": "Bottle Service",
+        "tr": "Bottle Service"
+      },
+      "hint": {
+        "en": "Sparkle",
+        "tr": "Parıltı"
+      }
+    },
+    {
+      "word": {
+        "en": "Afterparty",
+        "tr": "Afterparty"
+      },
+      "hint": {
+        "en": "Sunrise",
+        "tr": "Şafak"
+      }
+    }
+  ],
+  "brands": [
+    {
+      "word": {
+        "en": "Nike",
+        "tr": "Nike"
+      },
+      "hint": {
+        "en": "Swoosh",
+        "tr": "Swoosh"
+      }
+    },
+    {
+      "word": {
+        "en": "Apple",
+        "tr": "Apple"
+      },
+      "hint": {
+        "en": "Bite",
+        "tr": "Isırık"
+      }
+    },
+    {
+      "word": {
+        "en": "Coca-Cola",
+        "tr": "Coca-Cola"
+      },
+      "hint": {
+        "en": "Red",
+        "tr": "Kırmızı"
+      }
+    },
+    {
+      "word": {
+        "en": "McDonald's",
+        "tr": "McDonald's"
+      },
+      "hint": {
+        "en": "Arches",
+        "tr": "Kemer"
+      }
+    },
+    {
+      "word": {
+        "en": "Google",
+        "tr": "Google"
+      },
+      "hint": {
+        "en": "Search",
+        "tr": "Arama"
+      }
+    },
+    {
+      "word": {
+        "en": "Starbucks",
+        "tr": "Starbucks"
+      },
+      "hint": {
+        "en": "Coffee",
+        "tr": "Kahve"
+      }
+    },
+    {
+      "word": {
+        "en": "LEGO",
+        "tr": "LEGO"
+      },
+      "hint": {
+        "en": "Brick",
+        "tr": "Tuğla"
+      }
+    },
+    {
+      "word": {
+        "en": "Netflix",
+        "tr": "Netflix"
+      },
+      "hint": {
+        "en": "Binge",
+        "tr": "Maraton"
+      }
+    },
+    {
+      "word": {
+        "en": "IKEA",
+        "tr": "IKEA"
+      },
+      "hint": {
+        "en": "Allen",
+        "tr": "Allen"
+      }
+    },
+    {
+      "word": {
+        "en": "Adidas",
+        "tr": "Adidas"
+      },
+      "hint": {
+        "en": "Stripes",
+        "tr": "Şerit"
+      }
+    },
+    {
+      "word": {
+        "en": "PlayStation",
+        "tr": "PlayStation"
+      },
+      "hint": {
+        "en": "Controller",
+        "tr": "Kol"
+      }
+    },
+    {
+      "word": {
+        "en": "Tesla",
+        "tr": "Tesla"
+      },
+      "hint": {
+        "en": "Electric",
+        "tr": "Elektrik"
+      }
+    }
+  ],
+  "places": [
+    {
+      "word": {
+        "en": "Eiffel Tower",
+        "tr": "Eyfel Kulesi"
+      },
+      "hint": {
+        "en": "Paris",
+        "tr": "Paris"
+      }
+    },
+    {
+      "word": {
+        "en": "Great Wall",
+        "tr": "Çin Seddi"
+      },
+      "hint": {
+        "en": "China",
+        "tr": "Çin"
+      }
+    },
+    {
+      "word": {
+        "en": "Pyramids",
+        "tr": "Piramitler"
+      },
+      "hint": {
+        "en": "Egypt",
+        "tr": "Mısır"
+      }
+    },
+    {
+      "word": {
+        "en": "Statue of Liberty",
+        "tr": "Özgürlük Heykeli"
+      },
+      "hint": {
+        "en": "Torch",
+        "tr": "Meşale"
+      }
+    },
+    {
+      "word": {
+        "en": "Colosseum",
+        "tr": "Kolezyum"
+      },
+      "hint": {
+        "en": "Rome",
+        "tr": "Roma"
+      }
+    },
+    {
+      "word": {
+        "en": "Taj Mahal",
+        "tr": "Tac Mahal"
+      },
+      "hint": {
+        "en": "Marble",
+        "tr": "Mermer"
+      }
+    },
+    {
+      "word": {
+        "en": "Times Square",
+        "tr": "Times Square"
+      },
+      "hint": {
+        "en": "Lights",
+        "tr": "Işıklar"
+      }
+    },
+    {
+      "word": {
+        "en": "Machu Picchu",
+        "tr": "Machu Picchu"
+      },
+      "hint": {
+        "en": "Mountains",
+        "tr": "Dağlar"
+      }
+    },
+    {
+      "word": {
+        "en": "Sydney Opera",
+        "tr": "Sydney Opera"
+      },
+      "hint": {
+        "en": "Sails",
+        "tr": "Yelken"
+      }
+    },
+    {
+      "word": {
+        "en": "Grand Canyon",
+        "tr": "Grand Canyon"
+      },
+      "hint": {
+        "en": "Cliff",
+        "tr": "Uçurum"
+      }
+    },
+    {
+      "word": {
+        "en": "Santorini",
+        "tr": "Santorini"
+      },
+      "hint": {
+        "en": "Blue",
+        "tr": "Mavi"
+      }
+    },
+    {
+      "word": {
+        "en": "Tokyo Crossing",
+        "tr": "Tokyo Kavşağı"
+      },
+      "hint": {
+        "en": "Crowd",
+        "tr": "Kalabalık"
+      }
+    }
+  ],
+  "animals": [
+    {
+      "word": {
+        "en": "Penguin",
+        "tr": "Penguen"
+      },
+      "hint": {
+        "en": "Tuxedo",
+        "tr": "Smokin"
+      }
+    },
+    {
+      "word": {
+        "en": "Octopus",
+        "tr": "Ahtapot"
+      },
+      "hint": {
+        "en": "Arms",
+        "tr": "Kollar"
+      }
+    },
+    {
+      "word": {
+        "en": "Giraffe",
+        "tr": "Zürafa"
+      },
+      "hint": {
+        "en": "Neck",
+        "tr": "Boyun"
+      }
+    },
+    {
+      "word": {
+        "en": "Dolphin",
+        "tr": "Yunus"
+      },
+      "hint": {
+        "en": "Click",
+        "tr": "Tıkırtı"
+      }
+    },
+    {
+      "word": {
+        "en": "Owl",
+        "tr": "Baykuş"
+      },
+      "hint": {
+        "en": "Night",
+        "tr": "Gece"
+      }
+    },
+    {
+      "word": {
+        "en": "Kangaroo",
+        "tr": "Kanguru"
+      },
+      "hint": {
+        "en": "Pouch",
+        "tr": "Keseli"
+      }
+    },
+    {
+      "word": {
+        "en": "Panda",
+        "tr": "Panda"
+      },
+      "hint": {
+        "en": "Bamboo",
+        "tr": "Bambu"
+      }
+    },
+    {
+      "word": {
+        "en": "Chameleon",
+        "tr": "Bukalemun"
+      },
+      "hint": {
+        "en": "Color",
+        "tr": "Renk"
+      }
+    },
+    {
+      "word": {
+        "en": "Flamingo",
+        "tr": "Flamingo"
+      },
+      "hint": {
+        "en": "Pink",
+        "tr": "Pembe"
+      }
+    },
+    {
+      "word": {
+        "en": "Hedgehog",
+        "tr": "Kirpi"
+      },
+      "hint": {
+        "en": "Spikes",
+        "tr": "Diken"
+      }
+    },
+    {
+      "word": {
+        "en": "Elephant",
+        "tr": "Fil"
+      },
+      "hint": {
+        "en": "Trunk",
+        "tr": "Hortum"
+      }
+    },
+    {
+      "word": {
+        "en": "Butterfly",
+        "tr": "Kelebek"
+      },
+      "hint": {
+        "en": "Wings",
+        "tr": "Kanat"
+      }
+    }
+  ],
+  "sports": [
+    {
+      "word": {
+        "en": "Basketball",
+        "tr": "Basketbol"
+      },
+      "hint": {
+        "en": "Hoop",
+        "tr": "Pota"
+      }
+    },
+    {
+      "word": {
+        "en": "Tennis",
+        "tr": "Tenis"
+      },
+      "hint": {
+        "en": "Racket",
+        "tr": "Raket"
+      }
+    },
+    {
+      "word": {
+        "en": "Swimming",
+        "tr": "Yüzme"
+      },
+      "hint": {
+        "en": "Lane",
+        "tr": "Kulvar"
+      }
+    },
+    {
+      "word": {
+        "en": "Boxing",
+        "tr": "Boks"
+      },
+      "hint": {
+        "en": "Gloves",
+        "tr": "Eldiven"
+      }
+    },
+    {
+      "word": {
+        "en": "Skiing",
+        "tr": "Kayak"
+      },
+      "hint": {
+        "en": "Slope",
+        "tr": "Pist"
+      }
+    },
+    {
+      "word": {
+        "en": "Golf",
+        "tr": "Golf"
+      },
+      "hint": {
+        "en": "Tee",
+        "tr": "Tee"
+      }
+    },
+    {
+      "word": {
+        "en": "Volleyball",
+        "tr": "Voleybol"
+      },
+      "hint": {
+        "en": "Net",
+        "tr": "File"
+      }
+    },
+    {
+      "word": {
+        "en": "Surfing",
+        "tr": "Sörf"
+      },
+      "hint": {
+        "en": "Wave",
+        "tr": "Dalga"
+      }
+    },
+    {
+      "word": {
+        "en": "Cycling",
+        "tr": "Bisiklet"
+      },
+      "hint": {
+        "en": "Helmet",
+        "tr": "Kask"
+      }
+    },
+    {
+      "word": {
+        "en": "Archery",
+        "tr": "Okçuluk"
+      },
+      "hint": {
+        "en": "Bow",
+        "tr": "Yay"
+      }
+    },
+    {
+      "word": {
+        "en": "Skateboard",
+        "tr": "Kaykay"
+      },
+      "hint": {
+        "en": "Trick",
+        "tr": "Numara"
+      }
+    },
+    {
+      "word": {
+        "en": "Marathon",
+        "tr": "Maraton"
+      },
+      "hint": {
+        "en": "Endurance",
+        "tr": "Dayanıklılık"
+      }
+    }
+  ],
+  "newyear": [
+    {
+      "word": {
+        "en": "Fireworks",
+        "tr": "Havai Fişek"
+      },
+      "hint": {
+        "en": "Boom",
+        "tr": "Patlama"
+      }
+    },
+    {
+      "word": {
+        "en": "Countdown",
+        "tr": "Geri Sayım"
+      },
+      "hint": {
+        "en": "Midnight",
+        "tr": "Gece yarısı"
+      }
+    },
+    {
+      "word": {
+        "en": "Champagne Toast",
+        "tr": "Şampanya Kadehi"
+      },
+      "hint": {
+        "en": "Clink",
+        "tr": "Tokuşturma"
+      }
+    },
+    {
+      "word": {
+        "en": "New Year Resolution",
+        "tr": "Yılbaşı Kararı"
+      },
+      "hint": {
+        "en": "Promise",
+        "tr": "Söz"
+      }
+    },
+    {
+      "word": {
+        "en": "Party Horn",
+        "tr": "Parti Düdüğü"
+      },
+      "hint": {
+        "en": "Noise",
+        "tr": "Gürültü"
+      }
+    },
+    {
+      "word": {
+        "en": "Calendar Flip",
+        "tr": "Takvim Çevirme"
+      },
+      "hint": {
+        "en": "January",
+        "tr": "Ocak"
+      }
+    },
+    {
+      "word": {
+        "en": "Sparkler",
+        "tr": "Maytap"
+      },
+      "hint": {
+        "en": "Spark",
+        "tr": "Kıvılcım"
+      }
+    },
+    {
+      "word": {
+        "en": "Ball Drop",
+        "tr": "Top Düşürme"
+      },
+      "hint": {
+        "en": "Square",
+        "tr": "Meydan"
+      }
+    },
+    {
+      "word": {
+        "en": "Wish List",
+        "tr": "Dilek Listesi"
+      },
+      "hint": {
+        "en": "Hope",
+        "tr": "Umut"
+      }
+    },
+    {
+      "word": {
+        "en": "Confetti Cannon",
+        "tr": "Konfeti Topu"
+      },
+      "hint": {
+        "en": "Burst",
+        "tr": "Patlama"
+      }
+    },
+    {
+      "word": {
+        "en": "Midnight Kiss",
+        "tr": "Gece Yarısı Öpücüğü"
+      },
+      "hint": {
+        "en": "Romance",
+        "tr": "Romantik"
+      }
+    },
+    {
+      "word": {
+        "en": "Lucky Coin",
+        "tr": "Şans Parası"
+      },
+      "hint": {
+        "en": "Fortune",
+        "tr": "Talih"
+      }
+    }
+  ]
+}
