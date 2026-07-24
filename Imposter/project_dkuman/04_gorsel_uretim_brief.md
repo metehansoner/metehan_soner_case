@@ -156,15 +156,15 @@ Kart UI: sol metin (lokalize) · sağ bu PNG · kilit ikonu ayrı UI.
 
 ---
 
-## 6. Üretim sırası (sonraki iş)
+## 6. Üretim sırası — checklist
 
-1. Mod kartları (2)  
-2. 15 oyuncu karakteri  
-3. 16 kategori ikonu  
-4. Onboarding / paywall / rate-us sahneleri  
-
-Her batch `screens/assets/...` altına kaydedilir; bu brief güncellenerek checklist işaretlenir.
+| Batch | İçerik | Durum |
+|-------|--------|--------|
+| 1 | Mod kartları (2) | ✅ `assets/modes/` |
+| 2 | 15 oyuncu karakteri | ✅ `assets/players/` |
+| 3 | 16 kategori ikonu | ✅ `assets/categories/` |
+| 4 | Onboarding / paywall / rate-us sahneleri | ⏳ Sonra |
 
 ---
 
-*Imposter Party · 2026-07-25*
+*Imposter Party · 2026-07-25 · görseller üretildi*
