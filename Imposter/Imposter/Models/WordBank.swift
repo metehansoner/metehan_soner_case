@@ -27,18 +27,6 @@ enum WordBank {
             ?? SecretEntry(word: "Party", hint: "Celebrate")
     }
 
-    /// Another word from the same pool, different from `excluding` when possible.
-    static func decoyWord(
-        categoryIDs: Set<String>,
-        excluding: String,
-        locale: String = LocalizationManager.shared.localeCode
-    ) -> SecretEntry {
-        let pool = categoryIDs.flatMap { entries(for: $0, locale: locale) }
-            .filter { $0.word.caseInsensitiveCompare(excluding) != .orderedSame }
-        if let pick = pool.randomElement() { return pick }
-        return SecretEntry(word: "Shadow", hint: "Dark")
-    }
-
     private static func entries(for categoryID: String, locale: String) -> [SecretEntry] {
         guard let rows = catalog[categoryID] else { return [] }
         return rows.compactMap { row in

@@ -42,14 +42,6 @@ struct GameSettingsView: View {
                 ScrollView {
                     VStack(spacing: 14) {
                         SettingsCard(
-                            title: l10n.t("gameSettings.mysteryTwist"),
-                            subtitle: l10n.t("gameSettings.mysteryTwistDesc")
-                        ) {
-                            OnOffToggle(isOn: $session.mysteryTwistEnabled)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-
-                        SettingsCard(
                             title: l10n.t("gameSettings.imposters"),
                             subtitle: l10n.t(
                                 "gameSettings.impostersDesc",

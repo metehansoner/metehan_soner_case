@@ -285,14 +285,6 @@ struct ResultsView: View {
                     if showsImposterPortrait, let impostor = live.impostors.first {
                         playerSpotlight(impostor, caption: nil)
                     }
-
-                    if case .decoy = live.activeTwist, let decoy = live.decoyPlayer {
-                        playerSpotlight(decoy, caption: l10n.t("results.decoyPlayer"))
-                    }
-
-                    if case .blank = live.activeTwist, let blank = live.blankPlayer {
-                        playerSpotlight(blank, caption: l10n.t("results.blankPlayer"))
-                    }
                 }
                 .padding(18)
                 .frame(maxWidth: .infinity)
@@ -310,12 +302,6 @@ struct ResultsView: View {
                         .font(AppFont.display(26, weight: .bold))
                         .foregroundStyle(AppColors.textPrimary)
                         .multilineTextAlignment(.center)
-                    if let decoy = live.decoyWord {
-                        Text(l10n.t("results.decoyWord", ["word": decoy]))
-                            .font(AppFont.ui(13))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .padding(.top, 4)
-                    }
                 }
                 .padding(18)
                 .frame(maxWidth: .infinity)
@@ -353,7 +339,6 @@ struct ResultsView: View {
     private var showsImposterPortrait: Bool {
         switch live.outcome {
         case .crewWins, .imposterWinsHidden: return true
-        case .twistNoImposter, .twistAllImposters: return false
         case .none: return false
         }
     }
@@ -387,7 +372,6 @@ struct ResultsView: View {
         switch live.outcome {
         case .crewWins: return l10n.t("results.crewWins")
         case .imposterWinsHidden: return l10n.t("results.imposterWins")
-        case .twistNoImposter, .twistAllImposters: return l10n.t("results.twistTitle")
         case .none: return l10n.t("results.title")
         }
     }
@@ -396,8 +380,6 @@ struct ResultsView: View {
         switch live.outcome {
         case .crewWins: return l10n.t("results.crewWinsBody")
         case .imposterWinsHidden: return l10n.t("results.imposterWinsBody")
-        case .twistNoImposter: return l10n.t("results.twistNoImposterBody")
-        case .twistAllImposters: return l10n.t("results.twistAllImpostersBody")
         case .none: return ""
         }
     }

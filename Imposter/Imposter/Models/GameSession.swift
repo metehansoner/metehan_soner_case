@@ -8,7 +8,6 @@ final class GameSession {
     var selectedCategoryIDs: Set<String> = []
     /// Categories unlocked for this session via rewarded ad (stub until ads are wired).
     var adUnlockedCategoryIDs: Set<String> = []
-    var mysteryTwistEnabled = false
     var imposterCount = 1
     var roundDurationSeconds = RoundDurationLimits.defaultSeconds
     var imposterHintsEnabled = true
@@ -60,7 +59,6 @@ final class GameSession {
         players = (0..<PlayerLimits.minCount).map { _ in Player() }
         selectedCategoryIDs = []
         adUnlockedCategoryIDs = []
-        mysteryTwistEnabled = false
         imposterCount = 1
         roundDurationSeconds = RoundDurationLimits.defaultSeconds
         imposterHintsEnabled = true

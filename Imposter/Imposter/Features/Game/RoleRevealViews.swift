@@ -217,18 +217,6 @@ struct RoleRevealView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
-            case .blank:
-                Image(systemName: "questionmark.square.dashed")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(AppColors.accentYellow)
-                Text(l10n.t("pass.blank"))
-                    .font(AppFont.display(28, weight: .black))
-                    .foregroundStyle(AppColors.accentYellow)
-                Text(l10n.t("pass.blankBody"))
-                    .font(AppFont.ui(13, weight: .bold))
-                    .foregroundStyle(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
             case .word(let word):
                 Image(systemName: "person.3.fill")
                     .font(.system(size: 26, weight: .bold))
@@ -253,7 +241,6 @@ struct RoleRevealView: View {
 }
 
 struct ReadyToStartView: View {
-    var mysteryTwistEnabled: Bool = false
     var onStart: () -> Void
     @Bindable private var l10n = LocalizationManager.shared
 
@@ -269,15 +256,6 @@ struct ReadyToStartView: View {
                     .font(AppFont.display(30, weight: .bold))
                     .foregroundStyle(AppColors.textPrimary)
                     .multilineTextAlignment(.center)
-
-                if mysteryTwistEnabled {
-                    Text(l10n.t("twist.activeBadge"))
-                        .font(AppFont.ui(14, weight: .bold))
-                        .foregroundStyle(AppColors.textOnLight)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(AppColors.accentYellow))
-                }
 
                 Spacer()
                 Button(action: onStart) {

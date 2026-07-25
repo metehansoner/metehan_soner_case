@@ -27,29 +27,16 @@ enum LivePhase: Equatable {
 enum GameOutcome: Equatable {
     case crewWins
     case imposterWinsHidden
-    case twistNoImposter
-    case twistAllImposters
 }
 
 enum PlayerReveal: Hashable {
     case word(String)
     case impostor
-    case blank
-}
-
-/// Active mystery rule for this round (hidden from players until results).
-enum MysteryTwist: Equatable {
-    case none
-    case noImposter
-    case allImposters
-    case decoy(playerID: UUID)
-    case blank(playerID: UUID)
 }
 
 struct AssignedPlayer: Identifiable, Hashable {
     let id: UUID
     let name: String
-    /// True impostor for win checks (may differ from what the card shows).
     let isImposter: Bool
     let avatarIndex: Int
     let reveal: PlayerReveal
@@ -89,9 +76,6 @@ final class LiveGame {
     let hintsEnabled: Bool
     let roundDurationSeconds: Int
     let mode: GameMode
-    let mysteryTwistEnabled: Bool
-    let activeTwist: MysteryTwist
-    let decoyWord: String?
 
     var phase: LivePhase
     var remainingSeconds: Int
@@ -128,96 +112,25 @@ final class LiveGame {
         roundDurationSeconds = session.roundDurationSeconds
         remainingSeconds = session.roundDurationSeconds
         mode = session.selectedMode
-        mysteryTwistEnabled = session.mysteryTwistEnabled
         phase = .reveal(0)
 
         let impostorCount = min(session.imposterCount, max(1, named.count - 2))
         let shuffled = named.shuffled()
-        let baseImpostorIDs = Set(shuffled.prefix(impostorCount).map(\.id))
-
-        let twistPick: MysteryTwist
-        var decoy: String?
-        if session.mysteryTwistEnabled, Double.random(in: 0...1) < 0.7, named.count >= 3 {
-            let kinds = ["noImposter", "allImposters", "decoy", "blank"]
-            switch kinds.randomElement()! {
-            case "noImposter":
-                twistPick = .noImposter
-            case "allImposters":
-                twistPick = .allImposters
-            case "decoy":
-                let crew = named.filter { !baseImpostorIDs.contains($0.id) }
-                let target = (crew.isEmpty ? named : crew).randomElement()!.id
-                decoy = WordBank.decoyWord(
-                    categoryIDs: session.selectedCategoryIDs,
-                    excluding: entry.word,
-                    locale: locale
-                ).word
-                twistPick = .decoy(playerID: target)
-            default:
-                let crew = named.filter { !baseImpostorIDs.contains($0.id) }
-                let target = (crew.isEmpty ? named : crew).randomElement()!.id
-                twistPick = .blank(playerID: target)
-            }
-        } else {
-            twistPick = .none
-        }
-        activeTwist = twistPick
-        decoyWord = decoy
+        let impostorIDs = Set(shuffled.prefix(impostorCount).map(\.id))
 
         players = named.enumerated().map { index, player in
-            let reveal: PlayerReveal
-            let isImposter: Bool
-
-            switch twistPick {
-            case .noImposter:
-                isImposter = false
-                reveal = .word(entry.word)
-            case .allImposters:
-                isImposter = true
-                reveal = .impostor
-            case .decoy(let decoyID):
-                isImposter = baseImpostorIDs.contains(player.id)
-                if player.id == decoyID, let decoy {
-                    reveal = .word(decoy)
-                } else if isImposter {
-                    reveal = .impostor
-                } else {
-                    reveal = .word(entry.word)
-                }
-            case .blank(let blankID):
-                isImposter = baseImpostorIDs.contains(player.id)
-                if player.id == blankID {
-                    reveal = .blank
-                } else if isImposter {
-                    reveal = .impostor
-                } else {
-                    reveal = .word(entry.word)
-                }
-            case .none:
-                isImposter = baseImpostorIDs.contains(player.id)
-                reveal = isImposter ? .impostor : .word(entry.word)
-            }
-
+            let isImposter = impostorIDs.contains(player.id)
             return AssignedPlayer(
                 id: player.id,
                 name: player.name,
                 isImposter: isImposter,
                 avatarIndex: (index % 15) + 1,
-                reveal: reveal
+                reveal: isImposter ? .impostor : .word(entry.word)
             )
         }
     }
 
     var impostors: [AssignedPlayer] { players.filter(\.isImposter) }
-
-    var blankPlayer: AssignedPlayer? {
-        players.first { if case .blank = $0.reveal { return true }; return false }
-    }
-
-    var decoyPlayer: AssignedPlayer? {
-        guard case .decoy(let id) = activeTwist else { return nil }
-        return players.first { $0.id == id }
-    }
 
     var currentDrawer: AssignedPlayer? {
         player(at: drawerIndex)
@@ -315,27 +228,18 @@ final class LiveGame {
     }
 
     func submitVotes() {
-        switch activeTwist {
-        case .noImposter:
-            outcome = .twistNoImposter
-            Haptics.warning()
-        case .allImposters:
-            outcome = .twistAllImposters
-            Haptics.warning()
-        case .none, .decoy, .blank:
-            let tallies = Dictionary(grouping: votes.values, by: { $0 }).mapValues(\.count)
-            let maxVotes = tallies.values.max() ?? 0
-            let leaders = tallies.filter { $0.value == maxVotes }.map(\.key)
+        let tallies = Dictionary(grouping: votes.values, by: { $0 }).mapValues(\.count)
+        let maxVotes = tallies.values.max() ?? 0
+        let leaders = tallies.filter { $0.value == maxVotes }.map(\.key)
 
-            if leaders.count == 1,
-               let accused = players.first(where: { $0.id == leaders[0] }),
-               accused.isImposter {
-                outcome = .crewWins
-                Haptics.success()
-            } else {
-                outcome = .imposterWinsHidden
-                Haptics.warning()
-            }
+        if leaders.count == 1,
+           let accused = players.first(where: { $0.id == leaders[0] }),
+           accused.isImposter {
+            outcome = .crewWins
+            Haptics.success()
+        } else {
+            outcome = .imposterWinsHidden
+            Haptics.warning()
         }
         phase = .results
     }

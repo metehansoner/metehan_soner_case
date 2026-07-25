@@ -66,7 +66,7 @@ struct OceanBackground: View {
         ZStack {
             AppColors.screenGradient
 
-            // Center electric spotlight (preview look)
+            // Center electric spotlight
             RadialGradient(
                 colors: [
                     AppColors.bgGlow.opacity(0.75),
@@ -89,29 +89,140 @@ struct OceanBackground: View {
                 endRadius: 260
             )
 
-            GridPattern()
-                .stroke(AppColors.bgGrid, lineWidth: 1.1)
+            // Imposter Party stage motif — not a generic square grid.
+            PartyStagePattern()
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            AppColors.accentCyan.opacity(0.10),
+                            Color.white.opacity(0.07),
+                            AppColors.accentCyan.opacity(0.04)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    style: StrokeStyle(lineWidth: 1.2, lineCap: .round)
+                )
+
+            // Tiny scattered stars
+            TinyStars(seed: 11, count: 42)
+                .fill(Color.white.opacity(0.28))
+
+            TinyStars(seed: 29, count: 28)
+                .fill(AppColors.accentYellow.opacity(0.20))
+
+            TinyStars(seed: 47, count: 22)
+                .fill(AppColors.accentCyan.opacity(0.18))
+
+            // Soft vignette so content pops
+            RadialGradient(
+                colors: [.clear, Color.black.opacity(0.18)],
+                center: .center,
+                startRadius: 180,
+                endRadius: 520
+            )
         }
         .ignoresSafeArea()
     }
 }
 
-private struct GridPattern: Shape {
+/// Perspective stage lines — unique to Imposter Party atmosphere.
+private struct PartyStagePattern: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let step: CGFloat = 26
-        var x: CGFloat = 0
-        while x <= rect.width {
-            path.move(to: CGPoint(x: x, y: 0))
-            path.addLine(to: CGPoint(x: x, y: rect.height))
-            x += step
+        let vanishing = CGPoint(x: rect.midX, y: rect.height * 0.18)
+
+        // Soft horizon arc
+        let horizonY = rect.height * 0.42
+        path.move(to: CGPoint(x: 0, y: horizonY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width, y: horizonY),
+            control: CGPoint(x: rect.midX, y: horizonY - 18)
+        )
+
+        // Perspective rays from vanishing point (lower stage)
+        let rayCount = 11
+        for i in 0..<rayCount {
+            let t = CGFloat(i) / CGFloat(rayCount - 1)
+            let bottomX = rect.width * (-0.15 + t * 1.3)
+            path.move(to: vanishing)
+            path.addLine(to: CGPoint(x: bottomX, y: rect.height + 20))
         }
-        var y: CGFloat = 0
-        while y <= rect.height {
-            path.move(to: CGPoint(x: 0, y: y))
-            path.addLine(to: CGPoint(x: rect.width, y: y))
-            y += step
+
+        // Curved stage rings
+        for ring in 1...4 {
+            let progress = CGFloat(ring) / 4.5
+            let y = horizonY + (rect.height - horizonY) * progress
+            let inset = rect.width * (0.42 - progress * 0.38)
+            let left = inset
+            let right = rect.width - inset
+            path.move(to: CGPoint(x: left, y: y))
+            path.addQuadCurve(
+                to: CGPoint(x: right, y: y),
+                control: CGPoint(x: rect.midX, y: y + 10 * (1 - progress))
+            )
+        }
+
+        return path
+    }
+}
+
+/// Small 4-point stars with deterministic scatter (looks random, stays stable).
+private struct TinyStars: Shape {
+    var seed: UInt64
+    var count: Int
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        var rng = StarRNG(seed: seed)
+
+        for _ in 0..<count {
+            let x = CGFloat(rng.nextUnit()) * rect.width
+            let y = CGFloat(rng.nextUnit()) * rect.height
+            let size = 1.4 + CGFloat(rng.nextUnit()) * 2.4
+            path.addPath(Self.star(at: CGPoint(x: x, y: y), size: size))
         }
         return path
+    }
+
+    private static func star(at center: CGPoint, size: CGFloat) -> Path {
+        var path = Path()
+        let outer = size
+        let inner = size * 0.34
+        for i in 0..<8 {
+            let angle = (CGFloat(i) * .pi / 4) - .pi / 2
+            let radius = i.isMultiple(of: 2) ? outer : inner
+            let point = CGPoint(
+                x: center.x + cos(angle) * radius,
+                y: center.y + sin(angle) * radius
+            )
+            if i == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct StarRNG {
+    private var state: UInt64
+
+    init(seed: UInt64) {
+        state = seed == 0 ? 0x9E3779B97F4A7C15 : seed
+    }
+
+    mutating func next() -> UInt64 {
+        state &+= 0x9E3779B97F4A7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
+    }
+
+    mutating func nextUnit() -> Double {
+        Double(next() % 10_000) / 10_000
     }
 }

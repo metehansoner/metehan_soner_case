@@ -29,7 +29,7 @@ struct GameFlowView: View {
                     .id(player.id)
                 }
             case .ready:
-                ReadyToStartView(mysteryTwistEnabled: live.mysteryTwistEnabled) {
+                ReadyToStartView {
                     live.startRound()
                 }
             case .discussion:
