@@ -32,10 +32,14 @@ struct GameFlowView: View {
                     live.startRound()
                 }
             case .discussion:
-                DiscussionView(live: live) {
-                    live.phase = .voting
-                    Haptics.medium()
-                }
+                DiscussionView(
+                    live: live,
+                    onVote: {
+                        live.phase = .voting
+                        Haptics.medium()
+                    },
+                    onExit: onExitToSetup
+                )
             case .drawing:
                 DrawingRoundView(
                     live: live,

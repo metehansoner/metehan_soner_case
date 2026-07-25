@@ -98,13 +98,21 @@ struct GameSettingsView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
-                    .padding(.bottom, 110)
+                    .padding(.bottom, 120)
                 }
                 .scrollIndicators(.hidden)
+            }
 
+            VStack {
+                Spacer(minLength: 0)
                 PlayBar(
                     playTitle: l10n.t("common.play"),
-                    summary: l10n.t("gameSettings.playSummary", ["n": "\(session.imposterCount)"]),
+                    count: session.imposterCount,
+                    countSystemImage: "theatermasks.fill",
+                    countAccessibilityLabel: l10n.t(
+                        "gameSettings.playSummary",
+                        ["n": "\(session.imposterCount)"]
+                    ),
                     enabled: true
                 ) {
                     Haptics.medium()

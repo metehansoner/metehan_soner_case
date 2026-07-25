@@ -111,13 +111,14 @@ struct DrawingRoundView: View {
                 live.showExitConfirm = true
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 22, weight: .black))
                     .foregroundStyle(AppColors.textPrimary)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
 
             Text(l10n.t("app.name"))
-                .font(AppFont.display(20, weight: .bold))
+                .font(AppFont.display(24, weight: .black))
                 .foregroundStyle(AppColors.textPrimary)
 
             Spacer()
@@ -139,8 +140,10 @@ struct DrawingRoundView: View {
                 Haptics.light()
                 showHowTo = true
             } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 18, weight: .semibold))
+                Image(systemName: "info.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
                     .foregroundStyle(AppColors.textPrimary)
             }
         }
@@ -280,59 +283,23 @@ struct DrawingRoundView: View {
                     .font(AppFont.ui(15))
                     .foregroundStyle(AppColors.textSecondary)
             }
-            .onTapGesture {
-                Haptics.light()
-                live.isPaused = false
-            }
+            .allowsHitTesting(false)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            Haptics.light()
+            live.isPaused = false
         }
     }
 
     private var exitConfirmOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.55).ignoresSafeArea()
-            VStack(spacing: 16) {
-                Text(l10n.t("drawing.exitTitle"))
-                    .font(AppFont.display(24, weight: .bold))
-                    .foregroundStyle(.white)
-                Text(l10n.t("drawing.exitBody"))
-                    .font(AppFont.ui(14))
-                    .foregroundStyle(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-
-                HStack(spacing: 12) {
-                    Button {
-                        live.showExitConfirm = false
-                    } label: {
-                        Text(l10n.t("common.cancel"))
-                            .font(AppFont.ui(16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(
-                                Capsule().stroke(Color.white.opacity(0.7), lineWidth: 1.5)
-                            )
-                    }
-
-                    Button {
-                        live.showExitConfirm = false
-                        onExit()
-                    } label: {
-                        Text(l10n.t("drawing.exitConfirm"))
-                            .font(AppFont.ui(16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Capsule().fill(AppColors.stateDanger))
-                    }
-                }
+        ExitGameConfirmOverlay(
+            onCancel: { live.showExitConfirm = false },
+            onConfirm: {
+                live.showExitConfirm = false
+                onExit()
             }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(AppColors.surfaceCard)
-            )
-            .padding(.horizontal, 28)
-        }
+        )
     }
 
     private var timeString: String {

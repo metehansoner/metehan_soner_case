@@ -14,7 +14,7 @@ struct AddPlayersView: View {
     var onClose: (() -> Void)? = nil
 
     @Bindable private var l10n = LocalizationManager.shared
-    @FocusState private var focusedIndex: Int?
+    @FocusState private var focusedPlayerID: UUID?
     @State private var showSettings = false
 
     var body: some View {
@@ -27,11 +27,9 @@ struct AddPlayersView: View {
                     .padding(.top, 8)
 
                 ScrollView {
-                    VStack(spacing: 12) {
-                        modeChip
-
-                        ForEach(Array(session.players.enumerated()), id: \.element.id) { index, _ in
-                            playerRow(index: index)
+                    VStack(spacing: 14) {
+                        ForEach(Array(session.players.enumerated()), id: \.element.id) { index, player in
+                            playerRow(player: player, displayIndex: index)
                         }
 
                         if session.players.count < PlayerLimits.maxCount {
@@ -84,60 +82,14 @@ struct AddPlayersView: View {
         }
     }
 
-    private var modeChip: some View {
-        Menu {
-            Button {
-                session.selectedMode = .classic
-                AppSettingsStore.shared.lastGameMode = .classic
-                Haptics.selection()
-            } label: {
-                Label(l10n.t("home.classicTitle"), systemImage: "theatermasks.fill")
-            }
-            Button {
-                session.selectedMode = .drawing
-                AppSettingsStore.shared.lastGameMode = .drawing
-                Haptics.selection()
-            } label: {
-                Label(l10n.t("home.drawingTitle"), systemImage: "pencil.tip")
-            }
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: session.selectedMode == .classic ? "theatermasks.fill" : "pencil.tip")
-                Text(
-                    session.selectedMode == .classic
-                        ? l10n.t("home.classicTitle")
-                        : l10n.t("home.drawingTitle")
-                )
-                .font(AppFont.ui(14, weight: .bold))
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .bold))
-            }
-            .foregroundStyle(AppColors.textPrimary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(AppColors.surfaceCardElevated)
-                    .overlay(Capsule().stroke(AppColors.accentCyan.opacity(0.35), lineWidth: 1))
-            )
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     private var header: some View {
         HStack {
             if presentation == .profile {
-                Button {
+                HeaderCircleIconButton(systemName: "xmark") {
                     onClose?()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(AppColors.surfaceCardElevated))
                 }
             } else {
-                Color.clear.frame(width: 40, height: 40)
+                Color.clear.frame(width: 42, height: 42)
             }
 
             Spacer()
@@ -150,66 +102,93 @@ struct AddPlayersView: View {
 
             Spacer()
 
-            Button {
+            HeaderCircleIconButton(systemName: "gearshape.fill") {
                 Haptics.light()
                 showSettings = true
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppColors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(AppColors.surfaceCardElevated))
             }
         }
     }
 
-    private func playerRow(index: Int) -> some View {
-        HStack(spacing: 12) {
-            Text("\(index + 1)")
-                .font(AppFont.ui(14, weight: .bold))
-                .foregroundStyle(AppColors.textOnLight)
-                .frame(width: 28, height: 28)
-                .background(Circle().fill(AppColors.accentYellow))
+    private func playerRow(player: Player, displayIndex: Int) -> some View {
+        let isFocused = focusedPlayerID == player.id
 
-            TextField(
-                "",
-                text: bindingName(at: index),
-                prompt: Text(l10n.t("players.placeholder", ["n": "\(index + 1)"]))
-                    .foregroundStyle(AppColors.textSecondary.opacity(0.7))
-            )
-            .font(AppFont.ui(16, weight: .semibold))
-            .foregroundStyle(AppColors.textPrimary)
-            .focused($focusedIndex, equals: index)
-            .submitLabel(index == session.players.count - 1 ? .done : .next)
-            .onSubmit {
-                if index < session.players.count - 1 {
-                    focusedIndex = index + 1
-                } else {
-                    focusedIndex = nil
+        return HStack(spacing: 14) {
+            Text("\(displayIndex + 1)")
+                .font(AppFont.display(17, weight: .black))
+                .foregroundStyle(AppColors.textPrimary)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(isFocused ? AppColors.accentYellow : AppColors.surfaceCard)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    isFocused ? AppColors.accentYellow : AppColors.accentCyan.opacity(0.35),
+                                    lineWidth: 1.5
+                                )
+                        )
+                )
+
+            ZStack(alignment: .leading) {
+                if player.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text(l10n.t("players.placeholder", ["n": "\(displayIndex + 1)"]))
+                        .font(AppFont.display(18, weight: .bold))
+                        .foregroundStyle(AppColors.textSecondary.opacity(0.55))
+                        .lineLimit(1)
+                        .allowsHitTesting(false)
                 }
+
+                TextField("", text: bindingName(for: player.id))
+                    .font(AppFont.display(18, weight: .bold))
+                    .foregroundStyle(AppColors.textPrimary)
+                    .tint(AppColors.accentCyan)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .focused($focusedPlayerID, equals: player.id)
+                    .submitLabel(displayIndex == session.players.count - 1 ? .done : .next)
+                    .onSubmit {
+                        if displayIndex < session.players.count - 1 {
+                            focusedPlayerID = session.players[displayIndex + 1].id
+                        } else {
+                            focusedPlayerID = nil
+                        }
+                    }
             }
 
             if session.players.count > PlayerLimits.minCount {
                 Button {
-                    session.removePlayer(at: index)
+                    if focusedPlayerID == player.id {
+                        focusedPlayerID = nil
+                    }
+                    session.removePlayer(id: player.id)
                 } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .foregroundStyle(AppColors.stateDanger.opacity(0.9))
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(AppColors.textSecondary.opacity(0.55))
                 }
+                .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .background(
-            Capsule()
-                .fill(AppColors.surfaceCard)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(AppColors.surfaceCardElevated.opacity(0.92))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(
+                            isFocused ? AppColors.accentCyan.opacity(0.7) : AppColors.accentCyan.opacity(0.18),
+                            lineWidth: isFocused ? 2 : 1
+                        )
+                )
         )
+        .animation(.easeInOut(duration: 0.18), value: isFocused)
     }
 
     private var addPlayerButton: some View {
         Button {
             session.addPlayer()
-            focusedIndex = session.players.count - 1
+            focusedPlayerID = session.players.last?.id
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle.fill")
@@ -227,10 +206,13 @@ struct AddPlayersView: View {
         }
     }
 
-    private func bindingName(at index: Int) -> Binding<String> {
+    private func bindingName(for id: UUID) -> Binding<String> {
         Binding(
-            get: { session.players[index].name },
-            set: { session.players[index].name = $0 }
+            get: { session.players.first(where: { $0.id == id })?.name ?? "" },
+            set: { newValue in
+                guard let index = session.players.firstIndex(where: { $0.id == id }) else { return }
+                session.players[index].name = newValue
+            }
         )
     }
 }

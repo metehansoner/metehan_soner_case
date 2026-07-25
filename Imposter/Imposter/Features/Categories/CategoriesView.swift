@@ -37,13 +37,21 @@ struct CategoriesView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
-                    .padding(.bottom, 110)
+                    .padding(.bottom, 120)
                 }
                 .scrollIndicators(.hidden)
+            }
 
+            VStack {
+                Spacer(minLength: 0)
                 PlayBar(
                     playTitle: l10n.t("common.play"),
-                    summary: l10n.t("categories.selected", ["n": "\(session.selectedCategoryIDs.count)"]),
+                    count: session.selectedCategoryIDs.count,
+                    countSystemImage: "square.grid.2x2.fill",
+                    countAccessibilityLabel: l10n.t(
+                        "categories.selected",
+                        ["n": "\(session.selectedCategoryIDs.count)"]
+                    ),
                     enabled: session.canContinueCategories
                 ) {
                     Haptics.medium()
@@ -88,7 +96,7 @@ struct CategoriesView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
                         Text(l10n.t(category.titleKey))
-                            .font(AppFont.ui(20, weight: .bold))
+                            .font(AppFont.display(22, weight: .black))
                             .foregroundStyle(AppColors.textPrimary)
                         if category.isLocked {
                             Image(systemName: "lock.fill")

@@ -29,7 +29,7 @@ enum AppColors {
     static let stateLocked = Color(hex: 0x8AA4D4)
     static let overlayScrim = Color(hex: 0x001033).opacity(0.5)
 
-    static let btnPrimaryBg = Color.white
+    static let btnPrimaryBg = Color(hex: 0xFFE566)
     static let btnPrimaryText = Color(hex: 0x001A4D)
     static let btnSecondaryBg = Color(hex: 0x0A2F7A)
     static let btnDisabledBg = Color(hex: 0x2A4A8C)

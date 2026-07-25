@@ -4,9 +4,11 @@ import Combine
 struct DiscussionView: View {
     @Bindable var live: LiveGame
     var onVote: () -> Void
+    var onExit: () -> Void
 
     @Bindable private var l10n = LocalizationManager.shared
     @State private var showHowTo = false
+    @State private var showExitConfirm = false
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -15,17 +17,33 @@ struct DiscussionView: View {
 
             VStack(spacing: 24) {
                 HStack {
+                    Button {
+                        Haptics.light()
+                        live.isPaused = true
+                        showExitConfirm = true
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 22, weight: .black))
+                            .foregroundStyle(AppColors.textPrimary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
                     Spacer()
+
                     Button {
                         Haptics.light()
                         showHowTo = true
                     } label: {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 20, weight: .semibold))
+                        Image(systemName: "info.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
                             .foregroundStyle(AppColors.textPrimary)
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
                 .padding(.top, 8)
 
                 Spacer()
@@ -35,7 +53,7 @@ struct DiscussionView: View {
                     .foregroundStyle(AppColors.textPrimary)
 
                 Text(l10n.t("round.startAsking"))
-                    .font(AppFont.ui(18, weight: .semibold))
+                    .font(AppFont.ui(18, weight: .bold))
                     .foregroundStyle(AppColors.textSecondary)
 
                 Text(timeString)
@@ -79,23 +97,39 @@ struct DiscussionView: View {
             }
             .padding(.bottom, 28)
 
-            if live.isPaused && live.remainingSeconds > 0 {
-                Color.black.opacity(0.35).ignoresSafeArea()
-                VStack(spacing: 10) {
-                    Image(systemName: "pause.fill")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.white)
-                    Text(l10n.t("round.paused"))
-                        .font(AppFont.display(28, weight: .bold))
-                        .foregroundStyle(.white)
-                    Text(l10n.t("round.tapToContinue"))
-                        .font(AppFont.ui(15))
-                        .foregroundStyle(AppColors.textSecondary)
+            if live.isPaused && live.remainingSeconds > 0 && !showExitConfirm {
+                ZStack {
+                    Color.black.opacity(0.35).ignoresSafeArea()
+                    VStack(spacing: 10) {
+                        Image(systemName: "pause.fill")
+                            .font(.system(size: 36))
+                            .foregroundStyle(.white)
+                        Text(l10n.t("round.paused"))
+                            .font(AppFont.display(28, weight: .bold))
+                            .foregroundStyle(.white)
+                        Text(l10n.t("round.tapToContinue"))
+                            .font(AppFont.ui(15))
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                    .allowsHitTesting(false)
                 }
+                .contentShape(Rectangle())
                 .onTapGesture {
                     Haptics.light()
                     live.isPaused = false
                 }
+            }
+
+            if showExitConfirm {
+                ExitGameConfirmOverlay(
+                    onCancel: {
+                        showExitConfirm = false
+                    },
+                    onConfirm: {
+                        showExitConfirm = false
+                        onExit()
+                    }
+                )
             }
         }
         .onReceive(timer) { _ in
@@ -328,7 +362,7 @@ struct ResultsView: View {
         VStack(spacing: 8) {
             if let caption {
                 Text(caption)
-                    .font(AppFont.ui(12, weight: .semibold))
+                    .font(AppFont.ui(12, weight: .bold))
                     .foregroundStyle(AppColors.textSecondary)
             }
             Image(player.avatarImageName)

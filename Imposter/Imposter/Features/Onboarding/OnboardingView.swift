@@ -79,13 +79,13 @@ private struct OnboardingPage: View {
             .padding(.horizontal, 28)
 
             Text(title)
-                .font(AppFont.display(30, weight: .bold))
+                .font(AppFont.display(32, weight: .black))
                 .foregroundStyle(AppColors.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
             Text(bodyText)
-                .font(AppFont.ui(16))
+                .font(AppFont.ui(16, weight: .bold))
                 .foregroundStyle(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)

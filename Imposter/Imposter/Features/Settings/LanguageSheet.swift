@@ -4,7 +4,6 @@ struct LanguageSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var l10n = LocalizationManager.shared
 
-    /// Display order from product docs.
     private let codes = LocalizationManager.supportedLocales
 
     var body: some View {
@@ -16,7 +15,7 @@ struct LanguageSheet: View {
                 .padding(.bottom, 16)
 
             Text(l10n.t("settings.language"))
-                .font(AppFont.display(26, weight: .bold))
+                .font(AppFont.display(30, weight: .black))
                 .foregroundStyle(AppColors.textPrimary)
                 .padding(.bottom, 12)
 
@@ -50,6 +49,7 @@ struct LanguageSheet: View {
             .ignoresSafeArea()
         )
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.hidden)
         .presentationCornerRadius(32)
         .onAppear { Haptics.light() }
     }
@@ -64,7 +64,7 @@ struct LanguageSheet: View {
         } label: {
             HStack {
                 Text(name)
-                    .font(AppFont.ui(17, weight: .semibold))
+                    .font(AppFont.display(18, weight: .bold))
                     .foregroundStyle(AppColors.textPrimary)
                 Spacer()
                 if selected {
@@ -81,8 +81,6 @@ struct LanguageSheet: View {
     }
 
     private func displayName(for code: String) -> String {
-        // Prefer localized meta from that file's languageName by loading lightly from current cache;
-        // fallback map ensures UI works even if JSON key missing.
         let fallback: [String: String] = [
             "en": "English", "tr": "Türkçe", "ru": "Русский", "es": "Español",
             "pt": "Português", "de": "Deutsch", "fr": "Français", "it": "Italiano",

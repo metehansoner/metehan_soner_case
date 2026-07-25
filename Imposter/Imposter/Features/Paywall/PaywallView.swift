@@ -99,7 +99,7 @@ struct PaywallView: View {
                             }
                             .buttonStyle(.plain)
                         }
-                        .font(AppFont.ui(12, weight: .semibold))
+                        .font(AppFont.ui(12, weight: .bold))
                         .foregroundStyle(AppColors.textSecondary)
 
                         if let statusMessage = store.statusMessage {
@@ -220,7 +220,7 @@ struct RateUsSheet: View {
                 Image(systemName: "heart.fill")
                     .foregroundStyle(AppColors.accentCyan)
                 Text(l10n.t("rate.incentive"))
-                    .font(AppFont.ui(13, weight: .semibold))
+                    .font(AppFont.ui(13, weight: .bold))
                     .foregroundStyle(AppColors.textPrimary)
             }
             .padding(12)

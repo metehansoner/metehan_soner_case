@@ -47,6 +47,13 @@ final class GameSession {
         Haptics.light()
     }
 
+    func removePlayer(id: UUID) {
+        guard players.count > PlayerLimits.minCount,
+              let index = players.firstIndex(where: { $0.id == id }) else { return }
+        players.remove(at: index)
+        Haptics.light()
+    }
+
     func resetPlayersForNewLaunch() {
         players = (0..<PlayerLimits.minCount).map { _ in Player() }
         selectedCategoryIDs = []

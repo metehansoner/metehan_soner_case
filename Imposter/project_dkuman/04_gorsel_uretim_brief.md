@@ -34,6 +34,12 @@ assets/
   players/
     player_01.png … player_15.png
     (her biri solid renkli BG’li full-bleed karakter)
+  tutorial/
+    tutorial_01_themes.png
+    tutorial_02_role.png
+    tutorial_03_hint.png
+    tutorial_04_vote.png
+    (How to Play slider — şeffaf clay 3D)
 ```
 
 ---
