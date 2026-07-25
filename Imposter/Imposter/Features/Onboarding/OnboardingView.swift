@@ -29,8 +29,11 @@ struct OnboardingView: View {
                         .tag(index)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .tabViewStyle(.page(indexDisplayMode: .never))
+
+                pageDots
+                    .padding(.top, 4)
+                    .padding(.bottom, 14)
 
                 Button {
                     Haptics.light()
@@ -48,6 +51,19 @@ struct OnboardingView: View {
             }
         }
     }
+
+    private var pageDots: some View {
+        HStack(spacing: 8) {
+            ForEach(pages.indices, id: \.self) { index in
+                Capsule()
+                    .fill(index == page ? Color.white : Color.white.opacity(0.35))
+                    .frame(width: index == page ? 18 : 8, height: 8)
+                    .animation(.easeInOut(duration: 0.2), value: page)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(page + 1) / \(pages.count)")
+    }
 }
 
 private struct OnboardingPage: View {
@@ -56,42 +72,50 @@ private struct OnboardingPage: View {
     let assetName: String?
 
     var body: some View {
-        VStack(spacing: 14) {
-            Spacer(minLength: 8)
+        GeometryReader { geo in
+            VStack(spacing: 0) {
+                Spacer(minLength: 8)
 
-            Group {
-                if let assetName, UIImage(named: assetName) != nil {
-                    Image(assetName)
-                        .resizable()
-                        .interpolation(.high)
-                        .scaledToFit()
-                } else {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .fill(AppColors.surfaceCard)
-                        .overlay(
-                            Image(systemName: "theatermasks.fill")
-                                .font(.system(size: 72))
-                                .foregroundStyle(AppColors.accentCyan)
-                        )
+                VStack(spacing: 16) {
+                    Group {
+                        if let assetName, UIImage(named: assetName) != nil {
+                            Image(assetName)
+                                .resizable()
+                                .interpolation(.high)
+                                .scaledToFit()
+                        } else {
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(AppColors.surfaceCard)
+                                .overlay(
+                                    Image(systemName: "theatermasks.fill")
+                                        .font(.system(size: 72))
+                                        .foregroundStyle(AppColors.accentCyan)
+                                )
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(maxHeight: geo.size.height * 0.58)
+                    .padding(.horizontal, 16)
+
+                    VStack(spacing: 8) {
+                        Text(title)
+                            .font(AppFont.display(28, weight: .black))
+                            .foregroundStyle(AppColors.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text(bodyText)
+                            .font(AppFont.ui(15, weight: .bold))
+                            .foregroundStyle(AppColors.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 24)
                 }
+
+                Spacer(minLength: 8)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 12)
-            .layoutPriority(1)
-
-            Text(title)
-                .font(AppFont.display(30, weight: .black))
-                .foregroundStyle(AppColors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-
-            Text(bodyText)
-                .font(AppFont.ui(15, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-
-            Spacer(minLength: 56)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 }
