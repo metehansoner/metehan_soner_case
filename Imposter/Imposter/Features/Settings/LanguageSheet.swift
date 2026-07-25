@@ -82,9 +82,12 @@ struct LanguageSheet: View {
 
     private func displayName(for code: String) -> String {
         let fallback: [String: String] = [
-            "en": "English", "tr": "Türkçe", "ru": "Русский", "es": "Español",
-            "pt": "Português", "de": "Deutsch", "fr": "Français", "it": "Italiano",
-            "el": "Ελληνικά", "ro": "Română", "nl": "Nederlands", "pl": "Polski"
+            "tr": "Türkçe", "de": "Deutsch", "ar": "العربية", "be": "Беларуская", "da": "Dansk",
+            "id": "Bahasa Indonesia", "fil": "Filipino", "fi": "Suomi", "fr": "Français",
+            "nl": "Nederlands", "hr": "Hrvatski", "ca": "Català", "pl": "Polski", "ms": "Bahasa Melayu",
+            "nb": "Norsk Bokmål", "pt": "Português", "ro": "Română", "ru": "Русский",
+            "uk": "Українська", "el": "Ελληνικά", "cs": "Čeština", "en": "English",
+            "es": "Español", "sv": "Svenska", "it": "Italiano"
         ]
         return LocalizationManager.languageDisplayName(code) ?? fallback[code] ?? code
     }

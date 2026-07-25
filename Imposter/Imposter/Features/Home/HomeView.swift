@@ -64,16 +64,13 @@ struct HomeView: View {
                 }
             }
 
-            Text(l10n.t("app.name").uppercased())
-                .font(AppFont.display(30, weight: .black))
-                .foregroundStyle(AppColors.textPrimary)
-                .shadow(color: AppColors.surfaceCard.opacity(0.95), radius: 0, x: 0, y: 3)
-                .shadow(color: AppColors.surfaceCard.opacity(0.55), radius: 0, x: 0, y: 5)
-                .shadow(color: AppColors.accentCyan.opacity(0.4), radius: 10, y: 0)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-
-            Spacer(minLength: 8)
+            Image("home_logo")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 36)
+                .accessibilityLabel(l10n.t("app.name"))
 
             HeaderCircleIconButton(systemName: "gearshape.fill") {
                 Haptics.light()

@@ -115,15 +115,17 @@ struct AddPlayersView: View {
         return HStack(spacing: 14) {
             Text("\(displayIndex + 1)")
                 .font(AppFont.display(17, weight: .black))
-                .foregroundStyle(AppColors.textPrimary)
+                .foregroundStyle(isFocused ? AppColors.textOnLight : AppColors.textPrimary)
                 .frame(width: 36, height: 36)
                 .background(
                     Circle()
-                        .fill(isFocused ? AppColors.accentYellow : AppColors.surfaceCard)
+                        .fill(isFocused ? AppColors.btnPrimaryBg : AppColors.surfaceCard)
                         .overlay(
                             Circle()
                                 .stroke(
-                                    isFocused ? AppColors.accentYellow : AppColors.accentCyan.opacity(0.35),
+                                    isFocused
+                                        ? AppColors.btnPrimaryBg.opacity(0.9)
+                                        : AppColors.accentCyan.opacity(0.35),
                                     lineWidth: 1.5
                                 )
                         )

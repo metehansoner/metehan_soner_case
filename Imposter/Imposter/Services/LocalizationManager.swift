@@ -5,7 +5,26 @@ import SwiftUI
 final class LocalizationManager {
     static let shared = LocalizationManager()
 
-    static let supportedLocales = ["en", "tr", "ru", "es", "pt", "de", "fr", "it", "el", "ro", "nl", "pl"]
+    /// Order matches the in-app language list.
+    static let supportedLocales = [
+        "tr", "de", "ar", "be", "da",
+        "id", "fil", "fi", "fr",
+        "nl", "hr", "ca", "pl", "ms",
+        "nb", "pt", "ro", "ru",
+        "uk", "el", "cs", "en",
+        "es", "sv", "it"
+    ]
+
+    /// Maps OS / legacy language tags onto our JSON file codes.
+    private static let localeAliases: [String: String] = [
+        "tl": "fil",
+        "fil": "fil",
+        "no": "nb",
+        "nb": "nb",
+        "nn": "nb",
+        "in": "id",
+        "id": "id"
+    ]
 
     private(set) var localeCode: String
     private var strings: [String: String] = [:]
@@ -49,10 +68,26 @@ final class LocalizationManager {
            supportedLocales.contains(override) {
             return override
         }
-        let preferred = Locale.preferredLanguages.first ?? "en"
-        let short = String(preferred.prefix(2)).lowercased()
-        if supportedLocales.contains(short) { return short }
+        for preferred in Locale.preferredLanguages {
+            if let matched = matchSupportedLocale(preferred) {
+                return matched
+            }
+        }
         return "en"
+    }
+
+    private static func matchSupportedLocale(_ preferred: String) -> String? {
+        let lowered = preferred.lowercased()
+        let primary = String(lowered.split(separator: "-").first ?? Substring(lowered))
+
+        if let aliased = localeAliases[primary], supportedLocales.contains(aliased) {
+            return aliased
+        }
+        if supportedLocales.contains(primary) {
+            return primary
+        }
+        // e.g. "pt-BR" already handled via primary "pt"
+        return nil
     }
 
     private static func loadJSON(named name: String) -> [String: String]? {
