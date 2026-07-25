@@ -39,6 +39,7 @@ struct CategoriesView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 110)
                 }
+                .scrollIndicators(.hidden)
 
                 PlayBar(
                     playTitle: l10n.t("common.play"),

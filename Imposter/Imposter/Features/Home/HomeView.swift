@@ -169,52 +169,146 @@ struct HomeView: View {
 struct HowToPlaySheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var l10n = LocalizationManager.shared
+    @State private var page = 0
+
+    private var pages: [(icon: String, title: String, body: String, extra: String?)] {
+        [
+            ("paintpalette.fill", l10n.t("tutorial.1.title"), l10n.t("tutorial.1.body"), nil),
+            ("theatermasks.fill", l10n.t("tutorial.2.title"), l10n.t("tutorial.2.body"), nil),
+            ("lightbulb.fill", l10n.t("tutorial.3.title"), l10n.t("tutorial.3.body"), nil),
+            (
+                "hand.raised.fill",
+                l10n.t("tutorial.4.title"),
+                l10n.t("tutorial.4.body"),
+                l10n.t("tutorial.4.warning")
+            )
+        ]
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(spacing: 0) {
             Capsule()
                 .fill(AppColors.textSecondary.opacity(0.4))
                 .frame(width: 40, height: 5)
-                .frame(maxWidth: .infinity)
                 .padding(.top, 10)
+                .padding(.bottom, 12)
 
             Text(l10n.t("round.howToTitle"))
                 .font(AppFont.display(24, weight: .bold))
                 .foregroundStyle(AppColors.textPrimary)
+                .padding(.bottom, 8)
 
-            Group {
-                bullet(l10n.t("round.howTo1"))
-                bullet(l10n.t("round.howTo2"))
-                bullet(l10n.t("round.howTo3"))
+            TabView(selection: $page) {
+                ForEach(pages.indices, id: \.self) { index in
+                    tutorialPage(pages[index], index: index)
+                        .tag(index)
+                }
             }
-
-            Spacer()
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
 
             Button {
                 Haptics.light()
-                dismiss()
+                if page < pages.count - 1 {
+                    withAnimation { page += 1 }
+                } else {
+                    dismiss()
+                }
             } label: {
-                Text(l10n.t("common.gotIt"))
+                Text(page < pages.count - 1 ? l10n.t("common.next") : l10n.t("common.gotIt"))
             }
             .buttonStyle(PrimaryButtonStyle())
+            .padding(.horizontal, 24)
+            .padding(.bottom, 28)
+            .padding(.top, 8)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 28)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(OceanBackground())
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationCornerRadius(32)
+        .onAppear { Haptics.light() }
     }
 
-    private func bullet(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Circle()
-                .fill(AppColors.accentCyan)
-                .frame(width: 8, height: 8)
-                .padding(.top, 6)
-            Text(text)
-                .font(AppFont.ui(15))
+    private func tutorialPage(
+        _ page: (icon: String, title: String, body: String, extra: String?),
+        index: Int
+    ) -> some View {
+        VStack(spacing: 18) {
+            Spacer(minLength: 8)
+
+            ZStack {
+                Circle()
+                    .fill(AppColors.surfaceCard)
+                    .frame(width: 120, height: 120)
+                    .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.45), lineWidth: 2))
+                    .shadow(color: AppColors.accentCyan.opacity(0.35), radius: 12, y: 0)
+
+                Image(systemName: page.icon)
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundStyle(AppColors.accentCyan)
+            }
+
+            Text("\(index + 1)/4")
+                .font(AppFont.ui(13, weight: .bold))
+                .foregroundStyle(AppColors.accentYellow)
+
+            Text(page.title)
+                .font(AppFont.display(26, weight: .bold))
+                .foregroundStyle(AppColors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text(page.body)
+                .font(AppFont.ui(16))
                 .foregroundStyle(AppColors.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+
+            if let extra = page.extra {
+                Text(extra)
+                    .font(AppFont.ui(13, weight: .semibold))
+                    .foregroundStyle(AppColors.accentYellow)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(AppColors.surfaceCard)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(AppColors.accentYellow.opacity(0.35), lineWidth: 1)
+                            )
+                    )
+                    .padding(.top, 4)
+            }
+
+            if index == 3 {
+                HStack(spacing: 10) {
+                    outcomeChip(l10n.t("tutorial.4.win"), color: AppColors.stateSuccess)
+                    outcomeChip(l10n.t("tutorial.4.lose"), color: AppColors.stateDanger)
+                }
+                .padding(.top, 4)
+            }
+
+            Spacer(minLength: 8)
         }
+        .padding(.horizontal, 24)
+    }
+
+    private func outcomeChip(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(AppFont.ui(12, weight: .bold))
+            .foregroundStyle(AppColors.textPrimary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(AppColors.surfaceCard)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(color.opacity(0.7), lineWidth: 1.5)
+                    )
+            )
     }
 }

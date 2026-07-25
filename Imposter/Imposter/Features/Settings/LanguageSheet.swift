@@ -28,6 +28,7 @@ struct LanguageSheet: View {
                 }
                 .padding(.horizontal, 8)
             }
+            .scrollIndicators(.hidden)
 
             Button {
                 Haptics.light()

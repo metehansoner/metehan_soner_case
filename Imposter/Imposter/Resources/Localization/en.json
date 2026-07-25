@@ -159,5 +159,6 @@
   "results.blankPlayer": "Had a blank card",
   "results.decoyWord": "Decoy word: {word}",
   "common.done": "Done",
-  "players.profileTitle": "Players"
+  "players.profileTitle": "Players",
+  "common.copied": "Copied"
 }

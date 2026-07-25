@@ -159,5 +159,6 @@
   "results.blankPlayer": "Avait une carte vide",
   "results.decoyWord": "Mot leurre : {word}",
   "common.done": "OK",
-  "players.profileTitle": "Joueurs"
+  "players.profileTitle": "Joueurs",
+  "common.copied": "Copié"
 }

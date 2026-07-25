@@ -159,5 +159,6 @@
   "results.blankPlayer": "Boş kart aldı",
   "results.decoyWord": "Sahte kelime: {word}",
   "common.done": "Tamam",
-  "players.profileTitle": "Oyuncular"
+  "players.profileTitle": "Oyuncular",
+  "common.copied": "Kopyalandı"
 }

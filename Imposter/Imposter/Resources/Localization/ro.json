@@ -159,5 +159,6 @@
   "results.blankPlayer": "A avut o carte goală",
   "results.decoyWord": "Cuvânt momeală: {word}",
   "common.done": "Gata",
-  "players.profileTitle": "Jucători"
+  "players.profileTitle": "Jucători",
+  "common.copied": "Copiat"
 }

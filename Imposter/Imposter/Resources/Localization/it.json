@@ -159,5 +159,6 @@
   "results.blankPlayer": "Aveva una carta vuota",
   "results.decoyWord": "Parola esca: {word}",
   "common.done": "Fatto",
-  "players.profileTitle": "Giocatori"
+  "players.profileTitle": "Giocatori",
+  "common.copied": "Copiato"
 }

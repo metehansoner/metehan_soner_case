@@ -159,5 +159,6 @@
   "results.blankPlayer": "Had een lege kaart",
   "results.decoyWord": "Afleidingswoord: {word}",
   "common.done": "Klaar",
-  "players.profileTitle": "Spelers"
+  "players.profileTitle": "Spelers",
+  "common.copied": "Gekopieerd"
 }

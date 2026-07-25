@@ -11,97 +11,106 @@ struct PaywallView: View {
     private let termsURL = URL(string: "https://imposterparty.app/terms")!
 
     var body: some View {
-        ZStack {
-            OceanBackground()
+        GeometryReader { geo in
+            let heroHeight = min(max(geo.size.height * 0.34, 240), 360)
 
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 18) {
-                        Image("paywall_hero")
-                            .resizable()
-                            .interpolation(.high)
-                            .scaledToFit()
-                            .frame(maxHeight: 220)
-                            .padding(.top, 12)
+            ZStack {
+                OceanBackground()
 
-                        Text(l10n.t("paywall.title"))
-                            .font(AppFont.display(28, weight: .bold))
-                            .foregroundStyle(AppColors.textPrimary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            Image("paywall_hero")
+                                .resizable()
+                                .interpolation(.high)
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: heroHeight)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 8)
 
-                        VStack(spacing: 10) {
-                            planRow(
-                                plan: .freeTrial,
-                                title: l10n.t("paywall.freeTrial"),
-                                subtitle: l10n.t("paywall.cancelAnytime"),
-                                badge: nil
-                            )
-                            planRow(
-                                plan: .yearly,
-                                title: l10n.t("paywall.yearly"),
-                                subtitle: "₺2.499,99/year · ₺47,95/week",
-                                badge: l10n.t("paywall.bestDeal")
-                            )
-                            planRow(
-                                plan: .weekly,
-                                title: l10n.t("paywall.weekly"),
-                                subtitle: "₺499,99/week · " + l10n.t("paywall.cancelAnytime"),
-                                badge: l10n.t("paywall.mostPopular")
-                            )
+                            Text(l10n.t("paywall.title"))
+                                .font(AppFont.display(26, weight: .bold))
+                                .foregroundStyle(AppColors.textPrimary)
+                                .multilineTextAlignment(.center)
+                                .minimumScaleFactor(0.85)
+                                .padding(.horizontal, 20)
+
+                            VStack(spacing: 14) {
+                                planRow(
+                                    plan: .freeTrial,
+                                    title: l10n.t("paywall.freeTrial"),
+                                    subtitle: l10n.t("paywall.cancelAnytime"),
+                                    badge: nil
+                                )
+                                planRow(
+                                    plan: .yearly,
+                                    title: l10n.t("paywall.yearly"),
+                                    subtitle: "₺2.499,99/year · ₺47,95/week",
+                                    badge: l10n.t("paywall.bestDeal")
+                                )
+                                planRow(
+                                    plan: .weekly,
+                                    title: l10n.t("paywall.weekly"),
+                                    subtitle: "₺499,99/week · " + l10n.t("paywall.cancelAnytime"),
+                                    badge: l10n.t("paywall.mostPopular")
+                                )
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 6)
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.bottom, 20)
                     }
+                    .scrollIndicators(.hidden)
+
+                    VStack(spacing: 12) {
+                        Button {
+                            Task {
+                                await store.purchaseSelectedPlan()
+                                if store.isPremium {
+                                    finish(markSeen: true)
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                if store.isPurchasing {
+                                    ProgressView().tint(AppColors.textOnLight)
+                                }
+                                Text(ctaTitle)
+                            }
+                        }
+                        .buttonStyle(PrimaryButtonStyle(enabled: !store.isPurchasing))
+                        .disabled(store.isPurchasing)
+
+                        HStack(spacing: 18) {
+                            Link(l10n.t("common.terms"), destination: termsURL)
+                            Link(l10n.t("common.privacy"), destination: privacyURL)
+                            Button {
+                                finish(markSeen: true)
+                            } label: {
+                                Text(l10n.t("common.skip"))
+                                    .underline()
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                Task { await store.restore() }
+                            } label: {
+                                Text(l10n.t("common.restore"))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .font(AppFont.ui(12, weight: .semibold))
+                        .foregroundStyle(AppColors.textSecondary)
+
+                        if let statusMessage = store.statusMessage {
+                            Text(statusMessage)
+                                .font(AppFont.ui(12))
+                                .foregroundStyle(AppColors.stateDanger)
+                        }
+                    }
+                    .padding(.horizontal, 20)
                     .padding(.bottom, 24)
                 }
-
-                VStack(spacing: 12) {
-                    Button {
-                        Task {
-                            await store.purchaseSelectedPlan()
-                            if store.isPremium {
-                                finish(markSeen: true)
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            if store.isPurchasing {
-                                ProgressView().tint(AppColors.textOnLight)
-                            }
-                            Text(ctaTitle)
-                        }
-                    }
-                    .buttonStyle(PrimaryButtonStyle(enabled: !store.isPurchasing))
-                    .disabled(store.isPurchasing)
-
-                    HStack(spacing: 18) {
-                        Link(l10n.t("common.terms"), destination: termsURL)
-                        Link(l10n.t("common.privacy"), destination: privacyURL)
-                        Button {
-                            finish(markSeen: true)
-                        } label: {
-                            Text(l10n.t("common.skip"))
-                                .underline()
-                        }
-                        .buttonStyle(.plain)
-                        Button {
-                            Task { await store.restore() }
-                        } label: {
-                            Text(l10n.t("common.restore"))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .font(AppFont.ui(12, weight: .semibold))
-                    .foregroundStyle(AppColors.textSecondary)
-
-                    if let statusMessage = store.statusMessage {
-                        Text(statusMessage)
-                            .font(AppFont.ui(12))
-                            .foregroundStyle(AppColors.stateDanger)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
             }
         }
         .onAppear { Haptics.light() }
@@ -123,36 +132,50 @@ struct PaywallView: View {
             Haptics.selection()
             store.selectedPlan = plan
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(title)
-                        .font(AppFont.ui(16, weight: .bold))
-                        .foregroundStyle(AppColors.textPrimary)
-                    Spacer()
-                    if let badge {
-                        Text(badge)
-                            .font(AppFont.ui(11, weight: .bold))
-                            .foregroundStyle(AppColors.textOnLight)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Capsule().fill(AppColors.accentYellow))
+            ZStack(alignment: .topTrailing) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(title)
+                            .font(AppFont.ui(16, weight: .bold))
+                            .foregroundStyle(AppColors.textPrimary)
+                        Spacer(minLength: 8)
+                        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(selected ? AppColors.accentCyan : AppColors.textSecondary)
                     }
-                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(selected ? AppColors.accentCyan : AppColors.textSecondary)
+                    Text(subtitle)
+                        .font(AppFont.ui(13))
+                        .foregroundStyle(AppColors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Text(subtitle)
-                    .font(AppFont.ui(13))
-                    .foregroundStyle(AppColors.textSecondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(AppColors.surfaceCard)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(
+                                    selected ? AppColors.accentCyan : AppColors.accentCyan.opacity(0.18),
+                                    lineWidth: selected ? 2.5 : 1
+                                )
+                        )
+                )
+
+                // Badge sits on the top-right border midline when this plan is selected.
+                if let badge, selected {
+                    Text(badge)
+                        .font(AppFont.ui(10, weight: .bold))
+                        .foregroundStyle(AppColors.textOnLight)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(AppColors.accentYellow))
+                        .overlay(Capsule().stroke(AppColors.bgPrimary.opacity(0.15), lineWidth: 1))
+                        .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
+                        .offset(x: -14, y: -11)
+                }
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(AppColors.surfaceCard)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(selected ? AppColors.accentCyan : AppColors.accentCyan.opacity(0.15), lineWidth: selected ? 2 : 1)
-                    )
-            )
+            .padding(.top, (badge != nil && selected) ? 10 : 0)
         }
         .buttonStyle(.plain)
     }

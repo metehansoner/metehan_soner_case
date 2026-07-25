@@ -159,5 +159,6 @@
   "results.blankPlayer": "Teve carta em branco",
   "results.decoyWord": "Palavra isca: {word}",
   "common.done": "Concluído",
-  "players.profileTitle": "Jogadores"
+  "players.profileTitle": "Jogadores",
+  "common.copied": "Copiado"
 }

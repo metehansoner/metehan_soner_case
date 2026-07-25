@@ -159,5 +159,6 @@
   "results.blankPlayer": "Tuvo carta en blanco",
   "results.decoyWord": "Palabra señuelo: {word}",
   "common.done": "Listo",
-  "players.profileTitle": "Jugadores"
+  "players.profileTitle": "Jugadores",
+  "common.copied": "Copiado"
 }

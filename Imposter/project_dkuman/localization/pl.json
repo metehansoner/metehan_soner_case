@@ -159,5 +159,6 @@
   "results.blankPlayer": "Miał pustą kartę",
   "results.decoyWord": "Słowo-wabik: {word}",
   "common.done": "Gotowe",
-  "players.profileTitle": "Gracze"
+  "players.profileTitle": "Gracze",
+  "common.copied": "Skopiowano"
 }

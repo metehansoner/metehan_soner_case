@@ -159,5 +159,6 @@
   "results.blankPlayer": "Hatte eine leere Karte",
   "results.decoyWord": "Täuschungswort: {word}",
   "common.done": "Fertig",
-  "players.profileTitle": "Spieler"
+  "players.profileTitle": "Spieler",
+  "common.copied": "Kopiert"
 }

@@ -159,5 +159,6 @@
   "results.blankPlayer": "Получил пустую карту",
   "results.decoyWord": "Ложное слово: {word}",
   "common.done": "Готово",
-  "players.profileTitle": "Игроки"
+  "players.profileTitle": "Игроки",
+  "common.copied": "Скопировано"
 }

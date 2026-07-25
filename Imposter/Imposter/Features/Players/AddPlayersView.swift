@@ -53,6 +53,7 @@ struct AddPlayersView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 120)
                 }
+                .scrollIndicators(.hidden)
 
                 VStack(spacing: 0) {
                     Button {
