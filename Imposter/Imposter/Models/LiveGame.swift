@@ -63,11 +63,21 @@ struct AssignedPlayer: Identifiable, Hashable {
     }
 
     static let accents: [Color] = [
-        Color(hex: 0x1A6FE8), Color(hex: 0x12C4C8), Color(hex: 0x0B3D4A),
-        Color(hex: 0x2B6CFF), Color(hex: 0xFFE566), Color(hex: 0xF08A3A),
-        Color(hex: 0x7B5CFF), Color(hex: 0x00B894), Color(hex: 0x123A7A),
-        Color(hex: 0xFF6B9D), Color(hex: 0x00E5FF), Color(hex: 0xE17055),
-        Color(hex: 0x6C5CE7), Color(hex: 0x81ECEC), Color(hex: 0x0984E3)
+        Color(hex: 0x2B7BFF), // vivid blue
+        Color(hex: 0xFF4D8D), // hot pink
+        Color(hex: 0xFF9F1A), // bright orange
+        Color(hex: 0x00E5A8), // mint
+        Color(hex: 0xFFE566), // sunny yellow
+        Color(hex: 0x7B5CFF), // violet
+        Color(hex: 0x00D4FF), // electric cyan
+        Color(hex: 0xFF5A5A), // coral red
+        Color(hex: 0x3DFFB0), // neon green
+        Color(hex: 0xFF6BCB), // magenta
+        Color(hex: 0x4D9FFF), // sky blue
+        Color(hex: 0xFFB347), // peach
+        Color(hex: 0xA78BFF), // soft purple
+        Color(hex: 0x2EE6D6), // turquoise
+        Color(hex: 0xFF7A59)  // tangerine
     ]
 }
 

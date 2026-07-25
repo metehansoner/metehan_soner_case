@@ -162,26 +162,36 @@ struct DrawingRoundView: View {
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     ForEach(Array(LiveGame.palette.enumerated()), id: \.offset) { index, color in
+                        let selected = selectedColorIndex == index
                         Button {
                             Haptics.selection()
                             selectedColorIndex = index
                             live.selectedColor = color
                         } label: {
-                            Circle()
-                                .fill(color)
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            selectedColorIndex == index ? Color.white : .clear,
-                                            lineWidth: 2.5
-                                        )
-                                )
+                            ZStack {
+                                Circle()
+                                    .stroke(Color.white, lineWidth: 2.5)
+                                    .frame(width: 32, height: 32)
+                                    .opacity(selected ? 1 : 0)
+
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 26, height: 26)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white.opacity(color == .black ? 0.35 : 0.15), lineWidth: 1)
+                                    )
+                            }
+                            .frame(width: 34, height: 34)
+                            .contentShape(Circle())
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 2)
             }
 
             Button {

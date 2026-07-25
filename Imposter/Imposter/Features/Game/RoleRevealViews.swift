@@ -38,7 +38,8 @@ struct PassPhoneView: View {
     }
 
     private var needsDarkText: Bool {
-        [5, 11, 14].contains(player.avatarIndex)
+        // Light accents need dark copy: mint, yellow, neon green, peach, turquoise
+        [4, 5, 9, 12, 14].contains(player.avatarIndex)
     }
 
     private var textColor: Color {
@@ -246,7 +247,8 @@ struct RoleRevealView: View {
     }
 
     private var needsDarkText: Bool {
-        [5, 11, 14].contains(player.avatarIndex)
+        // Light accents need dark copy: mint, yellow, neon green, peach, turquoise
+        [4, 5, 9, 12, 14].contains(player.avatarIndex)
     }
 }
 
