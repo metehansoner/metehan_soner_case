@@ -20,11 +20,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		A1B2C3D4301401D800EXCEPT2 /* Exceptions for "Imposter" folder in "Resources" phase */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 56DFA1FB301401D800CB117D /* Resources */;
+			membershipExceptions = (
+				"App-Info.plist",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		56DFA1FF301401D800CB117D /* Imposter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A1B2C3D4301401D800EXCEPT1 /* Exceptions for "Imposter" folder in "Imposter" target */,
+				A1B2C3D4301401D800EXCEPT2 /* Exceptions for "Imposter" folder in "Resources" phase */,
 			);
 			path = Imposter;
 			sourceTree = "<group>";

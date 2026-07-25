@@ -8,6 +8,8 @@ final class GameSession {
     var selectedCategoryIDs: Set<String> = []
     /// Categories unlocked for this session via rewarded ad (stub until ads are wired).
     var adUnlockedCategoryIDs: Set<String> = []
+    /// English secret-word keys already used this session (avoid repeats across rounds).
+    var usedSecretWordKeys: Set<String> = []
     var imposterCount = 1
     var roundDurationSeconds = RoundDurationLimits.defaultSeconds
     var imposterHintsEnabled = true
@@ -59,6 +61,7 @@ final class GameSession {
         players = (0..<PlayerLimits.minCount).map { _ in Player() }
         selectedCategoryIDs = []
         adUnlockedCategoryIDs = []
+        usedSecretWordKeys = []
         imposterCount = 1
         roundDurationSeconds = RoundDurationLimits.defaultSeconds
         imposterHintsEnabled = true

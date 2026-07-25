@@ -14,16 +14,16 @@
 
 ## Kelime bankası
 
-- [ ] Kalan **10 dil** için kelime + ipucu çevirisi (`words.json`: de, es, fr, it, pt, ru, nl, pl, el, ro)
-- [ ] İsteğe bağlı: kategori başına daha fazla kelime (12 → 20+)
-- [ ] Kullanılmış kelimeleri turlar arası tekrar etmeme (session pool)
+- [x] Tüm desteklenen diller için kelime + ipucu (`words.json`, 25 dil)
+- [x] Kategori başına daha fazla kelime (12 → **20**, çizilebilir / tarif edilebilir, ilişkili ipucu)
+- [x] Kullanılmış kelimeleri turlar arası tekrar etmeme (session pool · `usedSecretWordKeys`)
 
 ## Oyun mekaniği (opsiyonel / polish)
 
 - [ ] Imposter’ın kelimeyi **tahmin ederek anında kazanması** (dokümanda opsiyonel)
 - [ ] Sonuç öncesi **“Moment of Truth”** dramatik geçiş ekranı
 - [ ] Çizim modu çıkış / pause / oy akışı ince ayar
-- [ ] Mystery Twist oranlarını ayardan veya sabit tabloya bağlama (şimdi ~%70 rastgele)
+- [x] ~~Mystery Twist oranları~~ — özellik kaldırıldı
 
 ## Ürün / App Store
 
@@ -31,11 +31,12 @@
 - [ ] Destek e-postası doğrula (`support@imposterparty.app`)
 - [ ] App Store ekran görüntüleri + açıklama (ASO, 12 dil metadata)
 - [ ] App ikon tüm boyutları / marketing asset kontrolü
+- [ ] AdMob: `useTestAds = false` (production unit)
 
 ## Teknik borç
 
 - [x] Asset imageset: PNG’ler yanlış `1x` kayıtlıydı → **single-scale universal** yapıldı (keskinlik)
-- [ ] Xcode uyarısı: `App-Info.plist` Copy Bundle Resources’tan çıkarılmalı
+- [x] Xcode: `App-Info.plist` Resources / target membership exception
 - [ ] Settings / HowTo metinlerini oyun içi kurallarla birleştirme
 - [ ] Gerçek cihaz + TestFlight smoke test (onboarding → paywall → klasik → çizim → rate)
 

@@ -105,7 +105,12 @@ final class LiveGame {
     init(from session: GameSession) {
         let named = session.namedPlayers
         let locale = LocalizationManager.shared.localeCode
-        let entry = WordBank.randomWord(categoryIDs: session.selectedCategoryIDs, locale: locale)
+        let entry = WordBank.randomWord(
+            categoryIDs: session.selectedCategoryIDs,
+            locale: locale,
+            excluding: session.usedSecretWordKeys
+        )
+        session.usedSecretWordKeys.insert(entry.englishKey)
         secretWord = entry.word
         hint = entry.hint
         hintsEnabled = session.imposterHintsEnabled
