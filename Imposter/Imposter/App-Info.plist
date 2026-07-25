@@ -14,5 +14,10 @@
 	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Imposter Party</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
 </dict>
 </plist>
