@@ -136,7 +136,7 @@ struct RoleRevealView: View {
                 Text(player.name)
                     .font(AppFont.display(32, weight: .black))
                     .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                    .padding(.top, 48)
+                    .padding(.top, 76)
 
                 Spacer(minLength: 4)
 
@@ -212,7 +212,7 @@ struct RoleRevealView: View {
                     .foregroundStyle(AppColors.stateDanger)
                 if let hint {
                     Text(l10n.t("pass.hint", ["hint": hint]))
-                        .font(AppFont.ui(14, weight: .bold))
+                        .font(AppFont.display(18, weight: .bold))
                         .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
