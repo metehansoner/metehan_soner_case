@@ -13,6 +13,8 @@ struct RootView: View {
     @State private var liveGame: LiveGame?
     @State private var mainHub: MainHub = .players
     @State private var showProfileEditor = false
+    /// Keeps the post-onboarding paywall on screen for this launch even after we persist `paywallSeen`.
+    @State private var showLaunchPaywall = false
 
     var body: some View {
         Group {
@@ -21,10 +23,18 @@ struct RootView: View {
                     settings.onboardingDone = true
                     session.resetPlayersForNewLaunch()
                     mainHub = .players
+                    if !store.isPremium {
+                        showLaunchPaywall = true
+                    }
                     Haptics.medium()
                 }
-            } else if shouldShowPaywall {
+            } else if showLaunchPaywall {
                 PaywallView(presentation: .afterOnboarding) {
+                    showLaunchPaywall = false
+                    store.paywallSeen = true
+                }
+                .onAppear {
+                    // Persist immediately so force-quit won't show launch paywall again.
                     store.paywallSeen = true
                 }
             } else if let liveGame {
@@ -53,10 +63,12 @@ struct RootView: View {
         }
         .environment(LocalizationManager.shared)
         .preferredColorScheme(.dark)
-    }
-
-    private var shouldShowPaywall: Bool {
-        !store.paywallSeen && !store.isPremium
+        .onAppear {
+            // Cold start: show launch paywall once if onboarding is done and it was never shown.
+            if settings.onboardingDone, !store.paywallSeen, !store.isPremium {
+                showLaunchPaywall = true
+            }
+        }
     }
 
     private var homeStack: some View {
