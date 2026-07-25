@@ -8,7 +8,11 @@ struct CategoriesView: View {
     @Bindable private var l10n = LocalizationManager.shared
     @Bindable private var store = SubscriptionStore.shared
     @State private var showSettings = false
-    @State private var showPaywall = false
+    @State private var showFullPaywall = false
+    @State private var showCategoryPaywall = false
+    @State private var pendingLockedCategoryID: String?
+    /// Alternates between full paywall and category (ad + yearly) paywall.
+    @State private var preferCategoryPaywallNext = true
 
     var body: some View {
         ZStack {
@@ -58,9 +62,39 @@ struct CategoriesView: View {
                     onPlay()
                 }
             }
+
+            if showCategoryPaywall {
+                CategoryPaywallView(
+                    onClose: {
+                        showCategoryPaywall = false
+                        pendingLockedCategoryID = nil
+                    },
+                    onWatchAd: {
+                        // Placeholder until rewarded ads are connected.
+                        if let id = pendingLockedCategoryID {
+                            session.adUnlockedCategoryIDs.insert(id)
+                            session.selectedCategoryIDs.insert(id)
+                        }
+                        showCategoryPaywall = false
+                        pendingLockedCategoryID = nil
+                        Haptics.success()
+                    },
+                    onPurchaseYearly: {
+                        Task {
+                            store.selectedPlan = .yearly
+                            await store.purchaseSelectedPlan()
+                            showCategoryPaywall = false
+                            pendingLockedCategoryID = nil
+                        }
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(2)
+            }
         }
         .navigationBarHidden(true)
         .id(store.isPremium)
+        .animation(.easeOut(duration: 0.2), value: showCategoryPaywall)
         .onAppear {
             if session.selectedCategoryIDs.isEmpty {
                 session.selectedCategoryIDs.insert("party")
@@ -69,20 +103,32 @@ struct CategoriesView: View {
         .sheet(isPresented: $showSettings) {
             SettingsSheet()
         }
-        .fullScreenCover(isPresented: $showPaywall) {
+        .fullScreenCover(isPresented: $showFullPaywall) {
             PaywallView(presentation: .modal) {
-                showPaywall = false
+                showFullPaywall = false
+                pendingLockedCategoryID = nil
             }
         }
     }
 
+    private func isLocked(_ category: CategoryDef) -> Bool {
+        category.isLocked(adUnlockedIDs: session.adUnlockedCategoryIDs)
+    }
+
     private func categoryCard(_ category: CategoryDef) -> some View {
+        let locked = isLocked(category)
         let selected = session.selectedCategoryIDs.contains(category.id)
 
         return Button {
-            if category.isLocked {
+            if locked {
                 Haptics.warning()
-                showPaywall = true
+                pendingLockedCategoryID = category.id
+                if preferCategoryPaywallNext {
+                    showCategoryPaywall = true
+                } else {
+                    showFullPaywall = true
+                }
+                preferCategoryPaywallNext.toggle()
                 return
             }
             Haptics.medium()
@@ -98,12 +144,12 @@ struct CategoriesView: View {
                         Text(l10n.t(category.titleKey))
                             .font(AppFont.display(22, weight: .black))
                             .foregroundStyle(AppColors.textPrimary)
-                        if category.isLocked {
+                        if locked {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundStyle(AppColors.textSecondary)
                         }
-                        if selected && !category.isLocked {
+                        if selected && !locked {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(AppColors.accentCyan)
                         }
@@ -135,13 +181,13 @@ struct CategoriesView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
                             .stroke(
-                                selected && !category.isLocked
+                                selected && !locked
                                     ? AppColors.accentCyan
                                     : AppColors.accentCyan.opacity(0.12),
-                                lineWidth: selected && !category.isLocked ? 2 : 1
+                                lineWidth: selected && !locked ? 2 : 1
                             )
                     )
-                    .opacity(category.isLocked ? 0.72 : 1)
+                    .opacity(locked ? 0.72 : 1)
             )
         }
         .buttonStyle(.plain)

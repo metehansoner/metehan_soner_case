@@ -7,7 +7,14 @@ struct CategoryDef: Identifiable, Hashable {
     let imageName: String
     let isFree: Bool
 
-    var isLocked: Bool { !isFree && !SubscriptionStore.shared.isPremium }
+    func isLocked(adUnlockedIDs: Set<String> = []) -> Bool {
+        if isFree || SubscriptionStore.shared.isPremium { return false }
+        if adUnlockedIDs.contains(id) { return false }
+        return true
+    }
+
+    /// Premium-only lock (ignores one-round ad unlocks). Prefer `isLocked(adUnlockedIDs:)`.
+    var isLocked: Bool { isLocked(adUnlockedIDs: []) }
 }
 
 enum CategoryCatalog {

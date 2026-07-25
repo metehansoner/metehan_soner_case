@@ -6,6 +6,8 @@ final class GameSession {
     var players: [Player]
     var selectedMode: GameMode
     var selectedCategoryIDs: Set<String> = []
+    /// Categories unlocked for this session via rewarded ad (stub until ads are wired).
+    var adUnlockedCategoryIDs: Set<String> = []
     var mysteryTwistEnabled = false
     var imposterCount = 1
     var roundDurationSeconds = RoundDurationLimits.defaultSeconds
@@ -31,7 +33,7 @@ final class GameSession {
         !selectedCategoryIDs.isEmpty
             && selectedCategoryIDs.allSatisfy { id in
                 guard let cat = CategoryCatalog.all.first(where: { $0.id == id }) else { return false }
-                return !cat.isLocked
+                return !cat.isLocked(adUnlockedIDs: adUnlockedCategoryIDs)
             }
     }
 
@@ -57,6 +59,7 @@ final class GameSession {
     func resetPlayersForNewLaunch() {
         players = (0..<PlayerLimits.minCount).map { _ in Player() }
         selectedCategoryIDs = []
+        adUnlockedCategoryIDs = []
         mysteryTwistEnabled = false
         imposterCount = 1
         roundDurationSeconds = RoundDurationLimits.defaultSeconds
