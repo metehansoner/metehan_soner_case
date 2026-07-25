@@ -34,48 +34,51 @@ final class RewardedAdService: NSObject {
     }
 
     func startSDK() {
-        MobileAds.shared.start { [weak self] _ in
+        MobileAds.shared.start { _ in
             Task { @MainActor in
-                guard let self else { return }
-                self.isSDKReady = true
-                self.preload()
+                let service = RewardedAdService.shared
+                service.isSDKReady = true
+                service.preload()
             }
         }
     }
 
     func preload() {
         guard rewardedAd == nil, loadTask == nil else { return }
-        loadTask = Task {
-            defer { loadTask = nil }
-            return try await performLoad()
+        let task = Task { @MainActor in
+            try await self.performLoad()
         }
-        Task {
-            _ = try? await loadTask?.value
+        loadTask = task
+        Task { @MainActor in
+            _ = try? await task.value
+            if self.loadTask == task {
+                self.loadTask = nil
+            }
         }
     }
 
     /// Loads if needed, then presents. Calls `onRewarded` only when reward is earned.
     func show(onRewarded: @escaping () -> Void, onFailed: ((String) -> Void)? = nil) {
-        Task {
-            isLoading = true
-            defer { isLoading = false }
+        Task { @MainActor in
+            self.isLoading = true
+            defer { self.isLoading = false }
 
             do {
-                await waitForSDK(timeoutMs: 8_000)
-                let ad = try await ensureLoadedAd()
-                guard let root = Self.topViewController() else {
+                await self.waitForSDK(timeoutMs: 8_000)
+                let ad = try await self.ensureLoadedAd()
+                guard let root = self.topViewController() else {
                     onFailed?("Ekran hazır değil. Tekrar dene.")
                     return
                 }
 
-                rewardedAd = nil
+                self.rewardedAd = nil
                 ad.present(from: root) {
                     onRewarded()
                 }
             } catch {
-                lastErrorMessage = error.localizedDescription
+                self.lastErrorMessage = error.localizedDescription
                 onFailed?(Self.userFacingMessage(for: error))
-                preload()
+                self.preload()
             }
         }
     }
@@ -87,12 +90,18 @@ final class RewardedAdService: NSObject {
             return try await loadTask.value
         }
 
-        let task = Task {
-            try await performLoad()
+        let task = Task { @MainActor in
+            try await self.performLoad()
         }
         loadTask = task
-        defer { loadTask = nil }
-        return try await task.value
+        do {
+            let ad = try await task.value
+            if loadTask == task { loadTask = nil }
+            return ad
+        } catch {
+            if loadTask == task { loadTask = nil }
+            throw error
+        }
     }
 
     private func performLoad() async throws -> RewardedAd {
@@ -140,7 +149,6 @@ final class RewardedAdService: NSObject {
 
     private static func userFacingMessage(for error: Error) -> String {
         let ns = error as NSError
-        // Common Mobile Ads error codes
         switch ns.code {
         case 1: return "Reklam isteği geçersiz. Birim ID'sini kontrol et."
         case 2: return "Ağ hatası. İnterneti kontrol edip tekrar dene."
@@ -152,21 +160,22 @@ final class RewardedAdService: NSObject {
         }
     }
 
-    private static func topViewController(
-        base: UIViewController? = {
-            let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-            let windows = scenes.flatMap(\.windows)
-            return (windows.first { $0.isKeyWindow } ?? windows.first)?.rootViewController
-        }()
-    ) -> UIViewController? {
+    private func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let windows = scenes.flatMap(\.windows)
+        let root = (windows.first(where: \.isKeyWindow) ?? windows.first)?.rootViewController
+        return Self.topViewController(from: root)
+    }
+
+    private static func topViewController(from base: UIViewController?) -> UIViewController? {
         if let nav = base as? UINavigationController {
-            return topViewController(base: nav.visibleViewController)
+            return topViewController(from: nav.visibleViewController)
         }
         if let tab = base as? UITabBarController {
-            return topViewController(base: tab.selectedViewController)
+            return topViewController(from: tab.selectedViewController)
         }
         if let presented = base?.presentedViewController {
-            return topViewController(base: presented)
+            return topViewController(from: presented)
         }
         return base
     }
@@ -175,8 +184,8 @@ final class RewardedAdService: NSObject {
 extension RewardedAdService: FullScreenContentDelegate {
     nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Task { @MainActor in
-            self.rewardedAd = nil
-            self.preload()
+            RewardedAdService.shared.rewardedAd = nil
+            RewardedAdService.shared.preload()
         }
     }
 
@@ -185,9 +194,9 @@ extension RewardedAdService: FullScreenContentDelegate {
         didFailToPresentFullScreenContentWithError error: Error
     ) {
         Task { @MainActor in
-            self.lastErrorMessage = error.localizedDescription
-            self.rewardedAd = nil
-            self.preload()
+            RewardedAdService.shared.lastErrorMessage = error.localizedDescription
+            RewardedAdService.shared.rewardedAd = nil
+            RewardedAdService.shared.preload()
         }
     }
 }
