@@ -24,7 +24,7 @@ struct RootView: View {
                     Haptics.medium()
                 }
             } else if shouldShowPaywall {
-                PaywallView {
+                PaywallView(presentation: .afterOnboarding) {
                     store.paywallSeen = true
                 }
             } else if let liveGame {

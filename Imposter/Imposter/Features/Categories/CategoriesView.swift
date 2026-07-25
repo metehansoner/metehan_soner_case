@@ -70,7 +70,7 @@ struct CategoriesView: View {
             SettingsSheet()
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView {
+            PaywallView(presentation: .modal) {
                 showPaywall = false
             }
         }
