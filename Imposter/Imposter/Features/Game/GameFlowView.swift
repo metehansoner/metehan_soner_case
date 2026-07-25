@@ -10,22 +10,23 @@ struct GameFlowView: View {
     var body: some View {
         Group {
             switch live.phase {
-            case .passPhone(let index):
-                if let player = live.player(at: index) {
-                    PassPhoneView(player: player) {
-                        live.phase = .reveal(index)
-                        Haptics.light()
-                    }
-                }
-            case .reveal(let index):
+            case .passPhone(let index), .reveal(let index):
                 if let player = live.player(at: index) {
                     let showHint: String? = {
                         guard live.hintsEnabled, case .impostor = player.reveal else { return nil }
                         return live.hint
                     }()
-                    RoleRevealView(player: player, hint: showHint) {
+                    let isLast = index == live.players.count - 1
+                    let nextName = isLast ? nil : live.player(at: index + 1)?.name
+                    RoleRevealView(
+                        player: player,
+                        hint: showHint,
+                        isLastPlayer: isLast,
+                        nextPlayerName: nextName
+                    ) {
                         live.advanceAfterReveal()
                     }
+                    .id(player.id)
                 }
             case .ready:
                 ReadyToStartView(mysteryTwistEnabled: live.mysteryTwistEnabled) {

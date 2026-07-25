@@ -119,7 +119,7 @@ final class LiveGame {
         remainingSeconds = session.roundDurationSeconds
         mode = session.selectedMode
         mysteryTwistEnabled = session.mysteryTwistEnabled
-        phase = .passPhone(0)
+        phase = .reveal(0)
 
         let impostorCount = min(session.imposterCount, max(1, named.count - 2))
         let shuffled = named.shuffled()
@@ -222,9 +222,9 @@ final class LiveGame {
         guard case .reveal(let index) = phase else { return }
         let next = index + 1
         if next < players.count {
-            phase = .passPhone(next)
+            phase = .reveal(next)
         } else {
-            phase = .ready
+            startRound()
         }
     }
 

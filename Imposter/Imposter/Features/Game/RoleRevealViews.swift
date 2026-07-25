@@ -16,7 +16,7 @@ struct PassPhoneView: View {
                     .resizable()
                     .interpolation(.high)
                     .scaledToFit()
-                    .frame(maxHeight: 340)
+                    .frame(maxHeight: 400)
                     .shadow(color: .black.opacity(0.25), radius: 18, y: 10)
 
                 Text(l10n.t("pass.givePhone", ["name": player.name]))
@@ -66,23 +66,26 @@ struct DarkCapsuleStyle: ButtonStyle {
 struct RoleRevealView: View {
     let player: AssignedPlayer
     let hint: String?
+    var isLastPlayer: Bool = false
+    var nextPlayerName: String? = nil
     var onDone: () -> Void
 
     @Bindable private var l10n = LocalizationManager.shared
     @State private var scrollUp: CGFloat = 0
     @State private var hintBobbing = false
+    /// Continue only after the user has peeked the secret at least once.
+    @State private var hasPeeked = false
 
-    private let revealFraction: CGFloat = 0.58
+    private let revealFraction: CGFloat = 0.26
 
     var body: some View {
         GeometryReader { geo in
-            // Full screen height (safe areas included via ignoresSafeArea below).
             let pageH = geo.size.height
             let revealH = pageH * revealFraction
             let maxScroll = revealH
+            let peekThreshold = revealH * 0.35
 
             ZStack(alignment: .top) {
-                // Underlay: black so the bottom never flashes blue while scrolling.
                 Color.black.ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -97,8 +100,8 @@ struct RoleRevealView: View {
             .frame(width: geo.size.width, height: pageH, alignment: .top)
             .clipped()
             .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 2)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 8)
                     .onChanged { value in
                         let up = max(0, -value.translation.height)
                         if up <= maxScroll {
@@ -106,6 +109,10 @@ struct RoleRevealView: View {
                         } else {
                             let over = up - maxScroll
                             scrollUp = maxScroll + over * 0.18
+                        }
+                        if scrollUp >= peekThreshold, !hasPeeked {
+                            hasPeeked = true
+                            Haptics.selection()
                         }
                     }
                     .onEnded { _ in
@@ -122,102 +129,117 @@ struct RoleRevealView: View {
 
     private func coverPage(height: CGFloat) -> some View {
         ZStack {
-            // Opaque cover fill — no black peek at rest.
             player.accent.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Text(player.name)
                     .font(AppFont.display(32, weight: .black))
                     .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                    .padding(.top, 54)
+                    .padding(.top, 48)
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 4)
 
                 Image(player.avatarImageName)
                     .resizable()
                     .interpolation(.high)
                     .scaledToFit()
                     .frame(maxWidth: .infinity)
-                    .frame(maxHeight: height * 0.46)
-                    .padding(.horizontal, 8)
+                    .frame(maxHeight: height * (hasPeeked ? 0.50 : 0.56))
+                    .padding(.horizontal, 4)
                     .shadow(color: .black.opacity(0.22), radius: 14, y: 8)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 8)
 
-                VStack(spacing: 8) {
-                    Text(l10n.t("pass.swipeHint"))
-                        .font(AppFont.ui(17, weight: .bold))
-                        .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
+                if hasPeeked {
+                    // After peek: hand phone to next player (or start if last).
+                    if !isLastPlayer {
+                        Text(l10n.t("pass.givePhone", ["name": nextPlayerName ?? ""]))
+                            .font(AppFont.display(28, weight: .black))
+                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 28)
+                            .padding(.bottom, 14)
+                            .transition(.opacity)
+                    }
 
-                    Image(systemName: "chevron.up")
-                        .font(.system(size: 22, weight: .black))
-                        .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
+                    Button {
+                        Haptics.light()
+                        onDone()
+                    } label: {
+                        Text(isLastPlayer ? l10n.t("pass.startGame") : l10n.t("common.continue"))
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                } else {
+                    // Only swipe hint — no "give phone" yet.
+                    VStack(spacing: 8) {
+                        Text(l10n.t("pass.swipeHint"))
+                            .font(AppFont.ui(17, weight: .bold))
+                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 22, weight: .black))
+                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
+                    }
+                    .offset(y: hintBobbing ? -7 : 5)
+                    .animation(
+                        .easeInOut(duration: 0.85).repeatForever(autoreverses: true),
+                        value: hintBobbing
+                    )
+                    .padding(.bottom, 40)
                 }
-                .offset(y: hintBobbing ? -7 : 5)
-                .animation(
-                    .easeInOut(duration: 0.85).repeatForever(autoreverses: true),
-                    value: hintBobbing
-                )
-                .padding(.bottom, 14)
-
-                Button {
-                    Haptics.light()
-                    onDone()
-                } label: {
-                    Text(l10n.t("common.continue"))
-                }
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
             }
+            .animation(.spring(response: 0.35, dampingFraction: 0.86), value: hasPeeked)
         }
     }
 
     private func revealPage(height: CGFloat) -> some View {
-        VStack(spacing: 16) {
-            Spacer(minLength: 32)
+        VStack(spacing: 10) {
+            Spacer(minLength: 12)
 
             switch player.reveal {
             case .impostor:
                 Image(systemName: "theatermasks.fill")
-                    .font(.system(size: 40, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(AppColors.stateDanger)
                 Text(l10n.t("pass.imposter"))
-                    .font(AppFont.display(36, weight: .black))
+                    .font(AppFont.display(28, weight: .black))
                     .foregroundStyle(AppColors.stateDanger)
                 if let hint {
                     Text(l10n.t("pass.hint", ["hint": hint]))
-                        .font(AppFont.ui(17, weight: .bold))
+                        .font(AppFont.ui(14, weight: .bold))
                         .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
             case .blank:
                 Image(systemName: "questionmark.square.dashed")
-                    .font(.system(size: 40, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(AppColors.accentYellow)
                 Text(l10n.t("pass.blank"))
-                    .font(AppFont.display(36, weight: .black))
+                    .font(AppFont.display(28, weight: .black))
                     .foregroundStyle(AppColors.accentYellow)
                 Text(l10n.t("pass.blankBody"))
-                    .font(AppFont.ui(16, weight: .bold))
+                    .font(AppFont.ui(13, weight: .bold))
                     .foregroundStyle(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
             case .word(let word):
                 Image(systemName: "person.3.fill")
-                    .font(.system(size: 38, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(AppColors.stateSuccess)
                 Text(word)
-                    .font(AppFont.display(36, weight: .black))
+                    .font(AppFont.display(28, weight: .black))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
             }
 
-            Spacer(minLength: 28)
+            Spacer(minLength: 10)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
