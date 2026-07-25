@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Ostvari neograničen pristup",
   "paywall.freeTrialBadge": "Besplatna proba",
   "paywall.yearlyOffer": "3 dana besplatno, zatim ₺2.499,99/godina",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Klasični Imposter",
   "home.classicSubtitle": "Opiši riječ a da ne budeš uhvaćen!",
   "home.drawingTitle": "Način crtanja",

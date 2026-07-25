@@ -13,6 +13,7 @@ struct CategoriesView: View {
     @State private var pendingLockedCategoryID: String?
     /// Alternates between full paywall and category (ad + yearly) paywall.
     @State private var preferCategoryPaywallNext = true
+    @State private var adErrorMessage: String?
 
     var body: some View {
         ZStack {
@@ -68,16 +69,27 @@ struct CategoriesView: View {
                     onClose: {
                         showCategoryPaywall = false
                         pendingLockedCategoryID = nil
+                        adErrorMessage = nil
                     },
                     onWatchAd: {
-                        // Placeholder until rewarded ads are connected.
-                        if let id = pendingLockedCategoryID {
-                            session.adUnlockedCategoryIDs.insert(id)
-                            session.selectedCategoryIDs.insert(id)
-                        }
-                        showCategoryPaywall = false
-                        pendingLockedCategoryID = nil
-                        Haptics.success()
+                        adErrorMessage = nil
+                        RewardedAdService.shared.show(
+                            onRewarded: {
+                                guard let id = pendingLockedCategoryID else { return }
+                                // Unlock only this category for the current session / round setup.
+                                session.adUnlockedCategoryIDs.insert(id)
+                                session.selectedCategoryIDs.insert(id)
+                                showCategoryPaywall = false
+                                pendingLockedCategoryID = nil
+                                adErrorMessage = nil
+                                Haptics.success()
+                            },
+                            onFailed: { message in
+                                adErrorMessage = message
+                                Haptics.error()
+                                RewardedAdService.shared.preload()
+                            }
+                        )
                     },
                     onPurchaseYearly: {
                         Task {
@@ -85,8 +97,10 @@ struct CategoriesView: View {
                             await store.purchaseSelectedPlan()
                             showCategoryPaywall = false
                             pendingLockedCategoryID = nil
+                            adErrorMessage = nil
                         }
-                    }
+                    },
+                    adErrorMessage: adErrorMessage
                 )
                 .transition(.opacity)
                 .zIndex(2)

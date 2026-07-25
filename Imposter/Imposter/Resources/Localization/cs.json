@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Získat neomezený přístup",
   "paywall.freeTrialBadge": "Bezplatná zkušební verze",
   "paywall.yearlyOffer": "3 dny zdarma, pak ₺2.499,99/rok",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Klasický podvodník",
   "home.classicSubtitle": "Popiš slovo, aniž bys byl chycen!",
   "home.drawingTitle": "Režim kreslení",

@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Krijg onbeperkte toegang",
   "paywall.freeTrialBadge": "Gratis proberen",
   "paywall.yearlyOffer": "3 dagen gratis, daarna ₺2.499,99/jaar",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Klassieke Imposter",
   "home.classicSubtitle": "Beschrijf het woord zonder gepakt te worden!",
   "home.drawingTitle": "Tekenmodus",

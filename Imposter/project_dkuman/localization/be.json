@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Атрымаць неабмежаваны доступ",
   "paywall.freeTrialBadge": "Бясплатны пробны перыяд",
   "paywall.yearlyOffer": "3 дні бясплатна, потым ₺2.499,99/год",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Класічны самазванец",
   "home.classicSubtitle": "Апішыце слова, каб вас не злавілі!",
   "home.drawingTitle": "Рэжым малявання",

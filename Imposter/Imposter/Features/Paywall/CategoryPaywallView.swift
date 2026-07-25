@@ -1,13 +1,15 @@
 import SwiftUI
 
-/// Compact category unlock sheet: watch-ad (stub) + yearly premium.
+/// Compact category unlock sheet: rewarded ad + yearly premium.
 struct CategoryPaywallView: View {
     var onClose: () -> Void
     var onWatchAd: () -> Void
     var onPurchaseYearly: () -> Void
+    var adErrorMessage: String? = nil
 
     @Bindable private var store = SubscriptionStore.shared
     @Bindable private var l10n = LocalizationManager.shared
+    @Bindable private var ads = RewardedAdService.shared
 
     private let privacyURL = URL(string: "https://imposterparty.app/privacy")!
     private let termsURL = URL(string: "https://imposterparty.app/terms")!
@@ -50,6 +52,15 @@ struct CategoryPaywallView: View {
 
                 watchAdButton
                     .padding(.horizontal, 20)
+
+                if let adErrorMessage, !adErrorMessage.isEmpty {
+                    Text(adErrorMessage)
+                        .font(AppFont.ui(12, weight: .bold))
+                        .foregroundStyle(AppColors.stateDanger)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+                }
 
                 yearlyCard
                     .padding(.horizontal, 20)
@@ -95,7 +106,6 @@ struct CategoryPaywallView: View {
     private var watchAdButton: some View {
         Button {
             Haptics.medium()
-            // Ad SDK wiring comes later — callback is the hook.
             onWatchAd()
         } label: {
             HStack(spacing: 12) {
@@ -103,14 +113,19 @@ struct CategoryPaywallView: View {
                     Circle()
                         .fill(Color.white)
                         .frame(width: 36, height: 36)
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(Color.black)
-                        .offset(x: 1)
+                    if ads.isLoading {
+                        ProgressView()
+                            .tint(.black)
+                    } else {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color.black)
+                            .offset(x: 1)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(l10n.t("paywall.watchAd"))
+                    Text(ads.isLoading ? l10n.t("paywall.adLoading") : l10n.t("paywall.watchAd"))
                         .font(AppFont.ui(16, weight: .bold))
                         .foregroundStyle(AppColors.textPrimary)
                     Text(l10n.t("paywall.watchAdSubtitle"))
@@ -130,6 +145,7 @@ struct CategoryPaywallView: View {
             )
         }
         .buttonStyle(.plain)
+        .disabled(ads.isLoading)
     }
 
     private var yearlyCard: some View {

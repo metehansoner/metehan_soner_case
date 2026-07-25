@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Kunin ang unlimited access",
   "paywall.freeTrialBadge": "Free trial",
   "paywall.yearlyOffer": "3 araw na libre, tapos ₺2.499,99/taon",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Classic Imposter",
   "home.classicSubtitle": "Ilarawan ang salita nang hindi nahuhuli!",
   "home.drawingTitle": "Drawing mode",

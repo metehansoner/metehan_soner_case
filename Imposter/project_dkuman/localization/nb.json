@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Få ubegrenset tilgang",
   "paywall.freeTrialBadge": "Gratis prøveperiode",
   "paywall.yearlyOffer": "3 dager gratis, deretter ₺2.499,99/år",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Klassisk Imposter",
   "home.classicSubtitle": "Beskriv ordet uten å bli tatt!",
   "home.drawingTitle": "Tegnemodus",

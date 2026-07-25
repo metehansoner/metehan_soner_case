@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Obține acces nelimitat",
   "paywall.freeTrialBadge": "Probă gratuită",
   "paywall.yearlyOffer": "3 zile gratuit, apoi ₺2.499,99/an",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Imposter clasic",
   "home.classicSubtitle": "Descrie cuvântul fără să fii prins!",
   "home.drawingTitle": "Mod desen",

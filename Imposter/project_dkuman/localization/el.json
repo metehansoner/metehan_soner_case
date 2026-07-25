@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Αποκτήστε απεριόριστη πρόσβαση",
   "paywall.freeTrialBadge": "Δωρεάν δοκιμή",
   "paywall.yearlyOffer": "3 μέρες δωρεάν, μετά ₺2.499,99/έτος",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Κλασικός Imposter",
   "home.classicSubtitle": "Περίγραψε τη λέξη χωρίς να σε πιάσουν!",
   "home.drawingTitle": "Λειτουργία σχεδίου",

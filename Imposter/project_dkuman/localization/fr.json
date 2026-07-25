@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Obtenir un accès illimité",
   "paywall.freeTrialBadge": "Essai gratuit",
   "paywall.yearlyOffer": "3 jours gratuits, puis ₺2.499,99/an",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Imposter classique",
   "home.classicSubtitle": "Décris le mot sans te faire prendre !",
   "home.drawingTitle": "Mode dessin",

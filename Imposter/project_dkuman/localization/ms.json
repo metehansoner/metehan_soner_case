@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Dapatkan akses tanpa had",
   "paywall.freeTrialBadge": "Percubaan percuma",
   "paywall.yearlyOffer": "3 hari percuma, kemudian ₺2.499,99/tahun",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Imposter Klasik",
   "home.classicSubtitle": "Terangkan perkataan tanpa ditangkap!",
   "home.drawingTitle": "Mod melukis",

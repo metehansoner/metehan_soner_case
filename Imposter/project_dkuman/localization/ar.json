@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "احصل على وصول غير محدود",
   "paywall.freeTrialBadge": "تجربة مجانية",
   "paywall.yearlyOffer": "3 أيام مجانًا، ثم ₺2.499,99/سنة",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "المحتال الكلاسيكي",
   "home.classicSubtitle": "صف الكلمة دون أن تُمسك!",
   "home.drawingTitle": "وضع الرسم",

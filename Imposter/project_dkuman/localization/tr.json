@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Sınırsız erişim elde et",
   "paywall.freeTrialBadge": "Ücretsiz deneme",
   "paywall.yearlyOffer": "3 gün ücretsiz, sonra ₺2.499,99/yıl",
+  "paywall.adLoading": "Reklam yükleniyor…",
+  "paywall.adFailed": "Reklam yüklenemedi. Tekrar dene.",
   "home.classicTitle": "Klasik Imposter",
   "home.classicSubtitle": "Kelimeyi yakalanmadan anlatın!",
   "home.drawingTitle": "Çizim modu",

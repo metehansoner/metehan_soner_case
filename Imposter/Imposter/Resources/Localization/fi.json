@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Hanki rajaton käyttöoikeus",
   "paywall.freeTrialBadge": "Ilmainen kokeilu",
   "paywall.yearlyOffer": "3 päivää ilmaiseksi, sitten ₺2.499,99/vuosi",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Klassinen Imposter",
   "home.classicSubtitle": "Kuvaile sanaa jäämättä kiinni!",
   "home.drawingTitle": "Piirustustila",

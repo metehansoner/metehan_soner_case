@@ -55,6 +55,8 @@
   "paywall.getUnlimited": "Получить безлимитный доступ",
   "paywall.freeTrialBadge": "Бесплатный пробный период",
   "paywall.yearlyOffer": "3 дня бесплатно, затем ₺2.499,99/год",
+  "paywall.adLoading": "Loading ad…",
+  "paywall.adFailed": "Ad failed to load. Try again.",
   "home.classicTitle": "Классический Imposter",
   "home.classicSubtitle": "Опиши слово и не попадись!",
   "home.drawingTitle": "Режим рисования",
