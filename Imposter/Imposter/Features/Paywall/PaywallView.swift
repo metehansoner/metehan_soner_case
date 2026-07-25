@@ -21,116 +21,111 @@ struct PaywallView: View {
     private let termsURL = URL(string: "https://imposterparty.app/terms")!
 
     var body: some View {
-        GeometryReader { geo in
-            // Bigger hero, still leaves room for compact plans + CTA.
-            let heroHeight = min(max(geo.size.height * 0.42, 280), 420)
+        ZStack {
+            OceanBackground()
 
-            ZStack(alignment: .topTrailing) {
-                OceanBackground()
+            VStack(spacing: 0) {
+                Image("paywall_hero")
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, 4)
+                    .padding(.top, 2)
+                    .layoutPriority(1)
 
-                VStack(spacing: 0) {
-                    Image("paywall_hero")
-                        .resizable()
-                        .interpolation(.high)
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
-                        .frame(height: heroHeight)
-                        .padding(.horizontal, 4)
-                        .padding(.top, 4)
+                Text(l10n.t("paywall.title"))
+                    .font(AppFont.display(24, weight: .black))
+                    .foregroundStyle(AppColors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .lineLimit(2)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
 
-                    Text(l10n.t("paywall.title"))
-                        .font(AppFont.display(24, weight: .black))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.85)
-                        .lineLimit(2)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 6)
-                        .padding(.bottom, 10)
+                VStack(spacing: 8) {
+                    planRow(
+                        plan: .freeTrial,
+                        title: l10n.t("paywall.freeTrial"),
+                        subtitle: l10n.t("paywall.cancelAnytime"),
+                        badge: nil
+                    )
+                    planRow(
+                        plan: .yearly,
+                        title: l10n.t("paywall.yearly"),
+                        subtitle: "₺2.499,99/year · ₺47,95/week",
+                        badge: l10n.t("paywall.bestDeal")
+                    )
+                    planRow(
+                        plan: .weekly,
+                        title: l10n.t("paywall.weekly"),
+                        subtitle: "₺499,99/week · " + l10n.t("paywall.cancelAnytime"),
+                        badge: l10n.t("paywall.mostPopular")
+                    )
+                }
+                .padding(.horizontal, 16)
 
-                    VStack(spacing: 8) {
-                        planRow(
-                            plan: .freeTrial,
-                            title: l10n.t("paywall.freeTrial"),
-                            subtitle: l10n.t("paywall.cancelAnytime"),
-                            badge: nil
-                        )
-                        planRow(
-                            plan: .yearly,
-                            title: l10n.t("paywall.yearly"),
-                            subtitle: "₺2.499,99/year · ₺47,95/week",
-                            badge: l10n.t("paywall.bestDeal")
-                        )
-                        planRow(
-                            plan: .weekly,
-                            title: l10n.t("paywall.weekly"),
-                            subtitle: "₺499,99/week · " + l10n.t("paywall.cancelAnytime"),
-                            badge: l10n.t("paywall.mostPopular")
-                        )
-                    }
-                    .padding(.horizontal, 16)
-
-                    Spacer(minLength: 10)
-
-                    VStack(spacing: 10) {
-                        Button {
-                            Task {
-                                await store.purchaseSelectedPlan()
-                                if store.isPremium {
-                                    finish(markSeen: true)
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                if store.isPurchasing {
-                                    ProgressView().tint(AppColors.textOnLight)
-                                }
-                                Text(ctaTitle)
+                VStack(spacing: 10) {
+                    Button {
+                        Task {
+                            await store.purchaseSelectedPlan()
+                            if store.isPremium {
+                                finish(markSeen: true)
                             }
                         }
-                        .buttonStyle(PrimaryButtonStyle(enabled: !store.isPurchasing))
-                        .disabled(store.isPurchasing)
-
-                        HStack(spacing: 16) {
-                            Link(l10n.t("common.terms"), destination: termsURL)
-                            Link(l10n.t("common.privacy"), destination: privacyURL)
-                            if presentation == .afterOnboarding {
-                                Button {
-                                    finish(markSeen: true)
-                                } label: {
-                                    Text(l10n.t("common.skip"))
-                                        .underline()
-                                }
-                                .buttonStyle(.plain)
+                    } label: {
+                        HStack {
+                            if store.isPurchasing {
+                                ProgressView().tint(AppColors.textOnLight)
                             }
+                            Text(ctaTitle)
+                        }
+                    }
+                    .buttonStyle(PrimaryButtonStyle(enabled: !store.isPurchasing))
+                    .disabled(store.isPurchasing)
+
+                    HStack(spacing: 16) {
+                        Link(l10n.t("common.terms"), destination: termsURL)
+                        Link(l10n.t("common.privacy"), destination: privacyURL)
+                        if presentation == .afterOnboarding {
                             Button {
-                                Task { await store.restore() }
+                                finish(markSeen: true)
                             } label: {
-                                Text(l10n.t("common.restore"))
+                                Text(l10n.t("common.skip"))
+                                    .underline()
                             }
                             .buttonStyle(.plain)
                         }
-                        .font(AppFont.ui(12, weight: .bold))
-                        .foregroundStyle(AppColors.textSecondary)
-
-                        if let statusMessage = store.statusMessage {
-                            Text(statusMessage)
-                                .font(AppFont.ui(12))
-                                .foregroundStyle(AppColors.stateDanger)
+                        Button {
+                            Task { await store.restore() }
+                        } label: {
+                            Text(l10n.t("common.restore"))
                         }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 18)
-                }
+                    .font(AppFont.ui(12, weight: .bold))
+                    .foregroundStyle(AppColors.textSecondary)
 
-                if presentation == .modal, showCloseButton {
-                    HeaderCircleIconButton(systemName: "xmark") {
-                        finish(markSeen: true)
+                    if let statusMessage = store.statusMessage {
+                        Text(statusMessage)
+                            .font(AppFont.ui(12))
+                            .foregroundStyle(AppColors.stateDanger)
                     }
-                    .padding(.top, max(geo.safeAreaInsets.top, 8))
-                    .padding(.trailing, 16)
-                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 18)
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if presentation == .modal, showCloseButton {
+                HeaderCircleIconButton(systemName: "xmark") {
+                    finish(markSeen: true)
+                }
+                .padding(.top, 6)
+                .padding(.trailing, 14)
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
         }
         .onAppear { Haptics.light() }
@@ -164,40 +159,41 @@ struct PaywallView: View {
             Haptics.selection()
             store.selectedPlan = plan
         } label: {
-            ZStack(alignment: .topTrailing) {
-                HStack(alignment: .center, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(title)
-                            .font(AppFont.ui(15, weight: .bold))
-                            .foregroundStyle(AppColors.textPrimary)
-                            .lineLimit(1)
-                        Text(subtitle)
-                            .font(AppFont.ui(12))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: 6)
-                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(selected ? AppColors.accentCyan : AppColors.textSecondary)
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(AppFont.ui(15, weight: .bold))
+                        .foregroundStyle(AppColors.textPrimary)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(AppFont.ui(12))
+                        .foregroundStyle(AppColors.textSecondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(AppColors.surfaceCard)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(
-                                    selected ? AppColors.accentCyan : AppColors.accentCyan.opacity(0.18),
-                                    lineWidth: selected ? 2.5 : 1
-                                )
-                        )
-                )
-
-                if let badge, selected {
+                Spacer(minLength: 6)
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(selected ? AppColors.accentCyan : AppColors.textSecondary)
+                    .transaction { $0.animation = nil }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppColors.surfaceCard)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(
+                        selected ? AppColors.accentCyan : AppColors.accentCyan.opacity(0.18),
+                        lineWidth: 2
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: selected)
+            )
+            .overlay(alignment: .topTrailing) {
+                if let badge {
                     Text(badge)
                         .font(AppFont.ui(10, weight: .bold))
                         .foregroundStyle(AppColors.textOnLight)
@@ -207,9 +203,13 @@ struct PaywallView: View {
                         .overlay(Capsule().stroke(AppColors.bgPrimary.opacity(0.15), lineWidth: 1))
                         .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
                         .offset(x: -12, y: -9)
+                        .opacity(selected ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.2), value: selected)
+                        .allowsHitTesting(false)
                 }
             }
-            .padding(.top, (badge != nil && selected) ? 8 : 0)
+            // Same top inset on every plan so selection never shifts the stack.
+            .padding(.top, 8)
         }
         .buttonStyle(.plain)
     }

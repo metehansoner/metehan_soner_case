@@ -56,8 +56,8 @@ private struct OnboardingPage: View {
     let assetName: String?
 
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer(minLength: 24)
+        VStack(spacing: 14) {
+            Spacer(minLength: 8)
 
             Group {
                 if let assetName, UIImage(named: assetName) != nil {
@@ -70,27 +70,28 @@ private struct OnboardingPage: View {
                         .fill(AppColors.surfaceCard)
                         .overlay(
                             Image(systemName: "theatermasks.fill")
-                                .font(.system(size: 64))
+                                .font(.system(size: 72))
                                 .foregroundStyle(AppColors.accentCyan)
                         )
                 }
             }
-            .frame(maxHeight: 280)
-            .padding(.horizontal, 28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 12)
+            .layoutPriority(1)
 
             Text(title)
-                .font(AppFont.display(32, weight: .black))
+                .font(AppFont.display(30, weight: .black))
                 .foregroundStyle(AppColors.textPrimary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+
+            Text(bodyText)
+                .font(AppFont.ui(15, weight: .bold))
+                .foregroundStyle(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            Text(bodyText)
-                .font(AppFont.ui(16, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 28)
-
-            Spacer(minLength: 80)
+            Spacer(minLength: 56)
         }
     }
 }
