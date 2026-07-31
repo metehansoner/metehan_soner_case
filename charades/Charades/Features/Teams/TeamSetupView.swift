@@ -108,13 +108,9 @@ struct TeamSetupView: View {
     /// İki sayaç tek dizede birleşmiyor: tekil/çoğul ayrımı her dilde ayrı
     /// anahtar istiyor (`playbar.summary` deseni).
     private var summary: String {
-        let teams = counted("teams.setup.teamCount", setup.teams.count)
-        let rounds = counted("teams.setup.roundCount", setup.roundsPerTeam)
+        let teams = l10n.t("teams.setup.teamCount", count: setup.teams.count)
+        let rounds = l10n.t("teams.setup.roundCount", count: setup.roundsPerTeam)
         return "\(teams) · \(rounds)"
-    }
-
-    private func counted(_ key: String, _ count: Int) -> String {
-        l10n.t(count == 1 ? key : "\(key).plural", ["count": "\(count)"])
     }
 
     // MARK: Takım kartı

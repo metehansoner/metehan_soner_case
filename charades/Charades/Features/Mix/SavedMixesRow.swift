@@ -58,10 +58,7 @@ struct SavedMixesRow: View {
                         .foregroundStyle(AppColors.textCream)
                         .lineLimit(1)
 
-                    Text(l10n.t(
-                        mix.deckIDs.count == 1 ? "mix.deckCount" : "mix.deckCount.plural",
-                        ["count": "\(mix.deckIDs.count)"]
-                    ))
+                    Text(l10n.t("mix.deckCount", count: mix.deckIDs.count))
                     .font(AppFont.ui(9.5))
                     .foregroundStyle(AppColors.textMuted)
                 }

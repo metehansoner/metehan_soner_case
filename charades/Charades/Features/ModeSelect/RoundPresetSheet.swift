@@ -181,7 +181,7 @@ struct RoundPresetSheet: View {
     /// § `09` §4: engel değil öneri — kullanıcı yine bu zorlukla oynayabiliyor.
     private var poolWarning: some View {
         VStack(alignment: .leading, spacing: 9) {
-            Text(l10n.t("preset.smallPool", ["count": "\(filteredCardCount)"]))
+            Text(l10n.t("preset.smallPool", count: filteredCardCount))
                 .font(AppFont.ui(12))
                 .foregroundStyle(AppColors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

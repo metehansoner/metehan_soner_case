@@ -25,6 +25,8 @@ enum PaywallContext: Hashable, Identifiable {
     case lockedDeck(String)
     case lockedMode(String)
     case mix
+    /// §09 §9: ücretsiz kullanıcı custom desteyi yazabiliyor ama oynayamıyor.
+    case customDeck
 
     var id: String {
         switch self {
@@ -32,6 +34,7 @@ enum PaywallContext: Hashable, Identifiable {
         case .lockedDeck(let id): "lockedDeck.\(id)"
         case .lockedMode(let id): "lockedMode.\(id)"
         case .mix: "mix"
+        case .customDeck: "customDeck"
         }
     }
 }

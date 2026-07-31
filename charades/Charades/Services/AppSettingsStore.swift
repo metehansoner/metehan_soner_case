@@ -26,6 +26,7 @@ final class AppSettingsStore {
         static let roundsPlayed = "stats.roundsPlayed"
         static let howToSeen = "settings.howToSeen"
         static let rapidHighScore = "stats.rapidHighScore"
+        static let basketDraft = "draft.basketWords"
     }
 
     /// Kullanıcının uygulama içinden seçtiği dil; `nil` ise sistem dili kullanılır.
@@ -100,6 +101,13 @@ final class AppSettingsStore {
         didSet { defaults.set(rapidHighScore, forKey: Key.rapidHighScore) }
     }
 
+    /// §09 §9: Kelime Sepeti `LiveGame`in dışında yaşıyor ama uygulama
+    /// sonlandırılırsa kaydedilmemiş sepet giderdi. 5 kelimeye ulaşan sepet
+    /// taslak olarak buraya yazılıyor; kaydedilince ya da boşaltılınca siliniyor.
+    private(set) var basketDraft: [String] {
+        didSet { defaults.set(basketDraft, forKey: Key.basketDraft) }
+    }
+
     private init() {
         languageOverride = defaults.string(forKey: Key.languageOverride)
         filmEffectsEnabled = defaults.object(forKey: Key.filmEffects) as? Bool ?? true
@@ -116,6 +124,20 @@ final class AppSettingsStore {
         roundsPlayed = defaults.integer(forKey: Key.roundsPlayed)
         howToSeenModes = Set(defaults.stringArray(forKey: Key.howToSeen) ?? [])
         rapidHighScore = defaults.integer(forKey: Key.rapidHighScore)
+        basketDraft = defaults.stringArray(forKey: Key.basketDraft) ?? []
+    }
+
+    func storeBasketDraft(_ words: [String]) {
+        guard words.count >= CustomDeckLimits.minWordsToPlay else {
+            if !basketDraft.isEmpty { basketDraft = [] }
+            return
+        }
+        basketDraft = words
+    }
+
+    func clearBasketDraft() {
+        guard !basketDraft.isEmpty else { return }
+        basketDraft = []
     }
 
     func recordRoundPlayed() { roundsPlayed += 1 }

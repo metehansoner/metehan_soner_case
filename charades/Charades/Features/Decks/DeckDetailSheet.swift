@@ -111,7 +111,7 @@ struct DeckDetailSheet: View {
     private var metaRow: some View {
         HStack(spacing: 10) {
             if let cardCount {
-                MetaPill(text: l10n.t("deck.cardCount", ["count": "\(cardCount)"]))
+                MetaPill(text: l10n.t("deck.cardCount", count: cardCount))
             }
             MetaPill(text: l10n.t(deck.difficulty.titleKey))
             MetaPill(text: l10n.t("deck.minPlayers", ["count": "\(deck.minPlayers)"]))

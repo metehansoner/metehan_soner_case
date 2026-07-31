@@ -67,8 +67,7 @@ struct PlayBar: View {
         if isMix {
             return l10n.t("playbar.mixReady")
         }
-        let key = deckCount == 1 ? "playbar.summary" : "playbar.summary.plural"
-        return l10n.t(key, ["decks": "\(deckCount)"])
+        return l10n.t("playbar.summary", count: deckCount)
     }
 
     private var subtitle: String {
@@ -76,9 +75,9 @@ struct PlayBar: View {
             return l10n.t("playbar.noContent")
         }
         if isMix, !isPremium {
-            return "\(l10n.t("playbar.cards", ["cards": "\(cardCount)"])) · \(l10n.t("playbar.premium"))"
+            return "\(l10n.t("playbar.cards", count: cardCount)) · \(l10n.t("playbar.premium"))"
         }
-        return l10n.t("playbar.cards", ["cards": "\(cardCount)"])
+        return l10n.t("playbar.cards", count: cardCount)
     }
 
     private var subtitleColor: Color {

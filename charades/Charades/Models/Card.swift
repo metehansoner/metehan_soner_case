@@ -32,4 +32,15 @@ struct Card: Codable, Hashable, Identifiable, Sendable {
     nonisolated func text(for language: String) -> String {
         t[language] ?? t["en"] ?? k
     }
+
+    /// §05 §7: custom kelimeler çevrilmiyor, kullanıcının yazdığı dilde kalıyor.
+    /// Metin `en`e de yazılıyor: kullanıcı TR yazıp uygulamayı İngilizce'ye
+    /// alırsa `text(for:)` ham anahtara düşer ve oyun kartında `custom.…` çıkardı.
+    nonisolated static func custom(key: String, text: String, language: String) -> Card {
+        // Sözlük literali kullanılmıyor: dil zaten `en` olduğunda çift anahtar
+        // oluşuyor ve `Dictionary(dictionaryLiteral:)` çalışma anında çöküyor.
+        var translations = ["en": text]
+        translations[language] = text
+        return Card(k: key, t: translations, d: 0)
+    }
 }

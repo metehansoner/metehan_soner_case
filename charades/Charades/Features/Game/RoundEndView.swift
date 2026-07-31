@@ -22,6 +22,14 @@ struct RoundEndView: View {
         VStack(spacing: 0) {
             header
             columns
+
+            // §02 §24: Kelime Sepeti'yle oynanan tur bitti; kaydetme isteği tam
+            // burada soruluyor, sepet ekranında değil.
+            if game.mode == .ownWords, !game.customCards.isEmpty {
+                SaveBasketBanner(words: game.customCards.map { $0.text(for: l10n.localeCode) })
+                    .padding(.top, 10)
+            }
+
             footer
         }
         .background {

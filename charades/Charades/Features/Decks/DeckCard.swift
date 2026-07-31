@@ -140,7 +140,7 @@ struct DeckCard: View {
                 .foregroundStyle(AppColors.textOnPoster)
 
             if let cardCount {
-                Text(l10n.t("deck.cardCount", ["count": "\(cardCount)"]))
+                Text(l10n.t("deck.cardCount", count: cardCount))
                     .font(AppFont.ui(7.5, weight: .semibold))
                     .tracking(1.3)
                     .textCase(.uppercase)
@@ -277,7 +277,7 @@ struct DeckCard: View {
 
     private var accessibilityLabel: String {
         var parts = [l10n.t(deck.titleKey)]
-        if let cardCount { parts.append(l10n.t("deck.cardCount", ["count": "\(cardCount)"])) }
+        if let cardCount { parts.append(l10n.t("deck.cardCount", count: cardCount)) }
         if let selectionOrder { parts.append(l10n.t("mix.selection.order", ["order": "\(selectionOrder)"])) }
         if isLocked { parts.append(l10n.t("deck.locked.stamp")) }
         if isOffMode, !isLocked { parts.append(l10n.t("deck.describeOnly.badge")) }

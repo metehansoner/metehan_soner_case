@@ -22,6 +22,10 @@ struct DecksHomeView: View {
     /// §05 §6: kaydedilmiş karışımlar `BENİM DESTELERİM` bölümünde görünüyor.
     @Query(sort: \SavedMix.sortIndex) private var savedMixes: [SavedMix]
 
+    /// §05 §7: custom desteler de aynı bölümde — kullanıcının kendi yaptığı
+    /// deste, katalog destesiyle aynı ızgarada oynanabilir olmalı.
+    @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
+
     @State private var filter: DeckFilter = .all
     @State private var collapseProgress: Double = 0
 
@@ -46,8 +50,9 @@ struct DecksHomeView: View {
                     sectionRow
 
                     FeaturedRow(
+                        isWordBasketLocked: !subscriptions.isPremium,
                         onMix: { router.push(.mix) },
-                        onWordBasket: { router.push(.wordBasket) },
+                        onWordBasket: openWordBasket,
                         onCustomDecks: { router.push(.customList) }
                     )
 
@@ -165,6 +170,39 @@ struct DecksHomeView: View {
         router.setupStep = .preset
     }
 
+    private func openWordBasket() {
+        guard subscriptions.isPremium else {
+            Haptics.lockedWall()
+            router.openPaywall(.lockedMode(GameMode.ownWords.id))
+            return
+        }
+        setup.mode = .ownWords
+        router.push(.wordBasket)
+    }
+
+    /// Izgaradaki custom deste **oynamak** için; düzenleme uzun basışta ve
+    /// `BENİM DESTELERİM` listesinde (§05 §7'nin iki kapısı).
+    private func playCustomDeck(_ deck: CustomDeck) {
+        guard subscriptions.isPremium else {
+            Haptics.lockedWall()
+            router.openPaywall(.customDeck)
+            return
+        }
+        // Kelimesi yetmeyen taslak oynanamaz; dokunuş editöre götürüyor ki
+        // kullanıcı eksiği tamamlayabilsin.
+        guard deck.canPlay else {
+            Haptics.stepperLimit()
+            router.push(.customEditor(deck.uuid.uuidString))
+            return
+        }
+        Haptics.primaryButton()
+        setup.select(custom: deck.uuid)
+        // Mod hâlâ önceki turdan Mix ya da Kendi Kelimelerin olabilir; ikisi de
+        // custom desteyle bağdaşmıyor, Mod Seçimi baştan soruyor.
+        setup.mode = .classic
+        router.beginSetup()
+    }
+
     private func editSavedMix(_ mix: SavedMix) {
         setup.select(all: mix.deckIDs)
         setup.mode = .mix
@@ -225,6 +263,21 @@ struct DecksHomeView: View {
             // Karışımlar yalnızca `BENİM DESTELERİM`de: bir filtre seçiliyken
             // ızgara o filtrenin sonucunu göstermeli, karışımın bölümü yok.
             if filter == .all {
+                ForEach(customDecks, id: \.uuid) { deck in
+                    Button { playCustomDeck(deck) } label: {
+                        CustomDeckCard(deck: deck, isLocked: !subscriptions.isPremium)
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(l10n.t("customDeck.edit"), systemImage: "square.and.pencil") {
+                            router.push(.customEditor(deck.uuid.uuidString))
+                        }
+                        Button(l10n.t("common.delete"), systemImage: "trash", role: .destructive) {
+                            modelContext.delete(deck)
+                        }
+                    }
+                }
+
                 ForEach(savedMixes) { mix in
                     Button { playSavedMix(mix) } label: {
                         SavedMixCard(mix: mix)

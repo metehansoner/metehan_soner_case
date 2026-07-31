@@ -18,9 +18,8 @@ enum AppFont {
         Locale.current.language.languageCode?.identifier ?? "en"
     }
 
-    /// §2 "Locale'e göre font ikamesi" tablosu.
-    /// `el` aileleri henüz bundle'da yok (§00 §8 açık kararı); o locale şimdilik
-    /// fallback zincirinin son halkasına düşer.
+    /// §2 "Locale'e göre font ikamesi" tablosu. Oswald ve Playfair'de Arap ve
+    /// Yunan glifi yok; Rubik'te Arap var, Yunan yok.
     static var families: Families {
         switch currentLanguageCode() {
         case "ar":
@@ -37,6 +36,9 @@ enum AppFont {
         "Oswald-SemiBold", "Oswald-Bold",
         "PlayfairDisplayRoman-Black", "PlayfairDisplayItalic-BoldItalic",
         "Rubik-Regular", "Rubik-Medium", "Rubik-SemiBold", "Rubik-Bold",
+        "FiraSansCondensed-Bold", "FiraSansCondensed-ExtraBold",
+        "FiraSans-Regular", "FiraSans-Medium", "FiraSans-SemiBold", "FiraSans-Bold",
+        "EBGaramond-Bold", "EBGaramondItalic-BoldItalic",
     ]
 
     static func isAvailable(_ postScriptName: String) -> Bool {
@@ -103,6 +105,32 @@ enum AppFont {
             return italic
                 ? ["PlayfairDisplayItalic-BoldItalic", "PlayfairDisplay-BoldItalic", "PlayfairDisplayRoman-Black"]
                 : ["PlayfairDisplayRoman-Black", "PlayfairDisplay-Black", "PlayfairDisplayItalic-BoldItalic"]
+
+        // §2 Yunanca ikamesi. Fira Sans Condensed marquee rolünü, Fira Sans
+        // gövdeyi, EB Garamond afiş serif'ini karşılıyor.
+        case "Fira Sans Condensed":
+            return weight.rank >= Font.Weight.heavy.rank
+                ? ["FiraSansCondensed-ExtraBold", "FiraSansCondensed-Bold"]
+                : ["FiraSansCondensed-Bold", "FiraSansCondensed-ExtraBold"]
+
+        case "Fira Sans":
+            switch weight {
+            case .black, .heavy, .bold:
+                return ["FiraSans-Bold", "FiraSans-SemiBold"]
+            case .semibold:
+                return ["FiraSans-SemiBold", "FiraSans-Bold"]
+            case .medium:
+                return ["FiraSans-Medium", "FiraSans-SemiBold"]
+            default:
+                return ["FiraSans-Regular", "FiraSans-Medium"]
+            }
+
+        // Değişken fonttan sabit ağırlık çıkarılınca italik yüzün PostScript
+        // adı `EBGaramondItalic-BoldItalic` oluyor; dosya adıyla eşleşmiyor.
+        case "EB Garamond":
+            return italic
+                ? ["EBGaramondItalic-BoldItalic", "EBGaramond-BoldItalic", "EBGaramond-Bold"]
+                : ["EBGaramond-Bold", "EBGaramondItalic-BoldItalic"]
 
         case "Rubik":
             switch weight {

@@ -70,11 +70,8 @@ struct SavedMixCard: View {
     }
 
     private var deckSummary: String {
-        let decks = l10n.t(
-            mix.deckIDs.count == 1 ? "mix.deckCount" : "mix.deckCount.plural",
-            ["count": "\(mix.deckIDs.count)"]
-        )
-        return "\(decks) · \(l10n.t("playbar.cards", ["cards": "\(mix.cardCount)"]))"
+        let decks = l10n.t("mix.deckCount", count: mix.deckIDs.count)
+        return "\(decks) · \(l10n.t("playbar.cards", count: mix.cardCount))"
     }
 
     private var tag: some View {

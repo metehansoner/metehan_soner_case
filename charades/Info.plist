@@ -40,6 +40,14 @@
 		<string>Rubik-Medium.ttf</string>
 		<string>Rubik-SemiBold.ttf</string>
 		<string>Rubik-Bold.ttf</string>
+		<string>FiraSansCondensed-Bold.ttf</string>
+		<string>FiraSansCondensed-ExtraBold.ttf</string>
+		<string>FiraSans-Regular.ttf</string>
+		<string>FiraSans-Medium.ttf</string>
+		<string>FiraSans-SemiBold.ttf</string>
+		<string>FiraSans-Bold.ttf</string>
+		<string>EBGaramond-Bold.ttf</string>
+		<string>EBGaramond-BoldItalic.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

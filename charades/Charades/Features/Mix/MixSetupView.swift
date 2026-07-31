@@ -70,7 +70,7 @@ struct MixSetupView: View {
             Button(l10n.t("common.cancel"), role: .cancel) {}
             Button(l10n.t("mix.save.confirm"), action: saveMix)
         } message: {
-            Text(l10n.t("mix.save.body", ["count": "\(selectionCount)"]))
+            Text(l10n.t("mix.save.body", count: selectionCount))
         }
     }
 
@@ -150,7 +150,7 @@ struct MixSetupView: View {
     private var mixBar: some View {
         VStack(alignment: .leading, spacing: 9) {
             HStack(alignment: .firstTextBaseline) {
-                Text(l10n.t(selectionCount == 1 ? "mix.selected" : "mix.selected.plural", ["count": "\(selectionCount)"]))
+                Text(l10n.t("mix.selected", count: selectionCount))
                     .font(AppFont.display(12.5, weight: .semibold))
                     .tracking(1.6)
                     .textCase(.uppercase)
@@ -158,7 +158,7 @@ struct MixSetupView: View {
 
                 Spacer(minLength: 8)
 
-                Text(l10n.t("playbar.cards", ["cards": "\(setup.selectedCardCount)"]))
+                Text(l10n.t("playbar.cards", count: setup.selectedCardCount))
                     .font(AppFont.display(13, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(AppColors.accentAmber)

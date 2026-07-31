@@ -166,9 +166,8 @@ struct MatchEndView: View {
         return match.standings.first { $0.suddenDeathCorrect != nil && $0.roleIndex == 0 }
     }
 
-    /// Tekil/çoğul ayrımı diğer sayaçlarla aynı desende (`playbar.summary`).
     private func counted(_ key: String, _ count: Int) -> String {
-        l10n.t(count == 1 ? key : "\(key).plural", ["count": "\(count)"])
+        l10n.t(key, count: count)
     }
 
     private func roleKey(_ index: Int) -> String {

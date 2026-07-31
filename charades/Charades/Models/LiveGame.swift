@@ -75,6 +75,11 @@ final class LiveGame {
     let mode: GameMode
     let deckIDs: [String]
 
+    /// Kelime Sepeti ya da custom desteden gelen kartlar. Tur sonundaki
+    /// `SEPETİ KAYDET` şeridi kaydedilecek kelimeleri buradan okuyor: oyun akışı
+    /// `GameSetup`u görmüyor (§02 §5, `NavigationStack`in yerine geçiyor).
+    let customCards: [Card]
+
     /// §09 §5: ani ölüm turu 30 saniye, o yüzden maç ortasında değişebiliyor.
     private(set) var duration: Int
     private let baseDuration: Int
@@ -171,10 +176,12 @@ final class LiveGame {
         playsInPortrait: Bool,
         roundsPlayed: Int,
         match: TeamMatch? = nil,
+        customCards: [Card] = [],
         onExit: @escaping (Exit) -> Void
     ) {
         self.mode = mode
         self.deckIDs = deckIDs
+        self.customCards = customCards
         self.duration = duration
         self.baseDuration = duration
         self.match = match
@@ -187,7 +194,11 @@ final class LiveGame {
         // `Set<String>` yerine kuyruk — de-duplication dilden bağımsız `k`
         // anahtarı üzerinden, kullanıcı ortada dil değiştirse bile bozulmuyor.
         // §05 §6: desteler ayrı kuyruklarda kalıyor, tek havuzda birleşmiyor.
-        pool = WordPool(byDeck: CardBank.shared.cardsByDeck(in: deckIDs, difficulty: difficulty))
+        // §05 §7 + §09 §4: custom kaynak (Kelime Sepeti ya da custom deste) tek
+        // kuyruk ve zorluk filtresine girmiyor — custom kartların `d` alanı yok.
+        pool = customCards.isEmpty
+            ? WordPool(byDeck: CardBank.shared.cardsByDeck(in: deckIDs, difficulty: difficulty))
+            : WordPool(cards: customCards)
 
         remaining = duration
         remainingExact = TimeInterval(duration)

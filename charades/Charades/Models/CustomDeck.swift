@@ -128,7 +128,38 @@ final class CustomDeck {
     /// Custom kartlar oyun döngüsüne katalog kartlarıyla aynı tipte giriyor;
     /// `d = 0` oldukları için zorluk filtresinden muaf kalıyorlar (§09 §4).
     func toCards() -> [Card] {
-        orderedCards.map { Card(k: "custom.\(uuid.uuidString).\($0.order)", t: [languageCode: $0.text], d: 0) }
+        orderedCards.map {
+            Card.custom(
+                key: "custom.\(uuid.uuidString).\($0.order)",
+                text: $0.text,
+                language: languageCode
+            )
+        }
+    }
+
+    var words: [String] { orderedCards.map(\.text) }
+
+    /// Kelime listesi tek yerden yazılıyor: `order` her seferinde yeniden
+    /// numaralanmazsa silme sonrası boşluklar `toCards()` anahtarlarını çakıştırır.
+    ///
+    /// Mevcut satırlar yeniden kullanılıp fazlası **açıkça siliniyor**: ilişkiden
+    /// çıkarılan `CustomCard` depoda öksüz kalıyor (cascade yalnızca deste
+    /// silinince işliyor) ve her kelime eklemede birikirdi.
+    func replaceWords(_ words: [String]) {
+        var survivors = orderedCards
+        while survivors.count > words.count {
+            modelContext?.delete(survivors.removeLast())
+        }
+        for (index, text) in words.prefix(CustomDeckLimits.maxWords).enumerated() {
+            if index < survivors.count {
+                survivors[index].text = text
+                survivors[index].order = index
+            } else {
+                survivors.append(CustomCard(text: text, order: index))
+            }
+        }
+        cards = survivors
+        updatedAt = .now
     }
 }
 

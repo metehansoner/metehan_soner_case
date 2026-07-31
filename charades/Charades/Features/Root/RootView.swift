@@ -183,8 +183,23 @@ struct RootView: View {
             playsInPortrait: false,
             roundsPlayed: settings.roundsPlayed,
             match: makeMatch(),
+            customCards: customCards(),
             onExit: endGame
         )
+    }
+
+    /// §05 §7'nin iki kapısı da aynı yere çıkıyor: kullanıcının kendi kelimeleri
+    /// katalog kartlarıyla aynı tipte havuza giriyor.
+    private func customCards() -> [Card] {
+        let language = LocalizationManager.shared.localeCode
+        if setup.mode == .ownWords {
+            return setup.basketCards(language: language)
+        }
+        guard let id = setup.customDeckID,
+              let deck = try? modelContext.fetch(FetchDescriptor<CustomDeck>())
+                  .first(where: { $0.uuid == id })
+        else { return [] }
+        return deck.toCards()
     }
 
     /// Takım adları maça girerken bir kez çözülüyor (§09 §5): boş bırakılan
@@ -210,6 +225,11 @@ struct RootView: View {
     /// İçeriği üretilmiş desteler (§10 §4) — boş havuzla tur başlamıyor.
     private static let debugMixDecks = ["party", "movieClassics", "cities"]
 
+    private static let debugWords = [
+        "Kahve molası", "Zoom", "Terfi", "Mesai", "Bordro", "Yazıcı",
+        "Toplantı", "Ayşe'nin köpeği", "Müdürün arabası", "Mola",
+    ]
+
     /// Simülatör doğrulaması. Tilt sensörü ve ekran döndürme simülatörde
     /// olmadığı için oyun fazlarına başka türlü girilemiyor.
     ///
@@ -223,11 +243,17 @@ struct RootView: View {
     ///   -TouchAnswers          dokunmatik cevap (tilt yerine ekran yarıları)
     ///   -ShortRound            süre 12 sn (tur sonu ekranını hızlı görmek için)
     ///   -Premium               abonelik açık (kilitli modları denemek için)
+    ///   -Free                  aboneliği kapatır (`-Premium` kalıcı yazıyor)
     ///   -TeamRoster            takım modu + örnek takım/oyuncu adları, 1 tur
     ///   -TeamSetup             Takım Kurulumu ekranı
     ///   -MixSelection [a,b]    premium + verilen desteler seçili (varsayılan 3)
     ///   -MixSetup              Mix Kurulumu ekranı
     ///   -SavedMix              örnek bir kayıtlı karışım ekler
+    ///   -CustomDeck [n]        örnek custom deste ekler (n kelime, varsayılan 6)
+    ///   -CustomList            Kendi Destelerim ekranı
+    ///   -CustomEditor          örnek destenin editörü
+    ///   -Basket [n]            sepete n örnek kelime koyar (varsayılan 7)
+    ///   -WordBasket            Kelime Sepeti ekranı
     private func applyDebugArguments() {
         let arguments = ProcessInfo.processInfo.arguments
 
@@ -244,8 +270,16 @@ struct RootView: View {
             (try? modelContext.fetchCount(FetchDescriptor<SavedMix>())) ?? 0
         }
 
+        func customDeckCount() -> Int {
+            (try? modelContext.fetchCount(FetchDescriptor<CustomDeck>())) ?? 0
+        }
+
+        // `-Premium` UserDefaults'a yazıyor; kilitli hâli görmek için açık bir
+        // kapatma bayrağı gerekiyor, yoksa sonraki açılışlar premium kalıyor.
         if arguments.contains("-Premium") {
             SubscriptionStore.shared.debugPremiumOverride = true
+        } else if arguments.contains("-Free") {
+            SubscriptionStore.shared.debugPremiumOverride = false
         }
         if let raw = value(after: "-Mode"), let mode = GameMode(rawValue: raw) {
             setup.mode = mode
@@ -278,7 +312,30 @@ struct RootView: View {
             modelContext.insert(SavedMix(name: "Cuma Gecesi", deckIDs: Self.debugMixDecks))
         }
 
-        if arguments.contains("-MixSetup") {
+        if arguments.contains("-CustomDeck"), customDeckCount() == 0 {
+            let count = value(after: "-CustomDeck").flatMap(Int.init) ?? 6
+            modelContext.insert(
+                CustomDeck(
+                    name: "Ofis Muhabbeti",
+                    languageCode: LocalizationManager.shared.localeCode,
+                    words: Array(Self.debugWords.prefix(count))
+                )
+            )
+        }
+        if arguments.contains("-Basket") {
+            let count = value(after: "-Basket").flatMap(Int.init) ?? 7
+            setup.basketWords = Array(Self.debugWords.prefix(count))
+        }
+
+        if arguments.contains("-CustomList") {
+            router.push(.customList)
+        } else if arguments.contains("-CustomEditor") {
+            let deck = (try? modelContext.fetch(FetchDescriptor<CustomDeck>()))?.first
+            router.push(.customEditor(deck?.uuid.uuidString))
+        } else if arguments.contains("-WordBasket") {
+            setup.mode = .ownWords
+            router.push(.wordBasket)
+        } else if arguments.contains("-MixSetup") {
             router.push(.mix)
         } else if arguments.contains("-TeamSetup") {
             router.push(.teamSetup)
@@ -309,11 +366,11 @@ struct RootView: View {
         case .mix:
             MixSetupView { router.setupStep = .preset }
         case .customList:
-            PlaceholderScreen(titleKey: "featured.customDeck", packageNote: "P8")
+            CustomDeckListView()
         case .customEditor(let id):
-            PlaceholderScreen(titleKey: "customDeck.editor.title", packageNote: "P8", detail: id)
+            CustomDeckEditorView(deckID: id.flatMap(UUID.init(uuidString:)))
         case .wordBasket:
-            PlaceholderScreen(titleKey: "featured.wordBasket", packageNote: "P8")
+            WordBasketView { router.setupStep = .preset }
         case .teamSetup:
             TeamSetupView { router.setupStep = .preset }
         case .archive:

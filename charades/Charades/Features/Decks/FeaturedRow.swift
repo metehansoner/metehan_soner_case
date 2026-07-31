@@ -6,6 +6,10 @@ import SwiftUI
 /// seçmiyor, dolayısıyla "deste seç → mod seç" hattından hiç erişilemez.
 /// `MIX` de aynı sebeple burada.
 struct FeaturedRow: View {
+    /// §02 §24: ücretsiz kullanıcı Kelime Sepeti'ni **hiç görmüyor** — 20 kelime
+    /// yazdırıp sonunda paywall göstermek yem-değiştir olurdu. Mix'te durum
+    /// farklı: kurulum serbest, duvar oynarken çıkıyor.
+    var isWordBasketLocked: Bool
     var onMix: () -> Void
     var onWordBasket: () -> Void
     var onCustomDecks: () -> Void
@@ -23,6 +27,7 @@ struct FeaturedRow: View {
                 FeaturedCard(
                     title: l10n.t("featured.wordBasket"),
                     style: .wordBasket,
+                    isLocked: isWordBasketLocked,
                     action: onWordBasket
                 )
                 FeaturedCard(
@@ -45,6 +50,7 @@ private struct FeaturedCard: View {
 
     let title: String
     let style: Style
+    var isLocked = false
     let action: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -53,6 +59,15 @@ private struct FeaturedCard: View {
         Button(action: action) {
             VStack(spacing: 5) {
                 icon
+                    .overlay(alignment: .topTrailing) {
+                        if isLocked {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(AppColors.accentBrass)
+                                .offset(x: 13, y: -3)
+                        }
+                    }
+
                 Text(title)
                     .font(AppFont.display(11, weight: .semibold))
                     .tracking(1.7)
@@ -60,6 +75,7 @@ private struct FeaturedCard: View {
                     .foregroundStyle(AppColors.textCream)
                     .lineLimit(1)
             }
+            .opacity(isLocked ? 0.68 : 1)
             .frame(width: 118, height: 74)
             .background {
                 RoundedRectangle(cornerRadius: 11)

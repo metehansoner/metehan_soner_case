@@ -12,7 +12,12 @@ final class GameSetup {
 
     /// Seçim sırası korunuyor: PlayBar özeti ve Mix önizlemesi kullanıcının
     /// seçtiği sırayı gösteriyor, alfabetik değil.
-    private(set) var selectedDeckIDs: [String] = []
+    private(set) var selectedDeckIDs: [String] = [] {
+        // Katalog ve custom deste iki ayrı kaynak; biri seçilince diğeri düşüyor.
+        // Aksi hâlde `startGame` iki kaynağı da geçerli bulup custom desteyi
+        // sessizce katalog seçiminin önüne geçiriyordu.
+        didSet { if !selectedDeckIDs.isEmpty { customDeckID = nil } }
+    }
 
     var mode: GameMode = .classic {
         // Süre moda bağlı (§04 §1): Canlandır 90, Hız Turu 30. Mod değişince
@@ -25,6 +30,17 @@ final class GameSetup {
     /// `nil` ise varsayılan geçerli: moda ait süre ya da ayarlardaki tercih.
     var duration: Int?
     var difficulty: CardDifficultyFilter?
+
+    /// §02 §24: Kelime Sepeti'nin kelimeleri `LiveGame`in değil kurulumun
+    /// parçası. Kullanıcı sepetten geri çıkıp dönünce 12 kelimesi duruyor, tur
+    /// çökse bile kayıp yok. Sepet kaydedilmezse `GameSetup` ile birlikte gidiyor.
+    var basketWords: [String] = AppSettingsStore.shared.basketDraft {
+        didSet { AppSettingsStore.shared.storeBasketDraft(basketWords) }
+    }
+
+    /// Seçili custom deste. `selectedDeckIDs` katalog kimliği taşıyor, custom
+    /// deste orada duramaz — ayrı kanal.
+    var customDeckID: UUID?
 
     /// Takım Kurulumu (ekran 11). Yalnızca `teams` modunda kullanılıyor ama
     /// burada duruyor: maç sonundaki `TEKRAR OYNA` kurulum ekranına dönüyor
@@ -114,5 +130,30 @@ final class GameSetup {
 
     func clearSelection() {
         selectedDeckIDs.removeAll()
+        customDeckID = nil
+    }
+
+    /// Custom deste seçimi katalog seçimini düşürüyor: PlayBar'ın "2 deste = Mix"
+    /// kuralı custom desteyi saymamalı.
+    func select(custom deckID: UUID) {
+        selectedDeckIDs.removeAll()
+        customDeckID = deckID
+    }
+
+    /// §02 §24: sepet 5 kelimeye ulaşınca oynanabilir.
+    var isBasketPlayable: Bool {
+        basketWords.count >= CustomDeckLimits.minWordsToPlay
+    }
+
+    func basketCards(language: String) -> [Card] {
+        basketWords.enumerated().map {
+            Card.custom(key: "basket.\($0)", text: $1, language: language)
+        }
+    }
+
+    /// Sepet kaydedildikten ya da kullanıcı boşalttıktan sonra temizleniyor.
+    func clearBasket() {
+        basketWords.removeAll()
+        AppSettingsStore.shared.clearBasketDraft()
     }
 }
