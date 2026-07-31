@@ -456,7 +456,7 @@ ok yönü ve `DOĞRU`/`PAS` damga şekli de farklı (§7).
 |---|---|---|---|
 | 1 | Alnında telefon tutan figür, karşısında 3 kişi | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_forehead.png` |
 | 2 | Mim yapan figür + üstü çizili konuşma balonu | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_mime.png` |
-| 3 | App ikonu | 1024×1024 opak | 3 aday üretildi, seçim bekliyor |
+| 3 | App ikonu | 1024×1024 opak | **Üretildi** — `ekran-gorselleri/app-ikonu/ikon-1024.png` (aday H) |
 | 4 | App Store ekran görüntüleri | Cihaz başına set | Bekliyor; §`03` ASO ile birlikte |
 
 İlk ikisi deste kapağı hattının chroma-key matematiğini aynen kullanıyor
@@ -487,19 +487,48 @@ Kapaklarda karşılaşmadığımız iki hata bu iki görselde çıktı ve kural 
 
 ### 6.4 App ikonu
 
-Üç aday `ekran-gorselleri/app-ikonu/` altında, karşılaştırma sayfası
-`ekran-gorselleri/_qc/app-ikonu.jpg`. Adaylar 300/120/60 px olarak yan yana
+Adaylar `ekran-gorselleri/app-ikonu/` altında, karşılaştırma sayfası
+`ekran-gorselleri/_qc/app-ikonu.jpg`. Adaylar 260/120/60 px olarak yan yana
 basılıyor, çünkü ikonun asıl sınavı 60 px.
 
 | Aday | Fikir | 60 px'te |
 |---|---|---|
-| A | Ampullü marquee tabelası | Okunuyor — silüeti belirgin, parlak amber çember dikkat çekiyor |
-| B | Alnında telefon tutan profil + ampul yayı | Kafa okunuyor, telefon ince bir banda dönüşüp saç bandı gibi duruyor; ampul yayı dağılıyor |
-| C | Ampullü madalyon içinde aynı profil | Çember baskın, kafa lekeye dönüyor, telefon yok oluyor |
+| A | Ampullü marquee tabelası | Okunuyor, silüeti belirgin; ama oyunun ne olduğunu anlatmıyor |
+| B | Alnında telefon tutan profil + ampul yayı | Telefon ince banda dönüşüp saç bandı gibi duruyor, ampul yayı dağılıyor |
+| D | Alında ampullü kart, altında gözler, kartta kalın yıldız | Yıldız lekeye dönüyor |
+| E | Aynı kompozisyon, kartta üç eşit boş satır | Üç satır ayrı ayrı ayakta kalıyor, gözler net |
+| E2 | Aynısı, satırlar kademeli uzunlukta | En iyisi — kademeli satır "gizli yazı" okunuyor, eşit satırın hamburger menü riski yok |
+| F | Ters şema: krem kart, amber çerçeve, bordo satırlar | Bordo satırlar tek koyu lekeye birleşiyor; ayrıca kart kremi yüz kremiyle aynı, kart–yüz sınırı kayboluyor |
+| G | Kartı iki el tutuyor, kart hafif eğik | 260 px'te anlatımı en net aday, ama eller 60 px'te gürültüye dönüşüp kartı küçültüyor |
+| H | Kart film şeridi: üstte ve altta sprocket delik sırası | E2'ye en yakın rakip; delikler kesikli bant olarak hayatta kalıyor, ama şerit jenerik "video kartı" gibi de okunabiliyor |
 
-App ikonu için katı kurallar: **alfa kanalı ve şeffaflık yasak**, köşeler yuvarlanmamış
-tam kare verilir (iOS kendi maskeler), ikonun içine metin konmaz — 25 dilde tek
-ikon kullanıyoruz.
+Tur 2 karşılaştırması `ekran-gorselleri/_qc/app-ikonu-tur2.jpg`. Finalistler
+**E2** ve **H** oldu; ayrım fikirde: E2'nin ampul çerçevesi arayüzün marquee
+diline, H'nin şeridi film motifine bağlanıyor.
+
+**Karar: H — film şeridi kart.** Teslim dosyası
+`ekran-gorselleri/app-ikonu/ikon-1024.png` (RGB, 1024×1024, alfa yok).
+Sprocket delikleri 60 px'te kesikli bant olarak ayakta kalıyor ve şerit, ampul
+çerçevesinden daha az piksel harcayıp kart yüzeyini büyük bırakıyor — üç boş
+satır bu yüzden daha net okunuyor.
+
+**Kompozisyon kararı, alında kart + altında gözler.** Referans olarak bakılan
+uygulamanın ikonu da bu yapıyı kullanıyor ve küçük boyutta çalışmasının nedeni
+belli: alındaki kart tek büyük düz şekil, gözler iki yüksek kontrastlı leke —
+ikisi de 60 px'te hayatta kalıyor. Bizde tek fark, kartın üzerine **yazı
+konmaması**: referans ikonda uygulama adı karta gömülü, biz 25 dil için tek ikon
+kullandığımızdan onun yerine sprocket şeridi ve boş satır çubukları var. Üç
+kademeli boş çubuk "kartta bir kelime var ama sen göremiyorsun" fikrini tek harf
+kullanmadan anlatıyor.
+
+Yüz burada da silüet kuralına tabi: **krem düz dolgu, ten tonu yok**, sadece
+gözler ve kaşlar bordo. Gözlerin turkuaz irisi paletin içinden geliyor.
+
+App ikonu için katı kurallar: **alfa kanalı ve şeffaflık yasak**, köşeler
+yuvarlanmamış tam kare verilir (iOS kendi maskeler) ve kartın kenarları köşelere
+dayanmaz — squircle maskesi köşeye taşan detayı kırpıyor. İkonun içine metin
+konmaz. Teslim dosyası bu ölçütlerden geçti: RGB, palet dışı %0.69 (yalnızca
+anti-alias kenarları), pembe/mor kalıntı yok, dört köşe opak.
 
 ---
 

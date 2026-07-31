@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		56E91BA4301CF9A5004A35B9 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA3301CF9A5004A35B9 /* ReceiptParser */; };
+		56E91BA6301CF9A5004A35B9 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA5301CF9A5004A35B9 /* RevenueCat */; };
+		56E91BA8301CF9A5004A35B9 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA7301CF9A5004A35B9 /* RevenueCatUI */; };
+		56E91BAA301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA9301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		56E91B92301CF96F004A35B9 /* charades.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = charades.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +30,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				56E91BA6301CF9A5004A35B9 /* RevenueCat in Frameworks */,
+				56E91BA4301CF9A5004A35B9 /* ReceiptParser in Frameworks */,
+				56E91BA8301CF9A5004A35B9 /* RevenueCatUI in Frameworks */,
+				56E91BAA301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +76,10 @@
 			);
 			name = charades;
 			packageProductDependencies = (
+				56E91BA3301CF9A5004A35B9 /* ReceiptParser */,
+				56E91BA5301CF9A5004A35B9 /* RevenueCat */,
+				56E91BA7301CF9A5004A35B9 /* RevenueCatUI */,
+				56E91BA9301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation */,
 			);
 			productName = charades;
 			productReference = 56E91B92301CF96F004A35B9 /* charades.app */;
@@ -94,6 +109,9 @@
 			);
 			mainGroup = 56E91B89301CF96F004A35B9;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56E91B93301CF96F004A35B9 /* Products */;
 			projectDirPath = "";
@@ -351,6 +369,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.83.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		56E91BA3301CF9A5004A35B9 /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = ReceiptParser;
+		};
+		56E91BA5301CF9A5004A35B9 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		56E91BA7301CF9A5004A35B9 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+		56E91BA9301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat_CustomEntitlementComputation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 56E91B8A301CF96F004A35B9 /* Project object */;
 }

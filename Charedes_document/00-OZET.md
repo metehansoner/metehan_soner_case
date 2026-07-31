@@ -108,6 +108,8 @@ Taslaklar üzerine notlar:
 | Deste çeşitliliği | 6 eksende dengelenmiş (kitle, oynanabilirlik, bilgi, dönem, kültür, sezon) + `playability` alanı (`mime`/`describe`/`both`) |
 | IP politikası | Deste adlarında ve kapaklarda **marka/telifli karakter yok** — jenerik adlandırma |
 | Deste kapakları | **92/92 üretildi.** Şeffaf amblem (1024×1024 RGBA), görselde yazı yok → 25 dilde tek görsel. Bkz. `kapaklar.html` |
+| Ekran görselleri | Onboarding illüstrasyonları **2/2 üretildi**; kalan tüm ikonlar SF Symbols ya da kodla çiziliyor. Bkz. `01` §6 |
+| App ikonu | **Seçildi ve üretildi** — alında film şeridi kart, altında gözler. `ekran-gorselleri/app-ikonu/ikon-1024.png` |
 | Ücretsiz erişim | **1 deste** (Parti Başlangıcı) + günlük rotasyonlu 1 bedava deste |
 | Monetizasyon | Sadece abonelik (RevenueCat), reklam **yok** |
 | Abonelik planları | **Haftalık (3 gün deneme) · Aylık · Yıllık** |
