@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-VARSAYILAN = Path(__file__).parent / "seffaf"
+VARSAYILAN = Path(__file__).parent.parent / "teslim" / "deste-kapaklari"
 
 PALET = {
     "krem":     (0xF4, 0xE7, 0xCE),
@@ -95,7 +95,7 @@ def pembe_kalinti(rgb: np.ndarray, alfa: np.ndarray) -> float:
 
 def main() -> None:
     # Aynı ölçütler onboarding illüstrasyonları için de geçerli, o yüzden
-    # klasör dışarıdan verilebiliyor: python3 kontrol.py ../ekran-gorselleri/seffaf
+    # klasör dışarıdan verilebiliyor: python3 kontrol.py ../teslim/ekran-gorselleri
     klasor = Path(sys.argv[1]) if len(sys.argv) > 1 else VARSAYILAN
     dosyalar = sorted(klasor.glob("*.png"))
     if not dosyalar:

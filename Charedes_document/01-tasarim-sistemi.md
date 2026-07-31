@@ -277,6 +277,68 @@ tutarlı olur.
 `presentationCornerRadius(28)`, üstte kadife perde gradient'i, tepede altın
 tutamak çizgisi (grabber), zemin `surfaceCardRaised`.
 
+### 4.1 Haptik dili — hangi dokunuş ne titriyor
+
+Bu tablo olmadan haptik "her yere `.impact(.medium)`" olarak kodlanıyor ve
+uygulama titreşiyor ama hiçbir şey anlatmıyor. Amaç şu: **her dokunuş kendi
+fiziksel karşılığını versin.** Amber buton mekanik bir tuş, filtre chip'i bir
+seçici, kilitli kart bir duvar — üçü aynı hissedilemez.
+
+Tek kural üstte: **kullanıcının başlatmadığı hiçbir şey titremez.** Scroll,
+otomatik kelime geçişi, toast, sheet açılışı ve ekran değişimleri haptik almaz.
+Bir kullanıcı aksiyonu da **en fazla bir** haptik üretir.
+
+| Etkileşim | Haptik | Neden bu |
+|---|---|---|
+| Birincil buton (`OYNA`, `BİLETİ AL`) | `.impact(.medium)` | Alt kenardaki 3px şeridin kaybolmasıyla eşzamanlı — tuşun oturması |
+| İkincil buton, `›` satırları | `.impact(.light)` | Aksiyon var ama ağırlığı yok |
+| Deste kartı seçme | `.impact(.rigid)` | Net klik: "kart PlayBar'a girdi" |
+| Deste kartı seçimi kaldırma | `.impact(.soft)` | Aynı hareketin yumuşak tersi; ikisi ayırt edilebilir olmalı |
+| Filtre chip'i, dil satırı | `.selection` | `UISelectionFeedbackGenerator` tam bunun için var: bir kümede gezinmek |
+| Tur süresi stepper adımı | `.selection` | Her 15 saniye bir tık |
+| Stepper sınırı (30s / 180s) | `.impact(.soft, 0.4)` | Tek küçük darbe: değer değişmedi ama dokunuş algılandı |
+| Marquee Switch açılırken | `.impact(.rigid, 0.8)` | Fiziksel anahtar sesi/hissi |
+| Marquee Switch kapanırken | `.impact(.soft, 0.6)` | Aynı anahtarın geri düşmesi |
+| **Kilitli deste / kilitli mod** | `.impact(.rigid, 0.6)` | Donuk bir çarpma. `.error` **kullanılmıyor** — kullanıcı hata yapmadı, sadece duvara dokundu |
+| **DOĞRU** | `.success` | § `04` §2 |
+| **PAS** | `.warning` | § `04` §2 |
+| Son 10 saniye, her saniye | `.impact(.light, 0.4)` | Tik sesiyle birlikte, nabız gibi |
+| Süre bitti | `.impact(.heavy)` | Tek ağır darbe |
+| Geri sayım rakamları (3, 2, 1) | `.impact(.medium)` | § `08` A1 |
+| Klaket çubuğu kapanması | `.impact(.heavy)` | § `08` A2 — "klak" |
+| Satın alma başarılı | `.success` | Bilet damgasıyla eşzamanlı |
+| Satın alma başarısız | `.error` | Burada gerçekten hata var |
+| Maç sonu / yeni rekor | `.success` | Fanfarla birlikte |
+| Kelime geçişi (450 ms) | **yok** | Turda 10–20 kelime geçiyor; her birine haptik koymak sürekli titreşim demek |
+| Scroll, sheet, navigasyon | **yok** | Sistem zaten hareketle söylüyor |
+
+Kodlamada üç teknik kural, üçü de atlanınca hissedilir:
+
+- **`prepare()` çağrılmadan ilk haptik ~100 ms gecikiyor.** Generator, anın
+  hemen öncesinde hazırlanır: butonda parmak *inince* (tetik değil), geri sayım
+  başlarken, tur başlarken. DOĞRU/PAS için `MotionService` eşiğe yaklaştığında
+  hazırlık yapılabilir.
+- **Generator'lar yeniden kullanılır**, her çağrıda `UIImpactFeedbackGenerator()`
+  oluşturulmaz — hem gecikme hem pil.
+- **DOĞRU/PAS haptiği eşiğin geçildiği anda çalar**, animasyon bittiğinde değil.
+  Aksi hâlde oyunun tek mekaniği gecikmeli hissediliyor. 400 ms cooldown
+  (§ `04` §2) haptik yığılmasını da baştan engelliyor.
+
+İki gerçeği bilmek destek yazışmasını kısaltıyor:
+
+- **iOS'un kendi "Sistem Titreşimi" anahtarı kapalıysa hiçbir haptik çalmaz** ve
+  bu anahtarı okumanın public API'si yok. Yani bizim anahtarımız `AÇIK` görünürken
+  kullanıcı hiçbir şey hissetmeyebilir. "Titreşim çalışmıyor" bildirimlerinin ilk
+  cevabı bu; ayar satırının altına açıklama koymuyoruz (yanlış yerde uzun metin),
+  destek şablonuna giriyor.
+- **Mikrofonla kayıt sırasında iOS haptiği susturur.** Replay kaydımız sessiz
+  (§ `04` §4.1), o yüzden etkilenmiyoruz — ama sonradan kayda ses eklenirse
+  oyunun DOĞRU/PAS haptiği kaybolur. Bu, ses ekleme kararının gizli maliyeti.
+
+Core Haptics (`CHHapticEngine`) v1'de **kullanılmıyor**; `UIFeedbackGenerator`
+yukarıdaki tablonun tamamını karşılıyor. v1.1'de film şeridi geçişine özel bir
+"tırtıklı makara" deseni düşünülebilir, tek gerçek gerekçesi olacak yer orası.
+
 ---
 
 ## 5. Deste görselleri için üretim reçetesi
@@ -391,12 +453,52 @@ buna, sonra `kapaklar.html`e bakılıyor.
 v1'in **92 kapağının tamamı üretildi.** Bölüm bölüm ilerlendi, her bölümün
 sonunda kontak sayfasıyla gözle bakıldı. Çıktılar:
 
-| Klasör | İçerik |
-|---|---|
-| `deste-gorselleri/ham/` | Magenta zeminli üretim çıktıları (RGB, arşiv) |
-| `deste-gorselleri/seffaf/` | Kesilmiş kapaklar (1024×1024 RGBA, uygulamaya girecek) |
-| `deste-gorselleri/_qc/` | Bölüm kontak sayfaları |
-| `kapaklar.html` | Bölüm bölüm gözden geçirme sayfası |
+**Uygulamaya girecek dosyalar `teslim/` altında toplu**, üretim artıkları kendi
+klasörlerinde kalıyor. Ayrımın sebebi pratik: Xcode'a eklenecek varlıkları
+seçerken 92 kesilmiş kapağın yanında 92 magenta ham dosya, kontak sayfaları ve
+elenmiş ikon adayları durmuyor. `teslim/` içeriği asset catalog'a olduğu gibi
+kopyalanabilir.
+
+| Klasör | İçerik | Uygulamaya girer |
+|---|---|---|
+| `teslim/deste-kapaklari/` | 92 kesilmiş kapak (1024×1024 RGBA) | ✓ |
+| `teslim/ekran-gorselleri/` | 2 onboarding illüstrasyonu (4:3 RGBA) | ✓ |
+| `teslim/app-ikonu/` | `ikon-1024.png` (RGB, alfasız) | ✓ |
+| `deste-gorselleri/ham/` | Magenta zeminli üretim çıktıları (RGB, arşiv) | ✗ |
+| `deste-gorselleri/_qc/`, `ekran-gorselleri/_qc/` | Kontak ve karşılaştırma sayfaları | ✗ |
+| `ekran-gorselleri/app-ikonu/` | Elenen 7 ikon adayı | ✗ |
+| `deste-gorselleri/{varyantlar,seffaf-test}/` | Stil arayışı denemeleri | ✗ |
+| `kapaklar.html` | Bölüm bölüm gözden geçirme sayfası | ✗ |
+
+Üç script de çıktısını `teslim/` altına yazıyor (`pipeline.py`, `kes.py`);
+`kontrol.py` ve `kontak.py` oradan okuyor.
+
+### 5.7 Dosya boyutu — hedef aşıldı, çözüm hazır
+
+Ham çıktı **92 kapak = 64 MB**, kapak başına ortalama 681 KB. § `05` §8'in
+hedefi 17 MB'dı ve § `07` §6'nın IPA hedefi 60 MB — yani kapaklar tek başına
+tüm bütçeyi yiyor.
+
+Sebep şaşırtıcı: görseller düz vektör gibi *görünüyor* ama tek bir kapakta
+**110.000 farklı RGBA değeri** var. Üretici düz alanlara gözle görünmeyen hafif
+gradyan ve gürültü koyuyor, PNG de bunu sıkıştıramıyor.
+
+Ölçülen seçenekler (12 kapak örneğinden 92'ye ölçeklendi):
+
+| Seçenek | Toplam | Not |
+|---|---|---|
+| 1024 RGBA (bugünkü) | 64 MB | Master, arşivde kalır |
+| 512 RGBA | 21 MB | Hâlâ fazla |
+| 1024 + 64 renk | 7 MB | Çözünürlük kaybı yok |
+| **512 + 64 renk** | **2.6 MB** | Önerilen |
+
+Renk sayısını 64'e indirmek gözle fark edilmiyor — ortalama piksel hatası 1.7/255
+ve karşılaştırma `deste-gorselleri/_qc/boyut-karsilastirma.jpg`. 512 yeterli
+çünkü kart ızgarada ~180pt genişliğinde, amblem kartın %80'i: @3x'te bile 430 px
+görünüyor, 1024 iki kat fazla.
+
+Karar: **master 1024 arşivde kalır, uygulamaya 512 + 64 renk girer.** Dönüşüm
+teslim anında tek geçişte yapılır, ham dosyalar bozulmaz.
 
 Palet ve pembe kalıntı ölçütlerinden **hiçbir kapak hata almıyor.** 18 kapak iç
 boşluk uyarısı veriyor; hepsi maske göz deliği, çaydanlık kulpu, fener askısı
@@ -422,17 +524,10 @@ maliyet değil davranış: Dynamic Type ile ölçekleniyor, RTL dillerde yön
 gerektiren semboller otomatik aynalanıyor, VoiceOver etiketleri hazır geliyor.
 Elle çizilmiş ikon kümesi bu üçünü 25 dilde tek tek üstlenmek demek.
 
-Paywall fayda listesindeki "pirinç ikon"lar da buradan:
-
-| Fayda satırı | Sembol |
-|---|---|
-| 92 temalı deste, 13 bölüm | `rectangle.stack.fill` |
-| 12.000+ kart | `square.grid.3x3.fill` |
-| 3 özel deste oluştur | `square.and.pencil` |
-| Desteleri karıştır (Mix) | `shuffle` |
-| Takım Savaşı ve Hız Turu | `flag.2.crossed.fill` |
-| Reklamsız, sınırsız oyun | `infinity` |
-| Aile Paylaşımı dahil | `person.2.fill` |
+Paywall'ın sekiz satırlık fayda listesi ve onun pirinç ikonları **kaldırıldı**
+(§ `03` §2): ekranın üst yarısını akan afiş duvarı devraldı, değer önerisi iki
+satır özete indi. Dolayısıyla o ikon kümesine artık ihtiyaç yok — üretilecek
+listeyi de, 25 dilde taşma kontrolünü de küçültüyor.
 
 ### 6.2 Kodla çizilenler — üretim yok
 
@@ -441,22 +536,26 @@ Bunlar statik görsel olarak üretilmemeli, çünkü ya **canlı veriye** ya da
 
 | Yer | Neden kod |
 |---|---|
-| Onboarding 1 — app ikonu + marquee çerçeve | Ampuller animasyonlu; çerçeve zaten komponent |
-| Onboarding 2 / Nasıl Oynanır 1 — yelpaze afişler | **Gerçek deste kapaklarından** diziliyor. Statik çizim, kapak seti değişince yalan söyler |
-| Onboarding 5 / Nasıl Oynanır 4 — eğme diyagramı | Telefonun eğilmesi **animasyonla** öğretiliyor; ayrıca kullanıcı dokunmatik moda geçtiyse bu sayfa gizleniyor ya da dokunma anlatımına dönüyor (§`09`). Statik görsel iki durumu karşılayamaz |
+| **Onboarding 1** / Nasıl Oynanır 1 — yelpaze afişler | **Gerçek deste kapaklarından** diziliyor. Statik çizim, kapak seti değişince yalan söyler |
+| **Onboarding 3** / Nasıl Oynanır 4 — eğme diyagramı | Telefonun eğilmesi **animasyonla** öğretiliyor; ayrıca kullanıcı dokunmatik moda geçtiyse bu sayfa gizleniyor ya da dokunma anlatımına dönüyor (§`09`). Statik görsel iki durumu karşılayamaz |
 | Paywall görsel şeridi | Aynı kapak kolajı; modal varyantta **o destenin** kartı büyük gösteriliyor |
 | Film şeridi ilerleme göstergesi, sprocket şerit, kupon tırtığı | Sayfa sayısına göre uzuyor, komponent |
 
 Eğme diyagramında yeşil/kırmızı bölge tek ayırt edici olamaz — renk körlüğü için
 ok yönü ve `DOĞRU`/`PAS` damga şekli de farklı (§7).
 
+Onboarding 3 adıma indiğinde (§ `03` §1) app ikonu + marquee çerçeve kalemi bu
+listeden **düştü**: eski adım 1'in görseliydi, o adım yelpaze afişlerle
+birleştirildi. Kullanıcı uygulamaya ikona dokunarak giriyor, ilk ekranda ikonu
+tekrar göstermenin bilgi değeri yok.
+
 ### 6.3 Üretilecekler — 4 kalem
 
 | # | Varlık | Ölçü | Durum |
 |---|---|---|---|
-| 1 | Alnında telefon tutan figür, karşısında 3 kişi | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_forehead.png` |
-| 2 | Mim yapan figür + üstü çizili konuşma balonu | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_mime.png` |
-| 3 | App ikonu | 1024×1024 opak | **Üretildi** — `ekran-gorselleri/app-ikonu/ikon-1024.png` (aday H) |
+| 1 | Alnında telefon tutan figür, karşısında 3 kişi | 4:3, şeffaf | **Üretildi** — `teslim/ekran-gorselleri/ob_forehead.png`. Onboarding 2 + Nasıl Oynanır 2 |
+| 2 | Mim yapan figür + üstü çizili konuşma balonu | 4:3, şeffaf | **Üretildi** — `teslim/ekran-gorselleri/ob_mime.png`. Yalnızca Nasıl Oynanır 3 |
+| 3 | App ikonu | 1024×1024 opak | **Üretildi** — `teslim/app-ikonu/ikon-1024.png` (aday H) |
 | 4 | App Store ekran görüntüleri | Cihaz başına set | Bekliyor; §`03` ASO ile birlikte |
 
 İlk ikisi deste kapağı hattının chroma-key matematiğini aynen kullanıyor
@@ -507,7 +606,7 @@ Tur 2 karşılaştırması `ekran-gorselleri/_qc/app-ikonu-tur2.jpg`. Finalistle
 diline, H'nin şeridi film motifine bağlanıyor.
 
 **Karar: H — film şeridi kart.** Teslim dosyası
-`ekran-gorselleri/app-ikonu/ikon-1024.png` (RGB, 1024×1024, alfa yok).
+`teslim/app-ikonu/ikon-1024.png` (RGB, 1024×1024, alfa yok).
 Sprocket delikleri 60 px'te kesikli bant olarak ayakta kalıyor ve şerit, ampul
 çerçevesinden daha az piksel harcayıp kart yüzeyini büyük bırakıyor — üç boş
 satır bu yüzden daha net okunuyor.

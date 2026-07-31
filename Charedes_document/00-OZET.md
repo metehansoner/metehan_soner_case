@@ -17,16 +17,19 @@ kararların netleştirildiği çalışma dökümanıdır. Amaç: kodlamaya geçt
 | `00-OZET.md` | Bu dosya: ürün özeti, karar tablosu, açık sorular |
 | `01-tasarim-sistemi.md` | Renk paleti, fontlar, doku/efektler, buton ve kart anatomisi |
 | `02-ekran-akisi.md` | Tüm ekranlar, navigasyon kabuğu, akış diyagramı |
-| `03-onboarding-paywall.md` | 5 adım onboarding, paywall varyantları, gating stratejisi |
+| `03-onboarding-paywall.md` | 3 adım onboarding, paywall varyantları, gating stratejisi |
 | `04-oyun-modlari.md` | Oyun modları, tilt mekaniği, tur akışı, skor sistemi |
 | `05-desteler-ve-kategoriler.md` | Çeşitlilik ilkesi, 124 destelik katalog, IP politikası, Mix, Custom Deck, veri şeması |
 | `06-ayarlar-ve-lokalizasyon.md` | Ayarlar menüsü, 25 dil, çeviri altyapısı, kültürel yerelleştirme tabloları, ASO |
 | `07-teknik-mimari.md` | Klasör yapısı, bağımlılıklar, state yönetimi, analytics |
 | `08-sinematik-detaylar.md` | Sinema dili geçişleri, animasyon bütçesi, kademe A/B/C |
 | `09-kesinti-ve-sinir-durumlari.md` | **Denetim sonucu.** Yön katmanı, kesinti politikası, kelime havuzu tükenmesi, beraberlik, abonelik düşüşü, içerik bütçesi, karar bekleyen riskler |
-| `ornek-ekranlar.html` | iPhone 17 Pro'da ana ekran, ayarlar, oyun ekranı (tarayıcıda aç) |
+| `10-kodlama-plani.md` | **Kodlamaya buradan başlanıyor.** 19 iş paketi, her paketin girdi dokümanları, kabul kriteri ve sınır durumları; ilk prompt şablonu |
+| `ornek-ekranlar.html` | **24 ekranın tamamı**, 27 cihazda — splash, onboarding, paywall, deste seçimi, oyun, sonuç, arşiv, ayarlar (tarayıcıda aç) |
 | `sinematik-ozellikler.html` | Sinematik geçişlerin canlı animasyon demosu (tarayıcıda aç) |
-| `film-arsivi.html` | Film Arşivi ve Replay Oynatıcı mockup'ı (tarayıcıda aç) |
+| `paywall.html` | Paywall'ın ayrıntılı çalışması: Varyant A (onboarding sonu) + Varyant B (kilitli desteye dokunuşta) |
+| `film-arsivi.html` | Film Arşivi ve Replay Oynatıcı — geniş çalışma |
+| `kapaklar.html` | 92 deste kapağının bölüm bölüm gözden geçirme sayfası |
 
 ---
 
@@ -60,7 +63,7 @@ amber ampul sırası, krem afiş kağıdı, film grain'i, pirinç detaylar.
 | Aldığımız | Neden |
 |---|---|
 | Onboarding'in ana ekran üzerinde **bottom sheet** olarak açılması | Kullanıcı arkada içeriği (desteleri) görür, "burada ne var" merakı oluşur |
-| Onboarding sonunda **social proof ekranı** (puan + yorumlar) | Paywall'dan hemen önce güven inşa eder, dönüşümü ölçülebilir şekilde artırır |
+| Onboarding **3 adım**, sosyal kanıt ekranı v1'de yok | Eski 5 adımın 4'ü Nasıl Oynanır slider'ının kopyasıydı; sosyal kanıt için gerçek puan yok. Gerekçe § `03` §1 |
 | Deste filtre chip'leri (Tümü / Popüler / Parti …) | 92 deste chip'siz yönetilemez |
 | Tilt mekaniği (öne eğ = doğru, arkaya eğ = pas) | Kategorinin standardı, kullanıcı bunu bekliyor |
 | Ayarlarda **UserID kopyalama** | Destek taleplerini eşleştirmek için |
@@ -103,13 +106,13 @@ Taslaklar üzerine notlar:
 | Navigasyon | **Tab bar yok.** Tek kök ekran (deste ızgarası); ayarlar sağ üst dişliden sheet olarak açılır, VIP bileti sol üstte |
 | Oyun ekranı yönü | Landscape (zorunlu), diğer tüm ekranlar portrait |
 | Ana mekanik | CoreMotion tilt: öne eğ = DOĞRU, arkaya eğ = PAS |
-| Oyun modları | 5 mod: Klasik, Takım Savaşı, Canlandır, Hız Turu, Mix — **hepsi v1'de** |
+| Oyun modları | 6 mod: Klasik, Takım Savaşı, Canlandır, Hız Turu, Mix, **Kendi Kelimelerin** — hepsi v1'de |
 | Deste sayısı | **124 deste tanımlı, 92'si v1'de** / ~12.000 kart. 13 bölüm |
 | Deste çeşitliliği | 6 eksende dengelenmiş (kitle, oynanabilirlik, bilgi, dönem, kültür, sezon) + `playability` alanı (`mime`/`describe`/`both`) |
 | IP politikası | Deste adlarında ve kapaklarda **marka/telifli karakter yok** — jenerik adlandırma |
 | Deste kapakları | **92/92 üretildi.** Şeffaf amblem (1024×1024 RGBA), görselde yazı yok → 25 dilde tek görsel. Bkz. `kapaklar.html` |
 | Ekran görselleri | Onboarding illüstrasyonları **2/2 üretildi**; kalan tüm ikonlar SF Symbols ya da kodla çiziliyor. Bkz. `01` §6 |
-| App ikonu | **Seçildi ve üretildi** — alında film şeridi kart, altında gözler. `ekran-gorselleri/app-ikonu/ikon-1024.png` |
+| App ikonu | **Seçildi ve üretildi** — alında film şeridi kart, altında gözler. `teslim/app-ikonu/ikon-1024.png` |
 | Ücretsiz erişim | **1 deste** (Parti Başlangıcı) + günlük rotasyonlu 1 bedava deste |
 | Monetizasyon | Sadece abonelik (RevenueCat), reklam **yok** |
 | Abonelik planları | **Haftalık (3 gün deneme) · Aylık · Yıllık** |
@@ -119,18 +122,23 @@ Taslaklar üzerine notlar:
 | Dil | 25 dil, uygulama içi dil seçimi, restart gerektirmez |
 | Tipografi | **Oswald** (display) · **Playfair Display** (afiş) · **Rubik** (UI). `ar` → Rubik Bold, `el` → **Fira Sans Condensed / EB Garamond / Fira Sans** (üçünde de Yunan glifi yok). § `01` §2 |
 | Yerelleştirme yaklaşımı | **Çeviri değil transcreation:** mod ve deste isimleri her kültürün kendi adıyla (`actOut` → tr "Sessiz Sinema", ru "Крокодил", pl "Kalambury", nl "Hints") |
-| Onboarding | 5 adım bottom sheet + ardından paywall |
-| Ayarlar | 4 grup / 13 satır |
+| Onboarding | **3 adım** bottom sheet + ardından paywall. Sosyal kanıt ekranı v1'de yok, detaylı anlatım Nasıl Oynanır slider'ında |
+| Ayarlar | 5 grup / 15 satır — dil, tur süresi, cevap yöntemi, zorluk, titreşim, ses, film efektleri, replay, arşiv, **bildirimler**, abonelik, destek |
+| Haptik | Etkileşim başına ayrı stil (§ `01` §4.1); tek `Titreşim` anahtarıyla kapanır |
+| Bildirimler | **Ayarlarda anahtar var.** İkisi de yerel bildirim (günlük bedava deste 18:00 + deneme bitişi), push altyapısı yok |
 | Replay arşivi | **Film Arşivi** ekranı — kalıcı depolama, 20 kayıt / 500 MB kotası, altyazılı ve ağır çekimli oynatıcı. § `04` §4.2–4.4 |
 | Custom deste | Ücretsiz 1 taslak (oynanamaz), Premium 3 aktif deste |
+| Kendi kelimeleri | **Kelime Sepeti** ekranı: mod seçilir, kelimeler yazılır, hemen oynanır; kaydetmek tur sonunda opsiyonel. § `02` ekran 24 |
+| Üretilen görseller | Uygulamaya girecek her şey `teslim/` altında; ham dosyalar ve elenen adaylar ayrı. § `01` §5.6 |
 
 ## 6. Onaylanan kararlar
 
 | Konu | Karar | Etkisi |
 |---|---|---|
 | Retro yön | **Modern retro** | Palet ve doku retro, tipografi temiz. Grain %5, scanline varsayılan kapalı. Detay § `01` |
-| Abonelik | **Haftalık (3 gün deneme) + Aylık + Yıllık** | Paywall'da 3 bilet kuponu, haftalık varsayılan seçili. Detay § `03` |
-| v1 kapsamı | **Tam kapsam:** Takım Savaşı, Mix, Custom deste, Replay kaydı + Film Arşivi, Canlandır modu | Geliştirme ~56.5 + sinematik 6 + sınır durumları 11 = **~73.5 gün**. İçerik üretimi ayrı ~33 gün (§ `09` §6). Detay § `07` §8, § `08` §6, § `09` §12 |
+| Abonelik | **Haftalık (3 gün deneme) + Aylık + Yıllık** | Paywall'da 3 bilet koçanı, haftalık varsayılan seçili. Aylık kartın kalıp kalmayacağı açık soru. Detay § `03` |
+| Paywall düzeni | **Üstte akan afiş duvarı, altta ödeme.** Fayda listesi yok | Referans uygulamanın düzeni, retro palette çevrildi. Mockup `paywall.html`, gerekçe § `03` §2 |
+| v1 kapsamı | **Tam kapsam:** Takım Savaşı, Mix, Custom deste, Replay kaydı + Film Arşivi, Canlandır modu | Geliştirme ~57 + sinematik 6 + sınır durumları 11 = **~74 gün**. İçerik üretimi ayrı ~33 gün (§ `09` §6). Detay § `07` §8, § `08` §6, § `09` §12 |
 | Gating | **1 ücretsiz deste** | Agresif model; risk azaltma için günlük rotasyonlu bedava deste eklendi. Detay § `03` §3 |
 | Ses | **12 parçalık retro ses paketi** | v1'de. Liste § `04` §5 |
 

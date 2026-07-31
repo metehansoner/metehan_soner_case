@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 KOK = Path(__file__).parent
-SEFFAF = KOK / "seffaf"
+SEFFAF = KOK.parent / "teslim" / "deste-kapaklari"
 QC = KOK / "_qc"
 
 KART_ZEMIN = (71, 26, 34)

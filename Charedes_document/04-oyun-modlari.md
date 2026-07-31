@@ -2,7 +2,7 @@
 
 ## 1. Mod listesi
 
-5 mod. Her modun tek bir "neden bu var" cümlesi olmalı; olmayan mod eklenmiyor.
+6 mod. Her modun tek bir "neden bu var" cümlesi olmalı; olmayan mod eklenmiyor.
 
 | Mod | id | Kim tutuyor | Süre | Skor | Ücretsiz |
 |---|---|---|---|---|---|
@@ -11,6 +11,7 @@
 | **Canlandır** | `actOut` | Canlandıran (ekranı sadece o görür) | 90s | Doğru sayısı | Premium |
 | **Hız Turu** | `rapid` | Tahmin eden | 30s, kelime başına 5s limit | Doğru sayısı × 2 | Premium |
 | **Mix** | `mix` | Klasik ile aynı | 60s | Doğru sayısı | Premium |
+| **Kendi Kelimelerin** | `ownWords` | Klasik ile aynı | 60s | Doğru sayısı | Premium |
 
 ### Klasik (`classic`)
 Referans mekanik. Telefon alında, arkadaşlar canlandırır, tilt ile cevaplanır.
@@ -47,15 +48,60 @@ Neden var: kısa oturum ihtiyacı + tekrar oynama motivasyonu (rekor kırma).
 Ayrı bir mod olarak duruyor çünkü kurulum ekranı farklı: 2+ deste seçilir,
 karışım oranı gösterilir. Oynanış Klasik ile birebir aynı. Detay § `05`.
 
+### Kendi Kelimelerin (`ownWords`)
+Deste seçilmiyor: mod seçildiği anda **Kelime Sepeti** ekranı açılıyor, kullanıcı
+kelimelerini yazıyor, 5 kelimeye ulaşınca `OYNA` aktif oluyor. Tur sonunda
+"bu sepeti kaydet?" sorulur; kaydedilirse custom desteye dönüşür, kaydedilmezse
+kaybolur. Ekran detayı § `02` ekran 24, kalıcılık § `05` §7.
+
+Neden ayrı bir mod, neden mevcut custom deste yetmiyor: **custom deste editörü
+kalıcı bir varlık üretiyor** — isim, kapak, kaydetme adımı var. Masadaki
+kullanıcının istediği bu değil, "şu an aklımızdaki 10 şeyle oynayalım". Editör
+akışında oyuna varmak için isim yazıp kapak seçmek gerekiyor; sepet akışında
+üçü de yok, tek alan var: kelime. Kaydetme sona alındı ve **opsiyonel** oldu.
+
+Bu mod, hiçbir destemizin karşılamadığı iki durumu karşılıyor: masadaki insanlara
+özel şakalar (ofis içi, aile içi isimler) ve öğretmen/eğitmen kullanımı (o haftanın
+kelimeleri). İkisi de bizim katalogla üretilemez.
+
 ### Mod özellik matrisi (kodda computed property olarak)
 
-| Mod | `usesTilt` | `usesTeams` | `perWordLimit` | `screenVisibleToGuesser` | `scoreMultiplier` |
-|---|---|---|---|---|---|
-| `classic` | ✓ | ✗ | — | ✓ | 1 |
-| `teams` | ✓ | ✓ | — | ✓ | 1 |
-| `actOut` | ✓ | ✗ | — | ✗ | 1 |
-| `rapid` | ✓ | ✗ | 5s | ✓ | 2 |
-| `mix` | ✓ | ✗ | — | ✓ | 1 |
+| Mod | `usesTilt` | `usesTeams` | `perWordLimit` | `screenVisibleToGuesser` | `scoreMultiplier` | `needsDeckSelection` |
+|---|---|---|---|---|---|---|
+| `classic` | ✓ | ✗ | — | ✓ | 1 | ✓ |
+| `teams` | ✓ | ✓ | — | ✓ | 1 | ✓ |
+| `actOut` | ✓ | ✗ | — | ✗ | 1 | ✓ |
+| `rapid` | ✓ | ✗ | 5s | ✓ | 2 | ✓ |
+| `mix` | ✓ | ✗ | — | ✓ | 1 | ✓ |
+| `ownWords` | ✓ | ✗ | — | ✓ | 1 | **✗** |
+
+`needsDeckSelection` sütunu `ownWords` için eklendi: bu tek modda kelime kaynağı
+katalog değil kullanıcı. Sütun olmadan mod seçimi ekranı `ownWords`'ü de deste
+ızgarasına yönlendiriyor.
+
+İki giriş noktası var ve ikisi de gerekli: ana ekrandaki `KENDİ KELİMELERİN`
+kartı (§ `02` §4) ve Mod Seçimi'ndeki mod kartı. Mod Seçimi'nden seçilirse ve
+kullanıcı **önceden bir deste seçmişse o seçim düşer** — kaynak değişti. PlayBar
+temizlenir ve Kelime Sepeti'nin üstünde tek satır: "Bu modda kendi kelimelerin
+oynanıyor, seçtiğin deste kullanılmayacak."
+
+> **Karar bekleyen yapısal soru.** `mix` ve `ownWords` aslında **kural modu değil,
+> kaynak modu** — oyunun kurallarını değiştirmiyorlar, kelimelerin nereden
+> geldiğini değiştiriyorlar; ikisi de Klasik kurallarıyla oynanıyor. Bu yüzden
+> `mix` bugün hem mod tablosunda duruyor hem de akış diyagramında Mod Seçimi'nin
+> **öncesinde** bir kurulum ekranı olarak görünüyor (§ `02` §3, `G → J`). Yani
+> tutarsızlık `ownWords` ile gelmedi, `mix` ile zaten vardı.
+>
+> Temiz model şu olurdu: `GameMode` yalnızca 4 kural modu (`classic`, `teams`,
+> `actOut`, `rapid`), kelime kaynağı ayrı bir tip
+> (`WordSource { deck, mix, custom, basket }`). Böylece "kendi kelimelerinle
+> **Takım Savaşı**" kombinasyonu bedavaya çıkıyor — şu anki modelde imkânsız,
+> çünkü ikisi de "mod".
+>
+> Bu ayrıştırmayı yapmadım: mod adlarının 25 dilde tabloları, `mode_locked_tap`
+> analytics'i, paywall metinleri ve `howToSeen` mantığı 6 mod varsayımına bağlı.
+> Değişiklik doğru ama küçük değil. **Senin kararın:** şimdi mi ayrıştırıyoruz,
+> yoksa v1'i 6 modla çıkarıp v1.1'de mi?
 
 Yeni mod eklemek = enum'a bir case + bu matriste bir satır. Ekran kodu
 değişmiyor. Lokalizasyon anahtarları otomatik türetilir:
@@ -105,6 +151,10 @@ Uygulama kuralları:
 ---
 
 ## 2. Tilt mekaniği (en kritik teknik parça)
+
+Tek cümlelik kural: **telefonu öne (aşağı) eğ = DOĞRU, arkaya (yukarı) eğ = PAS.**
+Yön her modda aynı, dilden ve RTL'den bağımsız (§ `06` §2), `actOut` modunda da
+değişmiyor — orada sadece anlamı "tahmin edildi" / "geç" oluyor.
 
 `Imposter` projesinde CoreMotion hiç kullanılmamış, bu kısım sıfırdan yazılacak.
 Yanlış yapıldığında oyunun tamamı hatalı hissettirir, o yüzden detaylandırıyorum.
@@ -169,15 +219,20 @@ Kritik detaylar:
 | Ses | Retro tiyatro zili "ding" | Projektör "klak" |
 
 Süre 0.45s, sonra sonraki kelime yukarıdan düşer (film karesinin ilerlemesi gibi).
+Kelime geçişinin **kendi haptiği yok** — turda 10–20 kelime geçiyor. Uygulamanın
+tamamının haptik haritası § `01` §4.1'de; haptiğin eşik geçildiği anda çalması ve
+`prepare()` gerekliliği oyunun hissi açısından oradaki en kritik iki madde.
 
 ---
 
 ## 3. Tur akışı
 
 ```
-Mod seçimi → (Takım kurulumu) → Tur ön ayar → Nasıl oynanır (ilk kez)
-  → Yatay çevir → Geri sayım (3-2-1) → OYUN → Tur sonu skor
-  → (Replay) → sonraki tur veya maç sonu
+Mod seçimi → (Kelime Sepeti · sadece ownWords) → (Takım kurulumu · sadece teams)
+  → Tur ön ayar → Nasıl oynanır (ilk kez) → Yatay çevir
+  → Geri sayım (3-2-1) → OYUN → Tur sonu skor
+  → (Sepeti kaydet? · sadece ownWords) → (Replay)
+  → sonraki tur veya maç sonu
 ```
 
 ### Geri sayım
@@ -201,8 +256,9 @@ içindeki `englishKey` yaklaşımı).
 ### Süre
 - Ayarlanabilir: 30s – 180s, 15s adımlarla. Varsayılan **60s**.
 - Hız Turu'nda sabit 30s (ayar kilitli, "Hız Turu'nda süre sabittir" notu).
-- Son 10 saniye: sayaç `stateWarning`e döner, her saniye hafif haptic + tik sesi.
-- 0'da: ağır haptic, zil sesi, otomatik Tur Sonu ekranına geçiş.
+- Son 10 saniye: sayaç `stateWarning`e döner, her saniye `.impact(.light, 0.4)`
+  + tik sesi.
+- 0'da: `.impact(.heavy)`, zil sesi, otomatik Tur Sonu ekranına geçiş.
 
 ### Duraklat
 İki parmakla dokunma veya üstten aşağı sürükleme. Overlay: `DEVAM ET` /

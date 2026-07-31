@@ -11,10 +11,17 @@
 		56E91BA6301CF9A5004A35B9 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA5301CF9A5004A35B9 /* RevenueCat */; };
 		56E91BA8301CF9A5004A35B9 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA7301CF9A5004A35B9 /* RevenueCatUI */; };
 		56E91BAA301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BA9301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation */; };
+		56E91BAC301CFE98004A35B9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 56E91BAB301CFE98004A35B9 /* GoogleService-Info.plist */; };
+		56E91BAF301CFF81004A35B9 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BAE301CFF81004A35B9 /* FirebaseAI */; };
+		56E91BB1301CFF81004A35B9 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BB0301CFF81004A35B9 /* FirebaseAILogic */; };
+		56E91BB3301CFF81004A35B9 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BB2301CFF81004A35B9 /* FirebaseAnalytics */; };
+		56E91BB5301CFF81004A35B9 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BB4301CFF81004A35B9 /* FirebaseAnalyticsCore */; };
+		56E91BB7301CFF81004A35B9 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = 56E91BB6301CFF81004A35B9 /* FirebaseAnalyticsIdentitySupport */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		56E91B92301CF96F004A35B9 /* charades.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = charades.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		56E91BAB301CFE98004A35B9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -30,10 +37,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				56E91BB3301CFF81004A35B9 /* FirebaseAnalytics in Frameworks */,
+				56E91BB1301CFF81004A35B9 /* FirebaseAILogic in Frameworks */,
+				56E91BB7301CFF81004A35B9 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
+				56E91BAF301CFF81004A35B9 /* FirebaseAI in Frameworks */,
 				56E91BA6301CF9A5004A35B9 /* RevenueCat in Frameworks */,
 				56E91BA4301CF9A5004A35B9 /* ReceiptParser in Frameworks */,
 				56E91BA8301CF9A5004A35B9 /* RevenueCatUI in Frameworks */,
 				56E91BAA301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
+				56E91BB5301CFF81004A35B9 /* FirebaseAnalyticsCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +57,7 @@
 			children = (
 				56E91B94301CF96F004A35B9 /* charades */,
 				56E91B93301CF96F004A35B9 /* Products */,
+				56E91BAB301CFE98004A35B9 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,6 +93,11 @@
 				56E91BA5301CF9A5004A35B9 /* RevenueCat */,
 				56E91BA7301CF9A5004A35B9 /* RevenueCatUI */,
 				56E91BA9301CF9A5004A35B9 /* RevenueCat_CustomEntitlementComputation */,
+				56E91BAE301CFF81004A35B9 /* FirebaseAI */,
+				56E91BB0301CFF81004A35B9 /* FirebaseAILogic */,
+				56E91BB2301CFF81004A35B9 /* FirebaseAnalytics */,
+				56E91BB4301CFF81004A35B9 /* FirebaseAnalyticsCore */,
+				56E91BB6301CFF81004A35B9 /* FirebaseAnalyticsIdentitySupport */,
 			);
 			productName = charades;
 			productReference = 56E91B92301CF96F004A35B9 /* charades.app */;
@@ -111,6 +129,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56E91B93301CF96F004A35B9 /* Products */;
@@ -127,6 +146,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				56E91BAC301CFE98004A35B9 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,6 +399,14 @@
 				minimumVersion = 5.83.0;
 			};
 		};
+		56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -401,6 +429,31 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 56E91BA2301CF9A5004A35B9 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat_CustomEntitlementComputation;
+		};
+		56E91BAE301CFF81004A35B9 /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
+		};
+		56E91BB0301CFF81004A35B9 /* FirebaseAILogic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAILogic;
+		};
+		56E91BB2301CFF81004A35B9 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		56E91BB4301CFF81004A35B9 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		56E91BB6301CFF81004A35B9 /* FirebaseAnalyticsIdentitySupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E91BAD301CFF81004A35B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsIdentitySupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

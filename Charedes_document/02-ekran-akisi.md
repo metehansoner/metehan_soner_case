@@ -47,14 +47,16 @@ navigasyon öğesi değil, bağlama göre çalışan bir aksiyon alanı.
 
 ## 2. Ekran envanteri
 
-Toplam **23 ekran** + 3 her yerden çıkabilen overlay. Kodlama sırasında bu liste doğrudan iş kalemi listesi
-olarak kullanılabilir.
+Toplam **24 ekran** + 3 her yerden çıkabilen overlay. Kodlama sırasında bu liste doğrudan iş kalemi listesi
+olarak kullanılabilir. Numaralar kimlik, sıra değil — sonradan eklenen ekran
+listenin ortasına girse bile numarası sonuncu oluyor, çünkü numaralar dosyalar
+arasında referans olarak kullanılıyor ve kaydırmak eski metinleri yalancı yapar.
 
 ### Giriş katmanı
 | # | Ekran | Tip | Not |
 |---|---|---|---|
-| 1 | Launch / Splash | Full | Perde açılma animasyonu (1.2s), marquee logo yanar |
-| 2 | Onboarding 1–5 | Bottom sheet | Ana ekran arkada görünür, § `03` |
+| 1 | Launch / Splash | Full | Perde açılır (1.2s), ortada **çerçeveli app ikonu**, ampuller yanar. § `02` §4 |
+| 2 | Onboarding 1–3 | Bottom sheet | Ana ekran arkada görünür, § `03` |
 | 3 | Paywall (onboarding sonu) | Full | Skip linki var, § `03` |
 
 ### Ana akış
@@ -66,8 +68,9 @@ olarak kullanılabilir.
 | 7 | Custom Deste Listesi | Full | Kendi destelerim (max 3) |
 | 8 | Custom Deste Editörü | Full | İsim, kapak seçimi, kelime ekleme |
 | 9 | Nasıl Oynanır (slider) | Sheet | 4 sayfalı, moda göre içerik değişir |
-| 10 | Mod Seçimi | Sheet | 5 mod kartı, § `04` |
+| 10 | Mod Seçimi | Sheet | 6 mod kartı, § `04` |
 | 11 | Takım Kurulumu | Full | Sadece Takım Savaşı modunda |
+| 24 | **Kelime Sepeti** | Full | Sadece `ownWords` modunda; kelime yazma + `OYNA` |
 | 12 | Tur Ön Ayar | Sheet | Süre, zorluk, kart sayısı |
 | 13 | Yatay Çevir Uyarısı | Full | Landscape'e geçiş istemi |
 | 14 | Geri Sayım | Full (landscape) | 3-2-1, projektör titremesi |
@@ -80,7 +83,7 @@ olarak kullanılabilir.
 ### Ayarlar (sağ üst dişliden)
 | # | Ekran | Tip | Not |
 |---|---|---|---|
-| 20 | Ayarlar | **Sheet** (`.large`) | 4 grup / 13 satır, § `06` |
+| 20 | Ayarlar | **Sheet** (`.large`) | 5 grup / 15 satır, § `06` |
 | 21 | Dil Seçimi | Sheet (ayarların üzerine) | 25 dil, her biri kendi dilinde, § `06` |
 
 ### Film Arşivi (header'daki makara ikonundan veya ayarlardan)
@@ -106,7 +109,7 @@ bırakıyordu (§ `09` §3).
 ```mermaid
 flowchart TD
     A[Launch / Perde Açılışı] --> B{Onboarding<br/>tamamlandı mı?}
-    B -- Hayır --> C[Onboarding 1-5<br/>bottom sheet]
+    B -- Hayır --> C[Onboarding 1-3<br/>bottom sheet]
     C --> D[Paywall<br/>skip'li]
     D --> E
     B -- Evet --> E[ANA EKRAN<br/>Deste Izgarası]
@@ -130,9 +133,13 @@ flowchart TD
     ARV -.-> AR
     AR -.-> E
 
+    E --> WB[KELİME SEPETİ<br/>≥ 5 kelime]
     F --> J[Mod Seçimi]
     G --> J
     H --> J
+    J -- Kendi Kelimelerin --> WB
+    WB -.-> E
+    WB --> M
     J --> K{Takım Savaşı mı?}
     K -- Evet --> L[Takım Kurulumu<br/>takım · tur sayısı · oyuncular]
     K -- Hayır --> M[Tur Ön Ayar]
@@ -157,6 +164,7 @@ flowchart TD
     S -- Evet --> T[Tur Sonu Skor<br/>LANDSCAPE]
     T -- Tekrar oyna --> Q
     T -- Sahneye dön --> E
+    T -- Sepeti kaydet<br/>ownWords --> H
     T --> U{Replay var mı?}
     U -- Evet --> V[Replay Oynatıcı<br/>altyazı · ağır çekim]
     V --> W
@@ -190,6 +198,57 @@ Diyagramda düzeltilen dört yapısal hata:
 ---
 
 ## 4. Ekran detayları
+
+### 1 — Launch / Splash
+
+Tek işi var: uygulama hazırlanırken geçen 1,2 saniyeyi boş bir yükleme ekranı
+yerine **perde açılışına** çevirmek. Mockup'ta iki kare halinde duruyor
+(`ornek-ekranlar.html`, cihaz 1a ve 1b).
+
+**Anatomi — merkezden dışa:**
+
+1. **Çerçeveli app ikonu (ortada).** Üç katman:
+   - dışta pirinç profil, dört köşesinde vida başı;
+   - içte krem paspartu (`--surface-poster`);
+   - ortada 104 pt ikon, `teslim/app-ikonu/ikon-1024.png`.
+
+   Neden çerçeve: ikon çerçevesiz konduğunda "yükleniyor" ekranındaki bir logo
+   gibi duruyor. Çerçeve onu **sergilenen bir eser** yapıyor — müzede tablo,
+   sinemada afiş. Tema da bunu istiyor.
+
+   Neden bu dosya: splash'ta ayrı bir logo çizimi kullanmıyoruz. App Store'da
+   görülen simge ile açılışta görülen simge **aynı** olmalı, yoksa kullanıcı
+   doğru uygulamayı açtığını bir an sorguluyor.
+
+2. **Çerçevenin çevresinde marquee ampulleri.** Ana ekrandaki logo ampulleriyle
+   aynı ritim: 1,5 sn nabız, ampul başına 0,11 sn kademeli gecikme. Splash'ta
+   yanan ampuller ana ekranda aynı tempoda devam ediyor; iki ekran arasında
+   kesinti değil süreklilik oluyor.
+
+3. **Altında wordmark.** `CHARADES` (Oswald Bold 34, harf aralığı 6) ve altında
+   pirinç çizgiler arasında `SESSİZ SİNEMA` — dile göre değişen mod adı değil,
+   sabit alt başlık.
+
+4. **İki kadife perde kanadı.** Kapalıyken ortada birleşiyor, birleşme yerinde
+   ince altın şerit var. Açılma davranışı § `08` §A3'te.
+
+5. **Alt kenarda yükleme göstergesi.** Akan ince amber çizgi + `MAKARA
+   YÜKLENİYOR`. **Normal açılışta hiç görünmüyor.** Yalnızca ilk kurulumda
+   (katalog ilk kez ayrıştırılırken) veya içerik güncellemesinde beliriyor.
+
+**Zamanlama:**
+
+| Durum | Davranış |
+|---|---|
+| Normal soğuk açılış | 1,2 sn perde animasyonu, sonra ana ekran |
+| Hazırlık 1,2 sn'den kısa sürdü | Yine 1,2 sn bekleniyor — yarım kesilmiş animasyon, hızlı açılıştan kötü hissettiriyor |
+| Hazırlık uzadı | Perde açık kalıyor, yükleme göstergesi devreye giriyor, 8 sn sonra hata durumu (§ `09`) |
+| Arka plandan dönüş | Splash **yok**, doğrudan son ekran |
+| Reduced Motion açık | Perde animasyonu yerine 200 ms fade; çerçeveli ikon yine görünüyor, ampuller sabit yanıyor |
+
+Splash'ta **hiçbir dokunulabilir öğe yok** — atlama butonu bile. 1,2 saniye
+bir butonu fark edip basmak için kısa, buton görsel gürültüden başka bir şey
+olmuyor.
 
 ### 4 — Ana Ekran (Deste Izgarası)
 
@@ -228,9 +287,12 @@ Yukarıdan aşağıya:
 4. **"BENİM DESTELERİM" bölümü** — `sectionLabel` başlık + sağda grid toggle
    (2 kolon / 3 kolon). Kullanıcının ücretsiz + satın alınmış + custom desteleri.
 
-5. **Öne çıkan satır (yatay scroll):** `MIX` kartı ve `CUSTOM DESTE` kartı burada,
-   diğerlerinden farklı görsel dille (Mix: dönen film makarası; Custom: boş afiş +
-   artı işareti).
+5. **Öne çıkan satır (yatay scroll):** `MIX`, `KENDİ KELİMELERİN` ve
+   `CUSTOM DESTE` kartları burada, diğerlerinden farklı görsel dille (Mix: dönen
+   film makarası; Kendi Kelimelerin: boş bilet + kalem; Custom: boş afiş + artı).
+   `KENDİ KELİMELERİN` kartının burada olması zorunlu, tercih değil: bu mod deste
+   seçmiyor, dolayısıyla "deste seç → mod seç" hattından erişilemez. Aynı sebeple
+   `MIX` de zaten burada.
 
 6. **Deste ızgarası** — 3:4 kartlar, 2 veya 3 kolon, 12pt aralık. Kilitli kartlar
    sepia + kilit + "BİLET GEREKLİ" mührü. Lazy yükleme.
@@ -259,6 +321,12 @@ yapışır, VIP ve dişli butonları sabit kalır.
 İlerleme göstergesi: film şeridi kareleri (aktif kare amber, geçilenler altın,
 gelecekler soluk) — nokta yerine tema ile uyumlu.
 
+Onboarding 3 adıma indikten sonra **detaylı anlatımın tek sahibi bu ekran**
+(§ `03` §1). Eskiden ikisi aynı 4 sayfayı anlatıyordu; şimdi onboarding ikna
+ediyor, bu slider talimat veriyor. Pratik sonucu: bu slider **kısaltılmayacak**,
+çünkü artık yedeği yok. Mim illüstrasyonu da (`ob_mime`) yalnızca burada,
+sayfa 3'te kullanılıyor.
+
 Klasik/Takım/Hız modları için içerik:
 
 | Sayfa | Başlık | Metin | Görsel |
@@ -275,6 +343,65 @@ sayfa 4 otomatik gizlenir.
 Gösterim kuralı: mod başına **bir kez** otomatik gösterilir
 (`howToSeen: Set<String>` UserDefaults'ta). Sonrasında Deste Detayı ve Duraklat
 ekranındaki `?` butonundan her zaman açılabilir.
+
+### 24 — Kelime Sepeti (`ownWords` modu)
+
+Mod seçiminde `Kendi Kelimelerin` seçilince açılan tam ekran. Tek işi var:
+kullanıcı kelimeleri yazsın ve oyuna girsin.
+
+```
+┌──────────────────────────────────┐
+│  ‹                        ?      │
+│                                  │
+│      K E L İ M E   S E P E T İ   │  ← marquee başlık
+│   Aklınıza geleni yazın, gerisi  │
+│         bize kalsın              │
+│                                  │
+│  ┌────────────────────────┐ ┌──┐ │
+│  │ kelime yaz…            │ │＋│ │  ← klavye açık kalır
+│  └────────────────────────┘ └──┘ │
+│                                  │
+│   7 / 100 KELİME    ▸ TOPLU EKLE │
+│                                  │
+│  ┌────────────────────────────┐  │
+│  │ AYŞE'NİN KÖPEĞİ         ✕ │  │  ← en yeni üstte
+│  │ MÜDÜRÜN ARABASI         ✕ │  │
+│  │ ...                       │  │
+│  └────────────────────────────┘  │
+│                                  │
+│  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁  │
+│         [  O Y N A  ]            │  ← PlayBar ile aynı dil
+└──────────────────────────────────┘
+```
+
+| Öğe | Davranış |
+|---|---|
+| Giriş alanı | Odak ekran açılışında **otomatik**. Enter kelimeyi ekler ve alanı boşaltır, **klavye kapanmaz** — 10 kelime yazan kullanıcı için tek önemli detay bu |
+| Eklenen kelime | Listenin **başına** girer (yazdığını görmesi için), kağıt etiket görünümünde, sağında `✕` |
+| Silme | `✕` veya satırı sağa kaydırma |
+| Sayaç | `7 / 100 KELİME`. 5'in altında `OYNA` disabled + "En az 5 kelime" |
+| Toplu ekle | Çok satırlı alan; satır ya da virgülle ayırır. Hazır listesi olan kullanıcı için (§ `05` §7 ile aynı bileşen) |
+| Tekrar eden kelime | Sessizce eklenmez, mevcut satır bir an amber yanar. Uyarı metni çıkmıyor — parti ortamında modal okunmuyor |
+| `?` butonu | Nasıl Oynanır slider'ı |
+| `‹` | Mod seçimine döner. **Yazılanlar korunur** (`GameSetup` içinde), kullanıcı yanlışlıkla çıkıp döndüğünde 12 kelimesi silinmiş olmaz |
+
+Kelime sayısı önerisi: 5 minimum ama **20 tavsiye edilir.** 60 saniyelik turda
+~15 kelime geçiyor; 5 kelimelik sepette havuz turun ortasında bitip başa dönüyor
+(§ `09` §4). Sayaç 20'nin altındayken altında tek satır bilgi duruyor:
+"60 saniyede ~15 kelime geçiyor, 20 kelime öneririz." Engel değil, tavsiye.
+
+Kaydetme **bu ekranda yok, tur sonunda soruluyor.** Sebep: kullanıcı buraya
+oynamak için geldi, kaydetmeyi henüz düşünmüyor; ekranın başına "isim ver" alanı
+koymak tam olarak custom deste editörünün akışa taktığı frendi geri getirir.
+Tur Sonu ekranında `SEPETİ KAYDET` şeridi çıkar, isim orada isteniyor
+(varsayılan doldurulmuş: `KENDİ KELİMELERİM · 24 TEMMUZ`). Kaydedilen sepet
+custom desteye dönüşür ve limitlere tabi olur (§ `05` §7). Kaydedilmezse
+`GameSetup` ile birlikte kaybolur — bu kayıp **açıkça** söylenir, yoksa kullanıcı
+20 kelimesini kaybettiğini sonradan fark eder.
+
+Ücretsiz kullanıcı bu ekranı **hiç görmüyor.** Mod kartı kilitli, dokunuş
+doğrudan paywall açıyor (§ `09` §9). 20 kelime yazdırıp sonunda paywall
+göstermek, § `09`'un başka bir yerde reddettiği yem-değiştir davranışının aynısı.
 
 ### 13 — Yatay Çevir Uyarısı
 
@@ -297,17 +424,37 @@ yarılarına dokunma ile oynanır).
 
 ### 17 — Tur Sonu Skor
 
-Bilet kağıdı (`surfaceTicket`) görünümünde dikey liste: her kelime, solunda
-yeşil onay veya kırmızı çarpı. **Yanlış işaretlenen kelimeye dokunarak düzeltme**
-yapılabilir (parti oyunlarında kritik: "o aslında doğruydu!"). Üstte büyük puan,
-altında `TEKRAR OYNA` / `SIRADAKİ TAKIM` / `SAHNEYE DÖN`.
+Bilet kağıdı (`surfaceTicket`) görünümünde **iki kolon**: solda doğrular yeşil
+noktayla, sağda paslar kırmızı noktayla, aralarında dikey perfore çizgi. Landscape
+olduğu için tek kolon ekranın yarısını boş bırakıyordu. Üstte takım/tur adı ve
+büyük doğru sayısı.
+
+**Yanlış işaretlenen kelimeye dokunarak düzeltme** yapılabilir (parti oyunlarında
+kritik: "o aslında doğruydu!"). Kelime kolonlar arasında yer değiştirir ve üstteki
+puan anında güncellenir. Bu yüzden ekranda "dokunarak düzeltebilirsin" ipucu
+satırı var — yoksa özelliğin varlığı keşfedilmiyor.
+
+**Alt butonlar moda göre değişiyor.** Önceki sürümde burada `TEKRAR OYNA` /
+`SIRADAKİ TAKIM` / `SAHNEYE DÖN` üçlüsü sabit yazılıydı; Klasik modda sıradaki
+takım diye bir şey olmadığı için bu üçlü olduğu gibi çıkamaz:
+
+| Durum | Birincil buton | Yanındakiler |
+|---|---|---|
+| Klasik · Mix · Hız Turu · Kendi Kelimelerin | `TEKRAR OYNA` | `SAHNEYE DÖN` · (kayıt varsa) `REPLAY'İ İZLE` |
+| Canlandır | `TEKRAR OYNA` | `SAHNEYE DÖN` · (kayıt varsa) `REPLAY'İ İZLE` |
+| Takım Savaşı, oynanacak tur kaldı | `SIRADAKİ TAKIM` → Perde Arası (§ `08` §B2) | `PAYLAŞ` · (kayıt varsa) `REPLAY'İ İZLE` |
+| Takım Savaşı, son tur da bitti | `JENERİĞE GEÇ` → ekran 19 | `PAYLAŞ` |
+
+`REPLAY'İ İZLE` yalnızca o turda kayıt alındıysa görünüyor (Ayarlar'da replay
+kapalıysa buton hiç yok, boş kalan yeri diğerleri paylaşıyor). Mockup'taki cihaz
+17 Takım Savaşı durumunu gösteriyor.
 
 ---
 
 ## 5. Navigasyon mimarisi
 
 - Kök: tek bir `NavigationStack` + `NavigationPath`. `TabView` **yok.**
-- Rotalar: `enum AppRoute: Hashable { case mix, customList, customEditor(String?), teamSetup, archive, archivePlayer(String) }`
+- Rotalar: `enum AppRoute: Hashable { case mix, customList, customEditor(String?), wordBasket, teamSetup, archive, archivePlayer(String) }`
   (Deste Detayı, Mod Seçimi, Tur Ön Ayar, Ayarlar ve Dil sheet olarak sunulur,
   path'e girmez.) `archive` ve `archivePlayer` **oyun akışının dışında** —
   Film Arşivi'nden açılan oynatıcı, tur sonunda açılan oynatıcı ile aynı view'ı

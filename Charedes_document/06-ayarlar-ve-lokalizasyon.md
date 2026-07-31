@@ -2,7 +2,7 @@
 
 ## 1. Ayarlar ekranı (sağ üst dişli)
 
-**4 grup / 13 satır.** Ana ekranın **sağ üstündeki pirinç dişli** butonundan
+**5 grup / 15 satır.** Ana ekranın **sağ üstündeki pirinç dişli** butonundan
 `.sheet` olarak açılır (`presentationDetents([.large])`, `presentationCornerRadius(28)`),
 arka planı kadife perde + grain. Ayrı bir sekme değil — tab bar kaldırıldı, § `02` §1.
 Grup başlıkları `sectionLabel` stilinde (`accentGold`, ALL CAPS, letterSpacing +2).
@@ -12,10 +12,14 @@ Satırlar `surfaceCard` kartlar içinde, aralarında 1px altın %15 çizgi.
 
 | # | Satır | Kontrol | Varsayılan | Not |
 |---|---|---|---|---|
-| 1 | Dil | Değer + `›` → Dil sheet'i | Sistem dili | Alt metinde dilin kendi adı: "Türkçe" |
+| 1 | Dil | Değer + `›` → Dil sheet'i | Sistem dili | Alt metinde dilin kendi adı: "Türkçe". Seçim anında uygulanır, restart yok (§2) |
 | 2 | Tur süresi | Stepper `−  01:00  +` | 60s | 30–180s, 15s adım |
 | 3 | Cevap yöntemi | Segment: `EĞ` / `DOKUN` | Eğ | Tilt yerine dokunmatik |
 | 4 | Zorluk | Segment: `HEPSİ` / `KOLAY` / `ZOR` | Hepsi | Kart `d` alanına göre filtreler |
+
+Dil satırı **bu grubun ilk sırasında**, çünkü uygulamayı yanlış dilde açan
+kullanıcının ayarlarda aradığı tek şey bu; aşağıya konursa kendi dilinde olmayan
+14 satırı taramak zorunda kalıyor.
 
 Bu grupta **yetişkin içeriği anahtarı yok** — katalogda 18+ deste bulunmuyor
 (§ `05` §2). Uygulama baştan sona 12+ seviyesinde.
@@ -29,6 +33,13 @@ Bu grupta **yetişkin içeriği anahtarı yok** — katalogda 18+ deste bulunmuy
 | 7 | Film efektleri (grain, çizik) | Marquee Switch | AÇIK |
 | 8 | Replay kaydı | Marquee Switch | KAPALI (Premium) |
 | 9 | **Film Arşivi** | Değer + `›` → Arşiv (ekran 22) | Alt metin: `14 makara · 312 MB` |
+
+`Titreşim` anahtarı **tüm** haptikleri kapatıyor: buton ve kart dokunuşlarını da,
+oyunun DOĞRU/PAS geri bildirimini de. Ayrı bir "oyun içi titreşim" anahtarı
+açmıyoruz — haptiği kapatan kullanıcı ya rahatsız oluyor ya pil düşünüyor, ikisi
+de kısmi çözüm istemiyor. Hangi etkileşimin hangi haptiği aldığı § `01` §4.1'de.
+Anahtar kapalıyken oyun oynanabilir kalıyor, çünkü DOĞRU/PAS'ın görsel ve sesli
+karşılığı da var (§ `04` §2, üç kanal birlikte).
 
 `Film efektleri` satırı retro temanın kaçınılmaz maliyetini yönetiyor: bazı
 kullanıcılar grain'i sevmez, bazı eski cihazlarda pil tüketir. Kapatınca sadece
@@ -53,23 +64,88 @@ oraya taşındı, § `04` §4.2):
 | Çıkışta kayıtları sil | Marquee Switch | KAPALI |
 | Arşivi temizle | Yıkıcı buton + onay | — |
 
-### Grup 3 — HESAP (`settings.group.account`)
+### Grup 3 — BİLDİRİMLER (`settings.group.notifications`)
+
+| # | Satır | Kontrol | Varsayılan |
+|---|---|---|---|
+| 10 | Bildirimler | Marquee Switch | KAPALI (izin alınmamış) |
+| 11 | Günlük bedava deste | Marquee Switch | AÇIK — **yalnızca 10 açıkken görünür** |
+
+**Bu grup önceki sürümde yoktu ve gerekçesi "iki kaynak senkronsuz kalır"dı.**
+Endişe gerçek ama çözümü satırı hiç koymamak değil; asıl sorun şuydu: soft
+prompt'u bir kez kapatan kullanıcının bildirimleri **uygulama içinden açmasının
+hiçbir yolu yoktu.** iOS Ayarlar'da da görünmüyordu, çünkü izin hiç istenmemiş
+bir uygulama o listede yer almıyor. Yani özellik sessizce erişilemez oluyordu.
+
+Senkron sorunu şu ayrımla çözülüyor: **izin iOS'un, içerik bizim.** Satır 10
+izni kopyalamıyor, `UNAuthorizationStatus`'u *gösteriyor*; tek yerel tercih
+satır 11, o da hangi bildirimi göndereceğimiz.
+
+| Sistem durumu | Satır 10 | Dokunulunca |
+|---|---|---|
+| `.notDetermined` | KAPALI | Sistem izin diyaloğu açılır; onaylanırsa AÇIK'a geçer |
+| `.authorized` | AÇIK | Kapatılırsa planlanmış bildirimler iptal edilir (`removeAllPendingNotificationRequests`). Sistem izni **geri alınmaz** — böyle bir API yok, zaten gerekmiyor |
+| `.denied` | KAPALI + soluk | iOS Ayarlar'a gider (`openSettingsURLString`), altında tek satır: "iOS Ayarlar'dan izin verin" |
+
+Durum her `scenePhase == .active` geçişinde yeniden okunuyor. Kullanıcı izni iOS
+Ayarlar'dan geri alırsa satır uygulamaya dönüldüğünde kendiliğinden `.denied`
+görünümüne düşüyor — korkulan senkronsuzluk tam olarak burada engelleniyor.
+
+### Ne gönderiyoruz
+
+İki bildirim, **ikisi de yerel.** Sunucu yok: APNs, push sertifikası,
+`aps-environment` entitlement'ı ve Firebase Messaging bağımlılığı **hiç
+girmiyor** (§ `07` §4).
+
+| Bildirim | Zamanlama | Metin |
+|---|---|---|
+| Günlük bedava deste | Cihazın yerel saatiyle 18:00 | "ŞİMDİ VİZYONDA — Bugün {deste} bedava" |
+| Deneme bitiyor | Deneme bitiminden 24 saat önce, tek seferlik | § `09` §7 |
+
+18:00 seçimi keyfi değil: bu bir parti oyunu, akşam açılıyor. Sabah gönderilen
+"bugün bedava" bildirimi akşama kadar unutulur.
+
+Üç teknik tuzak, üçü de sonradan bulunması pahalı:
+
+- **Tekrarlayan tetik kullanılamıyor.** `UNCalendarNotificationTrigger(repeats: true)`
+  tek bir sabit metin taşır, ama bizim metnimizde **o günün deste adı** var.
+  Çözüm: her açılışta önümüzdeki ~14 gün için deste adları hesaplanıp ayrı ayrı
+  planlanır (§ `09` §8'deki sabit bölenli formül bunu deterministik yapıyor),
+  eskiler temizlenir. 64 bekleyen bildirim sınırının çok altında kalıyoruz.
+- **Dil değişince bekleyen bildirimler eski dilde kalıyor.** Planlanmış
+  bildirimin metni planlama anında sabitleniyor; kullanıcı ayarlardan dili
+  değiştirirse bir sonraki akşam Türkçe uygulamada İngilizce bildirim düşer.
+  `LocalizationManager` dil değiştirdiğinde **bekleyen tüm bildirimler yeniden
+  planlanacak.** Aynı şey abonelik durumu değişince de geçerli: premium olan
+  kullanıcıya "bugün bedava" bildirimi anlamsız, iptal edilir.
+- **Provisional authorization** (`.provisional`, izin diyaloğu olmadan sessiz
+  bildirim) değerlendirildi ve **kullanılmıyor.** İzin oranını yükseltirdi ama
+  bildirimimizin tüm değeri zamanında görülmesinde; Bildirim Merkezi'nde sessizce
+  bekleyen "bugün bedava" hiçbir işe yaramıyor.
+
+İzin isteme yeri değişmiyor: onboarding'de sorulmuyor, ana ekranda 8 saniye
+gecikmeli soft prompt (§ `03`), oturum başına tek prompt kuralı § `09` §9'da.
+Ayarlar satırı bu akışın yerine geçmiyor, **ikinci bir kapı** açıyor.
+Analytics: `notification_permission_result(granted)` ve
+`notification_setting_toggle(row, value)`.
+
+### Grup 4 — HESAP (`settings.group.account`)
 
 | # | Satır | Aksiyon |
 |---|---|---|
-| 10 | Aboneliği Yönet | Premium ise sistem abonelik sayfası; değilse Paywall (modal) |
-| 11 | Satın Alımları Geri Yükle | `SubscriptionStore.restore()` + sonuç toast'ı |
+| 12 | Aboneliği Yönet | Premium ise sistem abonelik sayfası; değilse Paywall (modal) |
+| 13 | Satın Alımları Geri Yükle | `SubscriptionStore.restore()` + sonuç toast'ı |
 
 Premium kullanıcıda bu grubun üstünde ayrıca bir **altın bilet kartı** görünür:
 "TAM BİLET AKTİF · Yenileme: 12 Ağustos 2026". Ödediği şeyi görmesi iptal
 oranını düşürüyor.
 
-### Grup 4 — DESTEK & YASAL (`settings.group.legal`)
+### Grup 5 — DESTEK & YASAL (`settings.group.legal`)
 
 | # | Satır | Aksiyon |
 |---|---|---|
-| 12 | Bize Ulaş | `mailto:` — konu satırında UserID ve app sürümü hazır gelir |
-| 13 | Bizi Puanla | `requestReview` |
+| 14 | Bize Ulaş | `mailto:` — konu satırında UserID ve app sürümü hazır gelir |
+| 15 | Bizi Puanla | `requestReview` |
 | — | Gizlilik Politikası | `Link` |
 | — | Kullanım Koşulları | `Link` |
 
@@ -85,12 +161,6 @@ Sürüm 1.0 (12)
 Kopyalandığında 1.5 saniye "KOPYALANDI" durumu gösterilir. Destek taleplerinde
 kullanıcıyı eşleştirmek için. UserID, RevenueCat `appUserID` ve Firebase
 `setUserID` ile **aynı** değer.
-
-### Bildirimler nerede?
-Bilinçli olarak ayarlarda **yok.** Sistem bildirim ayarları zaten iOS Ayarlar'da;
-uygulama içinde ikinci bir anahtar tutmak iki kaynağın senkronsuz kalmasına yol
-açıyor (`Imposter`'da bu senkronizasyon için ekstra kod yazılmış). Bunun yerine
-bildirim izni ana ekranda soft prompt ile bir kez istenir, sonrası iOS'a bırakılır.
 
 ---
 
@@ -355,6 +425,31 @@ Rusça ve Ukraynaca'da tek kelime `Блиц` yeterli ve satranç kültüründen 
 bilinen karışık tatlısının adı. Tam olarak aradığımız türden bir yerelleştirme —
 kullanıcı gülümsüyor. Native onayı alınacak.
 
+#### `ownWords` — Kendi Kelimelerin
+Burada `classic` gibi davranıyoruz: bu bir kültürel oyun adı değil, bir etiket.
+Çeviri düz, tek dikkat noktası **18 karakter sınırı** (§ `04` §1) — "kendi
+kelimeleriniz" biçimindeki uzun kurulumlar birçok dilde sınırı aşıyor, o yüzden
+her dilde kısa hâli seçildi.
+
+| Dil | Ad | Dil | Ad |
+|---|---|---|---|
+| `en` | Own Words | `it` | Parole tue |
+| `tr` | Kendi Kelimelerin | `ms` | Kata Sendiri |
+| `de` | Eigene Wörter | `nb` | Egne ord |
+| `ar` | كلماتكم | `nl` | Eigen woorden |
+| `be` | Свае словы | `pl` | Własne słowa |
+| `ca` | Paraules pròpies | `pt` | Suas palavras |
+| `cs` | Vlastní slova | `ro` | Cuvinte proprii |
+| `da` | Egne ord | `ru` | Свои слова |
+| `el` | Δικές σου λέξεις | `sv` | Egna ord |
+| `es` | Tus palabras | `uk` | Свої слова |
+| `fi` | Omat sanat | `fil` | Sariling Salita |
+| `fr` | Vos mots | `hr` | Vlastite riječi |
+| `id` | Kata Sendiri | | |
+
+En uzunu Türkçe (17) ve Yunanca (16) — ikisi de sınırın altında ama mod kartında
+iki satıra düşecek, tasarım buna hazır olmalı.
+
 > Tüm bu isimler native konuşur gözden geçirmesinden geçmeli. Özellikle
 > `fil` (Pinoy Henyo / Halo-halo), `ms` (Lakonan Bisu), `be` (Кракадзіл) ve
 > `nl` (Hints) maddeleri kültürel iddia içeriyor; yanlışsa etkisi ters olur.
@@ -428,11 +523,13 @@ kesinleştirilecek; buradaki liste başlangıç hipotezi.
 
 Her dil için tek tek işaretlenecek:
 
-- [ ] 5 mod adı native onaylı ve ≤18 karakter
+- [ ] 6 mod adı native onaylı ve ≤18 karakter
 - [ ] 92 deste adı ≤22 karakter, kart üzerinde 2 satırda sığıyor
 - [ ] `adapt` destelerinde en az %60 yerel içerik var
-- [ ] Onboarding 5 adımının metni ekranda taşmıyor
-- [ ] Paywall fayda listesi 7 satır sığıyor (Almanca en riskli)
+- [ ] Onboarding 3 adımının metni ekranda taşmıyor
+- [ ] Paywall başlığı ve iki satır özeti taşmıyor (Almanca en riskli; fayda
+      listesi kaldırıldı, § `03` §2)
+- [ ] Paywall plan kartlarında plan adı ve alt metin tek satırda kalıyor
 - [ ] Plural formları doğru (`ru`, `uk`, `pl`, `hr`, `cs` için `.few` dahil)
 - [ ] Sayı ve süre formatı locale'e uygun (`01:00` ayırıcısı)
 - [ ] Arapça'da tüm ekranlar RTL'de doğru, display fontu Rubik'e düşüyor

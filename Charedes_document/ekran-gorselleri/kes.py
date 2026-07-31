@@ -21,7 +21,7 @@ sys.path.insert(0, str(KOK.parent / "deste-gorselleri"))
 from pipeline import magenta_kes  # noqa: E402
 
 HAM = KOK / "ham"
-SEFFAF = KOK / "seffaf"
+SEFFAF = KOK.parent / "teslim" / "ekran-gorselleri"
 
 HEDEF_EN = 1536      # 4:3 → 1536×1152, @3x kullanımda fazlasıyla yeterli
 HEDEF_BOY = 1152

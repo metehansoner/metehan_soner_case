@@ -7,7 +7,7 @@ satranç desenini boyayarak taklit ediyor), kapaklar paletimizde bulunmayan
 düz magenta #FF00FF zeminle üretilip burada programatik olarak kesiliyor.
 
 Kullanım:
-    python3 pipeline.py kes            # ham/*.png -> seffaf/*.png
+    python3 pipeline.py kes            # ham/*.png -> teslim/deste-kapaklari/*.png
     python3 pipeline.py onizleme       # kapaklar.html üret
     python3 pipeline.py hepsi
 """
@@ -21,10 +21,14 @@ import numpy as np
 from PIL import Image
 
 KOK = Path(__file__).parent
+PROJE = KOK.parent
 HAM = KOK / "ham"
-SEFFAF = KOK / "seffaf"
+# Uygulamaya girecek dosyalar çalışma dosyalarından ayrı: teslim/ altındaki
+# her şey Xcode asset catalog'a olduğu gibi kopyalanabilir.
+SEFFAF = PROJE / "teslim" / "deste-kapaklari"
+SEFFAF_WEB = "teslim/deste-kapaklari"   # kapaklar.html proje kökünden okuyor
 KATALOG = KOK / "desteler.json"
-CIKTI_HTML = KOK.parent / "kapaklar.html"
+CIKTI_HTML = PROJE / "kapaklar.html"
 
 HEDEF_BOYUT = 1024   # kare şeffaf sanat eseri
 KENAR_PAY = 0.04     # içerik etrafında oranlı nefes payı
@@ -192,7 +196,7 @@ def onizleme_uret() -> None:
       <div class="cell">
         <div class="deck{kilit}">
           <div class="deck-inner">
-            <div class="art"><img src="deste-gorselleri/seffaf/deck_{d['id']}.png" alt=""></div>
+            <div class="art"><img src="{SEFFAF_WEB}/deck_{d['id']}.png" alt=""></div>
             <div class="deck-strip"><h3>{escape(d['ad'])}</h3><div class="cards">130 kart</div></div>
           </div>
           <div class="reel">Reel No. {d.get('reel', '—')}</div>{rozet}{kilit_kat}
@@ -212,7 +216,7 @@ def onizleme_uret() -> None:
     <p class="hint">Damalı zemin gerçek alfa kanalını gösteriyor. Zemin uygulamada çiziliyor.</p>
     <div class="grid raw">{''.join(f'''
       <div class="cell">
-        <div class="frame damali"><img src="deste-gorselleri/seffaf/deck_{d['id']}.png" alt=""></div>
+        <div class="frame damali"><img src="{SEFFAF_WEB}/deck_{d['id']}.png" alt=""></div>
         <div class="cid">{escape(d['ad'])}</div>
       </div>''' for d in desteler)}</div>
   </div>""")

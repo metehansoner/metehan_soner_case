@@ -536,6 +536,20 @@ davranır.
 
 ## 7. CUSTOM DESTE
 
+Kullanıcının kendi kelimelerine **iki kapı** var ve ikisini karıştırmamak gerekiyor:
+
+| | Kelime Sepeti (`ownWords` modu) | Custom deste editörü |
+|---|---|---|
+| Nereden | Mod Seçimi | Ana ekran → `BENİM DESTELERİM` |
+| Amacı | **Şimdi oynamak** | Kalıcı bir deste yapmak |
+| Zorunlu alan | Yalnızca kelimeler | İsim + kelimeler (kapak opsiyonel) |
+| Kaydetme | Tur **sonunda**, opsiyonel | Baştan, zorunlu |
+| Ekran | 24 (§ `02`) | 8 |
+
+Aynı iki bileşeni paylaşıyorlar: kelime giriş satırı ve toplu ekleme alanı.
+Kaydedilen sepet bu bölümdeki limitlere ve depolamaya tabi oluyor — yani sepet
+"kaydedilmemiş bir custom deste", ayrı bir veri tipi değil.
+
 ### Limitler
 | | Ücretsiz | Premium |
 |---|---|---|
@@ -557,6 +571,12 @@ davranır.
   ayrılır. "Hazır listemi yapıştırayım" isteğini karşılar.
 - **Sayaç** — `18 / 100 kelime`, 5'in altında uyarı.
 - Alt: `KAYDET` · `KAYDET VE OYNA`
+
+### Kaydedilen sepetin kapağı
+Sepet akışında kapak seçimi yok, ama kaydedilen deste ızgarada görünecek ve
+kapaksız kart ızgarayı bozuyor. Karar: **kaydedilen sepete 12 şablondan biri
+otomatik atanır** (deste adının hash'inden deterministik olarak — aynı isim aynı
+kapağı alır, rastgele değil). Kullanıcı sonradan editörden değiştirebilir.
 
 ### Depolama
 `SwiftData` (iOS 17+ zaten minimum): `CustomDeck` ve `CustomCard` modelleri.
@@ -588,9 +608,14 @@ v1 için **92 deste görseli** (kalan 32'si güncellemelerde). Üretim sırası:
    sonradan tıkanılıyor.
 2. Stil onaylandıktan sonra kalan 84, bölüm bölüm (bölüm içinde görsel tutarlılık
    daha kolay yakalanıyor).
-3. Her kart 1080×1440, `@2x`/`@3x` türev, PNG.
-4. Toplam boyut hedefi: 92 × ~180 KB = ~17 MB. App thinning sonrası cihaza inen
-   kısım daha az. 25 MB'ı geçerse On-Demand Resources değerlendirilir.
+3. Her kapak **1024×1024 şeffaf PNG** (RGBA). Eski plandaki 1080×1440 opak kart
+   terk edildi: kart zemini, krem başlık şeridi ve çerçeve uygulamada çiziliyor,
+   görsel yalnızca ortadaki amblem. Böylece kapak 25 dilde tek dosya kalıyor ve
+   tema değişse zemin koda dokunarak güncelleniyor (§ `01` §5).
+4. Toplam boyut: ham master 1024×1024 RGBA olarak **64 MB** çıktı (kapak başına
+   681 KB) — bu satırdaki eski `92 × ~180 KB = ~17 MB` tahmini ölçüldüğünde
+   yanlış çıktı. Uygulamaya **512 px + 64 renk** türev giriyor: **2.6 MB**, gözle
+   fark edilmiyor. Ölçüm ve gerekçe § `01` §5.7. On-Demand Resources'a gerek yok.
 5. Prompt iskeleti ve kurallar § `01-tasarim-sistemi.md` §5'te.
 
 İki kesin kural:

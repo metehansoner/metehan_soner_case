@@ -28,10 +28,13 @@ Charades/
 ├── CharadesApp.swift
 ├── Features/
 │   ├── Root/            RootView, AppRoute, HeaderBar
-│   ├── Onboarding/      OnboardingSheet, SocialProofView
+│   ├── Onboarding/      OnboardingSheet (3 adım)
+│   │                    SocialProofView — v1'de çağrılmıyor, § `03` §1
 │   ├── Decks/           DecksHomeView, DeckCard, DeckDetailSheet, FilterChips
 │   ├── Mix/             MixSetupView, SavedMixesRow
-│   ├── CustomDeck/      CustomDeckListView, CustomDeckEditorView, CoverPicker
+│   ├── CustomDeck/      CustomDeckListView, CustomDeckEditorView, CoverPicker,
+│   │                    WordEntryField, BulkPasteSheet (sepetle paylaşılan)
+│   ├── WordBasket/      WordBasketView, SaveBasketBanner
 │   ├── HowToPlay/       HowToPlaySlider
 │   ├── ModeSelect/      ModeSelectSheet, ModeCard
 │   ├── Teams/           TeamSetupView, TeamTurnHandoffView
@@ -45,7 +48,7 @@ Charades/
 │   ├── DeckCatalog.swift        // 124 DeckDef (92'si v1), tek kaynak
 │   ├── DeckSection.swift
 │   ├── CardBank.swift           // JSON okuma + lazy cache
-│   ├── GameMode.swift           // 5 mod + özellik matrisi
+│   ├── GameMode.swift           // 6 mod + özellik matrisi
 │   ├── LiveGame.swift           // @Observable, faz makinesi, skor
 │   ├── GameSetup.swift          // seçili desteler, mod, süre, takımlar
 │   └── CustomDeck.swift         // SwiftData @Model
@@ -111,6 +114,13 @@ static func correct() {
 Böylece 100+ çağrı noktasında tek satır yazılıyor. (`Imposter/Services/Haptics.swift`
 aynen taşınacak.)
 
+`Haptics`'in yüzeyi § `01` §4.1'deki haritadan türetiliyor: her satır için isimli
+bir fonksiyon (`Haptics.primaryTap()`, `Haptics.deckSelect()`, `Haptics.locked()`…),
+çağrı yerinde stil seçilmiyor. Sebep: stil seçimi çağrı yerine bırakılırsa
+tablo bir hafta içinde geçersiz oluyor. Generator'lar servis içinde bir kez
+oluşturulup saklanıyor ve `prepare()` ayrı bir fonksiyonla dışarıdan
+tetiklenebiliyor (butonda parmak inince, geri sayım başlarken).
+
 ---
 
 ## 4. Bağımlılıklar
@@ -125,6 +135,9 @@ Bu kadar. Özellikle **eklenmeyecekler:**
   linklenmiş ama kullanılmıyor, boşuna binary yükü.)
 - `FirebaseFirestore` — v1'de sunucu ihtiyacı yok. Custom deste paylaşımı (v1.1)
   gelirse eklenir.
+- `FirebaseMessaging` — bildirimlerin ikisi de **yerel** (`UNUserNotificationCenter`,
+  § `06` §1). Sunucudan push atmadığımız için APNs sertifikası,
+  `aps-environment` entitlement'ı ve bildirim servis uzantısı da yok.
 - `GoogleMobileAds` — reklam yok.
 - `Lottie` — tüm animasyonlar SwiftUI (`Canvas`, `TimelineView`, `withAnimation`).
   Imposter'daki `TwinklingStarField` prosedürel yaklaşımı grain/ampul efektleri
@@ -193,6 +206,13 @@ ikinci bir küçük varyant).
 
 Her adım kendi içinde çalışan bir uygulama bırakıyor; bu, ara kontrol için önemli.
 
+> **Bu tablo bütçe kaynağı, uygulama planı değil.** Kodlamaya başlarken
+> § `10-kodlama-plani.md` kullanılıyor: aynı işi 19 pakete bölüyor, her paketin
+> girdi dokümanlarını ve kabul kriterini yazıyor, aşağıdaki 17. satırdaki sınır
+> durumlarını ait oldukları paketlere dağıtıyor. Aşağıdaki sıra olduğu gibi
+> uygulanırsa yön katmanı oyun ekranından **sonra** gelir ve § `09` §12'nin
+> uyardığı "yamayla giren mimari" ortaya çıkar.
+
 | Aşama | İş | Süre tahmini |
 |---|---|---|
 | 1 | Proje iskeleti, `Theme` (renk+font+grain+ampul), `Components` | 3 gün |
@@ -202,10 +222,11 @@ Her adım kendi içinde çalışan bir uygulama bırakıyor; bu, ara kontrol iç
 | 5 | Takım Savaşı (kurulum, geçiş, maç sonu) | 4 gün |
 | 6 | Mix + kaydedilmiş karışımlar | 3 gün |
 | 7 | Custom deste (SwiftData, editör, kapak seçici) | 4 gün |
+| 7b | **Kendi Kelimelerin modu** (Kelime Sepeti ekranı, tur sonunda kaydetme) | 1.5 gün |
 | 8 | `LocalizationManager` + 25 dil + dil sheet'i + RTL geçişi | 4 gün |
 | 9 | RevenueCat + 3 plan + 3 paywall varyantı + gating + günlük bedava deste | 5 gün |
-| 10 | Onboarding + social proof + soft prompt'lar | 3 gün |
-| 11 | Ayarlar ekranı (13 satır) | 2 gün |
+| 10 | Onboarding (3 adım) + soft prompt'lar | 2 gün |
+| 11 | Ayarlar ekranı (15 satır) + bildirim izni akışı | 2 gün |
 | 12 | Ses paketi (12 parça) entegrasyonu, haptics geçişi | 2 gün |
 | 13 | **Replay kaydı** (AVCapture, birleştirme, paylaşım, termal koruma) | 4 gün |
 | 13b | **Film Arşivi** (kalıcı depolama, kota/FIFO, arşiv ekranı, oynatıcıda altyazı + ağır çekim + zaman çizelgesi işaretleri) | 3.5 gün |
@@ -214,8 +235,8 @@ Her adım kendi içinde çalışan bir uygulama bırakıyor; bu, ara kontrol iç
 | 17 | **Kesinti ve sınır durumları** (yön katmanı, `scenePhase`, kelime havuzu, beraberlik, abonelik düşüşü, RC varsayılanları) | 11 gün |
 | 16 | Cilalama, erişilebilirlik, App Store materyalleri | 5 gün |
 
-Toplam geliştirme: **~56.5 gün** + sinematik katman 6 gün (§ `08` §6) + kesinti ve
-sınır durumları 11 gün (§ `09` §12) = **~73.5 gün**.
+Toplam geliştirme: **~57 gün** + sinematik katman 6 gün (§ `08` §6) + kesinti ve
+sınır durumları 11 gün (§ `09` §12) = **~74 gün**.
 
 **İçerik üretimi paralel yürür ama "bedava" değil:** ~33 gün, ayrı bir kaynak
 (§ `09` §6). Adım 15'in süre hanesinde yalnızca "paralel iş" yazması bu kalemi

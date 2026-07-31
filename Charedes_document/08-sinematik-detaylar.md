@@ -75,14 +75,21 @@ Tur başlamadan önce 0.9 saniyelik klaket kapanışı.
 
 ### A3. Perde Açılışı (Curtain Reveal)
 
-Soğuk açılışta iki kadife perde kanadı yana açılır, arkasından marquee logo
-ampulleri sırayla yanar.
+Soğuk açılışta iki kadife perde kanadı yana açılır, arkasından **çerçeveli app
+ikonu** ve altında marquee wordmark belirir, ampuller sırayla yanar. Ekranın
+tam anatomisi § `02` §4'te, ekran 1 başlığı altında.
 
 - 1.2 saniye, sadece **soğuk açılışta** (arka plandan dönüşte yok).
 - `sfx_curtain_open` + `sfx_bulb_flicker`.
+- Kanatlar düz kaymıyor: `offset` ile kenara giderken `scaleX` 0.6'ya düşüyor.
+  Gerçek sahne perdesi kenara toplanınca kalınlaşır, düz kaydırma bunu kaçırıyor.
 - Teknik olarak launch screen'den sonraki ilk view; bu sürede JSON katalog
   yükleniyor ve RevenueCat/Firebase başlıyor. Yine "var olan beklemeyi süsleme"
   ilkesi.
+- **Statik launch screen ile devamlılık:** iOS'un gösterdiği `LaunchScreen`
+  storyboard'u kapalı perdenin donmuş bir karesi + aynı çerçeveli ikon. Böylece
+  sistem launch ekranından bizim view'a geçerken hiçbir şey yerinden zıplamıyor;
+  sadece perde açılmaya başlıyor.
 
 ### A4. Film Şeridi Geçişi (Frame Advance)
 
@@ -227,5 +234,5 @@ Kademe A'nın tamamı, oyun döngüsü çalışır hâle geldikten hemen sonra (
 | Sinematik III | B1 Jenerik akışı, B2 Perde arası | 2 gün |
 | Kademe C | Artan zamana göre, v1.1'e ertelenebilir | — |
 
-Toplam ek: **6 gün.** § `09`'daki 11 günle birlikte genel takvim ~56.5 günden
-**~73.5 güne** çıkıyor (§ `07` §8).
+Toplam ek: **6 gün.** § `09`'daki 11 günle birlikte genel takvim ~57 günden
+**~74 güne** çıkıyor (§ `07` §8).

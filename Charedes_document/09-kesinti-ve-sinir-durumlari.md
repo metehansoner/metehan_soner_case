@@ -110,8 +110,10 @@ yolu duraklat. Bu yol modellenmezse kullanıcı **oyunda kilitli kalır.**
 `Set<String>` ile oturum içi tekrar engelleniyordu ama havuz **bittiğinde** ne
 olacağı hiçbir yerde yazılmamıştı. Üç senaryoda kesin olarak biter:
 
-1. **5 kelimelik custom deste + 60 saniyelik tur** — custom destede oynamak için
-   minimum 5 kelime yeterli görülmüş, ama bir turda 10–20 kelime geçiliyor.
+1. **5 kelimelik custom deste veya Kelime Sepeti + 60 saniyelik tur** — oynamak
+   için minimum 5 kelime yeterli görülmüş, ama bir turda 10–20 kelime geçiliyor.
+   `ownWords` modunda bu senaryo **en sık** olan: kullanıcı masada aceleyle
+   6-7 kelime yazıp oyuna giriyor.
 2. **Uzun takım maçı** — 4 takım × 3 tur = 12 tur, tek destenin ~130 kartı
    tükenir. "Oturum içi tekrar engellenir" kuralı bunu **garanti ediyor**.
 3. **Zorluk filtresi** — `ZOR` seçili ve deste ağırlıklı olarak kolay kartlardan
@@ -122,7 +124,7 @@ olacağı hiçbir yerde yazılmamıştı. Üç senaryoda kesin olarak biter:
 | Havuzda kart kaldı ama < 10 | Sessizce devam, uyarı yok |
 | Havuz bitti, tur sürüyor | Havuz **yeniden karıştırılıp** açılır; kartlar tekrar gelmeye başlar. Ekranda bir kez ince etiket: `DESTE BAŞA DÖNDÜ` |
 | Tur öncesi filtrelenmiş havuz < 20 kart | Tur ön ayarda uyarı: "Bu zorlukta yalnızca 14 kart var. Zorluğu `HEPSİ` yapmak ister misin?" |
-| Custom deste < 20 kelime | Editörde bilgi satırı: "60 saniyelik bir turda ~15 kelime geçiyor. En az 20 kelime öneririz." Engel değil, tavsiye |
+| Custom deste veya sepet < 20 kelime | Editörde ve Kelime Sepeti ekranında bilgi satırı: "60 saniyelik bir turda ~15 kelime geçiyor. En az 20 kelime öneririz." Engel değil, tavsiye |
 
 Ayrıca **custom kartlarda zorluk (`d`) alanı yok** ama zorluk filtresi kartların
 `d` alanına göre çalışıyor. Karar: custom kartlar `d = 0` (nötr) alır ve zorluk
@@ -148,7 +150,7 @@ Mod tanımlıydı ama sonucu belirleyen kurallar yoktu.
 
 ## 6. Lokalizasyon ve içerik üretimi bütçesi
 
-§ `07` §8 geliştirmeyi yarım gün hassasiyetinde bütçeliyor (~73.5 gün) ama
+§ `07` §8 geliştirmeyi yarım gün hassasiyetinde bütçeliyor (~74 gün) ama
 adım 15 — "92 deste görseli + içerik doldurma + doğrulama script'i" — süre
 hanesinde yalnızca **"paralel iş"** yazıyor. Projenin en büyük kalemi tek
 kelimeyle geçilmiş durumda.
@@ -159,7 +161,7 @@ Gerçek hacim: 25 dil × ~12.634 dize ≈ **316.000 dize**, artı 31 `adapt` des
 | Kalem | Yöntem | Tahmin |
 |---|---|---|
 | ~450 UI anahtarı × 25 dil | LLM + öncelikli 6 dilde insan gözden geçirme | 4 gün |
-| 5 mod adı × 25 dil (transcreation) | **İnsan**, native onaylı | 2 gün |
+| 6 mod adı × 25 dil (transcreation) | **İnsan**, native onaylı | 2 gün |
 | 92 başlık + 92 açıklama × 25 dil | LLM + taşma kontrolü (CI #6) | 3 gün |
 | 61 `literal` destenin kelimeleri × 25 dil | LLM + CI #3 | 6 gün |
 | 31 `adapt` destesi — öncelikli 6 dil | **İnsan/editör**, deste başına ~2 saat | 8 gün |
@@ -248,7 +250,10 @@ bilinemez, `SEZON` chip'i ve "ŞİMDİ VİZYONDA" şeridinin ne göstereceği ta
 | Replay zaman damgası referansı | **Video saati** (kayıt başlangıcına göre), oyun saati değil. Duraklatmada kayıt da durduğu için ikisi ayrışıyordu |
 | `Çıkışta kayıtları sil` | **`Sonraki açılışta sil`** olarak yeniden adlandırıldı. iOS uygulama sonlandırılırken kod çalışacağını garanti etmiyor; verilmiş bir gizlilik sözünü tutmayan ayar, § `04` §4.2'de App Review riski olarak yazılan hatanın aynısı |
 | Ücretsiz custom destede `OYNA` | 5 kelime tamamlanınca buton aktif görünür ama paywall açar: "Kendi destenle oynamak Tam Bilet'te." Ayrıca `custom_deck_locked_tap(word_count)` event'i eklenir — gating gerekçesi ancak böyle ölçülebilir |
-| Mod Seçimi'nde kilit göstergesi | 4 premium mod kartında sağ üstte bilet ikonu + soluk zemin, kilitli deste kartıyla aynı dil (§ `01` §4) |
+| **Ücretsizde `ownWords` modu** | Mod kartı kilitli, dokunuş **doğrudan paywall** açar; Kelime Sepeti ekranı hiç açılmaz. Yukarıdaki satırla çelişmiyor: orada kullanıcı kelimeleri zaten *önceden* yazmıştı, burada yazdırıp sonunda kapıyı kapatmak yem-değiştir olur |
+| **Kelime Sepeti + tur ortasında arka plan** | Sepet `GameSetup` içinde, `LiveGame`'in dışında — tur çökse bile kelimeler duruyor. Ama uygulama **sonlandırılırsa** kaydedilmemiş sepet gider. Sepet, 5 kelimeye ulaştığı andan itibaren `UserDefaults`'a taslak olarak yazılır ve kaydedilirse ya da kullanıcı sepeti boşaltırsa silinir |
+| **Sepet kaydedilirken limit dolu** | Premium'da 3 deste doluysa tur sonundaki `SEPETİ KAYDET` şeridi "3 destenin dolu, birini sil ya da üzerine yaz" seçeneği sunar. Sessizce kaydetmemek en kötü davranış |
+| Mod Seçimi'nde kilit göstergesi | 5 premium mod kartında sağ üstte bilet ikonu + soluk zemin, kilitli deste kartıyla aynı dil (§ `01` §4) |
 | Mix'te 0 deste seçili | `OYNA` disabled + "En az 2 deste seç" |
 
 ---
@@ -274,6 +279,9 @@ Eklenecekler:
 | `mix_save`, `session_start` | — |
 | `word_pool_recycled` | `deck_ids`, `round_index` — havuz tükenmesi gerçekte ne sıklıkta oluyor |
 | `notification_permission_result` | `granted` |
+| `notification_setting_toggle` | `row`, `value` — ayarlardaki anahtar (§ `06` §1) |
+| `own_words_basket_play` | `word_count` — kaç kelimeyle oynanıyor; 20 tavsiyesinin tutup tutmadığı |
+| `own_words_basket_save` | `saved` (bool), `word_count` — sepetin kalıcıya dönüşme oranı |
 
 ---
 
@@ -326,9 +334,13 @@ Bunlar düzeltilebilir hatalar değil, **senin kararını** bekleyen riskler.
    Filipince için ayrı store metadata locale'i yok). "25 dilde ASO" planı olduğu
    gibi uygulanamaz; ayrıca `be`, `ca`, `fil`, `hr`, `id`, `ms`, `ro` için ASO
    hipotezi hiç yazılmamış.
-10. **Paywall fayda listesi eksik satış** — `Canlandır` modu ve Replay/Film Arşivi
-    paywall'da hiç anılmıyor. Replay 7.5 gün geliştirme alıp "viral paylaşım
-    motoru" diye gerekçelendirilmişken satış metninde tek satırı yok.
+10. **Paywall'da eksik satış** — `Canlandır` modu ve Replay/Film Arşivi
+    paywall'da anılmıyordu. Replay 7.5 gün geliştirme alıp "viral paylaşım
+    motoru" diye gerekçelendirilmişken satış metninde tek satırı yoktu.
+    **Kısmen kapatıldı:** fayda listesi kaldırılıp yerine gelen iki satır özete
+    `Replay` girdi (§ `03` §2). `Canlandır` hâlâ yok — afiş duvarı modları değil
+    desteleri gösteriyor, iki satıra da sığmadı. Mod bazlı satış yapılacaksa yeri
+    Varyant B (bağlamlı modal): kilitli moda dokunulduğunda o modun adı başlıkta.
 
 ---
 
@@ -345,7 +357,7 @@ Bunlar düzeltilebilir hatalar değil, **senin kararını** bekleyen riskler.
 | Kalan küçük düzeltmeler (§9) | 2 gün |
 | Ek analytics event'leri | 0.5 gün |
 
-**Toplam +11 gün.** Geliştirme ~62.5 günden **~73.5 güne** çıkıyor.
+**Toplam +11 gün.** Geliştirme ~63 günden **~74 güne** çıkıyor.
 
 Bu artış kötü haber gibi görünüyor ama aslında tersi: bu 11 gün zaten
 harcanacaktı — fark, şimdi planlı mı yoksa geliştirme sırasında "bir de bunu
