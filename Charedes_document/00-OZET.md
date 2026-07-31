@@ -107,6 +107,7 @@ Taslaklar üzerine notlar:
 | Deste sayısı | **124 deste tanımlı, 92'si v1'de** / ~12.000 kart. 13 bölüm |
 | Deste çeşitliliği | 6 eksende dengelenmiş (kitle, oynanabilirlik, bilgi, dönem, kültür, sezon) + `playability` alanı (`mime`/`describe`/`both`) |
 | IP politikası | Deste adlarında ve kapaklarda **marka/telifli karakter yok** — jenerik adlandırma |
+| Deste kapakları | **92/92 üretildi.** Şeffaf amblem (1024×1024 RGBA), görselde yazı yok → 25 dilde tek görsel. Bkz. `kapaklar.html` |
 | Ücretsiz erişim | **1 deste** (Parti Başlangıcı) + günlük rotasyonlu 1 bedava deste |
 | Monetizasyon | Sadece abonelik (RevenueCat), reklam **yok** |
 | Abonelik planları | **Haftalık (3 gün deneme) · Aylık · Yıllık** |

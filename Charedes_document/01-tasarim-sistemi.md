@@ -281,30 +281,229 @@ tutamak çizgisi (grabber), zemin `surfaceCardRaised`.
 
 ## 5. Deste görselleri için üretim reçetesi
 
-92 destenin görselini tutarlı üretmek için tek prompt iskeleti. Boyut **1080×1440
-(3:4)**, `@2x` ve `@3x` türevleri.
+92 deste kapağı **şeffaf amblem** olarak üretiliyor: zemin görselin içinde
+değil, uygulamada çiziliyor. Boyut **1024×1024 kare RGBA**, kart içinde art
+alanının %80 genişliğinde ortalanıyor.
+
+### 5.1 Neden şeffaf
+
+| | Opak 3:4 görsel | Şeffaf kare amblem |
+|---|---|---|
+| Palet sadakati | Her üretimde bordo tonu kayıyor | Zemin token'dan gelir, kayamaz |
+| Kâğıt kenarı | Kartın altın çerçevesiyle çift çerçeve yapıyor | Sorun ortadan kalkıyor |
+| Bölüm tonlaması | Sabit | Art alanı gradyanı bölüme göre değişebilir |
+| Kilitli sepya | Tüm görsele uygulanıyor | Yalnız amblemi etkiler, zemin sabit kalır |
+
+### 5.2 Kritik teknik gerçek
+
+Görsel üretici **gerçek alfa kanalı vermiyor.** "Transparent background" denince
+satranç desenini boyayarak taklit ediyor; çıkan dosya `RGB` modunda ve köşe
+pikselleri beyaz. Bu yüzden kapaklar **paletimizde bulunmayan düz magenta
+`#FF00FF` zeminle** üretilip `deste-gorselleri/pipeline.py` ile programatik
+kesiliyor.
+
+Kesme matematiği: gözlenen piksel `C = A·F + (1−A)·B`. Zemin `B` her dosyanın
+kenar şeridinden **ölçülüyor** — üretici tam `#FF00FF` vermiyor, biraz kayıyor
+ve sabit zemin varsayınca alfa tam sıfıra inmiyor. Alfa magenta taşmasından
+türetiliyor, renk `F` unpremultiply ile geri kazanılıyor.
+
+> Kaba despill (R ve B'den sabit değer çıkarma) denendi ve **ince ışınları
+> soğutup grileştirdi.** Işın çelengi amblem kalıbının parçası olduğu için bu
+> 92 kapağın tamamını bozardı; unpremultiply yolu tonu koruyor.
+
+### 5.3 Prompt iskeleti
 
 ```
-Vintage 1950s movie poster illustration of {KONU},
-limited color palette: deep burgundy #47161F, cream #F4E7CE,
-amber #F0A93B, muted teal #2F7F7C,
-screen-printed texture, visible halftone dots, heavy film grain,
-slightly faded and worn paper edges, high contrast,
-bold simple composition with clear central subject,
-no text, no letters, no watermark, flat illustration, not photorealistic
+Vintage 1950s screen-printed poster style illustration of a single centered
+emblem: {KONU}, framed loosely by a subtle symmetrical starburst of thin
+radiating lines.
+The illustration uses ONLY these four colors: cream #F4E7CE, amber gold
+#F0A93B, muted teal #2F7F7C, and dark burgundy #47161F for outlines and
+internal shading.
+Screen-printed halftone dot texture visible inside the shapes.
+CRITICAL BACKGROUND REQUIREMENT: place the entire artwork on a perfectly flat,
+uniform, solid pure magenta background, exact color #FF00FF, completely even
+with no gradient, no texture, no grain, no shading, no vignette and no drop
+shadow anywhere on the magenta. Magenta must not appear anywhere inside the
+illustration.
+No frame, no border, no paper edge.
+Absolutely no text, no letters, no numbers, no watermark, no logos.
+Flat vector-like illustration, not photorealistic.
 ```
 
-Kurallar:
+### 5.4 Kurallar
+
 - **Görselin üzerine yazı üretilmeyecek.** Başlık uygulama tarafında lokalize
   metinle basılıyor — 25 dilde 92 görseli yeniden üretmek imkânsız olurdu.
   (Referans uygulamada başlıklar görsele gömülü, bu yüzden tek dilde kalıyorlar.)
-- Ana özne kartın üst %60'ında; alt %40 başlık şeridi için nefes alanı.
+- **Saydam/tül nesne yasak.** Chroma-key saydam özneyi kurtaramaz: magenta
+  içinden geçer ve nesne pembeye boyanır. `bachelor` destesinde duvak tül
+  üretildi ve pembe çıktı; opak krem duvakla yeniden üretildi. Cam, tül, duman,
+  sabun köpüğü konu olarak seçilmeyecek — seçilirse "fully OPAQUE, not sheer,
+  not translucent" ibaresi prompt'a eklenecek.
+- **Pembe/mor/eflatun yasak.** Amblemin içinde magenta eksenine yakın renk
+  olursa key onu zemin sanıp delik açar. Prompt'ta açıkça yasaklanıyor.
+- **Gözenekli doku dolu gövde olarak istenecek.** File, ızgara, hasır, örgü,
+  kafes gibi arası boşluklu dokular gerçek delikli üretilirse key o boşlukları
+  keser ve amblem ortasında yırtık gibi görünür. `basketball` destesinde pota
+  filesi gerçek örgü olarak geldi, dolu krem gövde + üstüne çizilmiş baklava
+  deseniyle yeniden üretildi. Prompt'a "SOLID FILLED … mesh drawn only as thin
+  lines on top of the solid fill, no see-through gaps" ibaresi ekleniyor.
+- Ana özne kare tuvale ortalanıyor; içerik etrafında %4 nefes payı bırakılıyor.
+- **Kadraj dışına uzantı yasak.** Asılı nesnelerde üretici zinciri/ipi tuvalin
+  üst kenarına kadar götürüp kesiyor; kartta amblem kırpılmış görünüyor.
+  `ramadan` destesinde fener zinciri kenardan taştı, kısa ve kapalı bir askı
+  halkasıyla yeniden üretildi. Prompt'a "nothing touching or running off the
+  image edges" ibaresi ekleniyor.
 - Fotoğraf kullanılmayacak — tek bir fotoğraf tüm ızgarayı bozar.
-- Dosya adı: `deck_{id}` → `Assets.xcassets/deck_movies.imageset/`
+- Dosya adı: `deck_{id}.png` → `Assets.xcassets/deck_{id}.imageset/`
+
+### 5.5 Kalite kontrolü
+
+`deste-gorselleri/kontrol.py` her kapağı üç ölçütle tarıyor ve bunlar CI'a
+bağlanacak:
+
+| Ölçüt | Nasıl | Eşik |
+|---|---|---|
+| Palet dışı renk | Opak piksellerin palete RGB uzaklığı | > %18 → **hata** |
+| Pembe kalıntı | Key'in kaçırdığı magenta piksel | > %0.4 → **hata** |
+| İç boşluk | Kenardan flood fill; dışa bağlı olmayan şeffaf bölge | > %0.5 → **incele** |
+
+> İç boşluk tek başına hata sayılmıyor. Maskenin göz deliği, düdüğün kordon
+> ilmeği, çalar saatin kulp kemeri gibi **meşru kapalı boşluklar** da bu ölçüte
+> düşüyor ve kartta zeminin görünmesi doğru davranış. `animalsAct`, `sportsAct`
+> ve `badHabits` bu yüzden işaretlendi, üçü de sağlam çıktı. Key'in gerçekten
+> öznenin içini yediği durumun ayırt edici işareti palet ihlali ya da pembe
+> kalıntıdır; ikisi de sıfırsa boşluk kasıtlıdır.
+
+Sağlıklı bir kapakta şeffaf oran **%70–80**, yumuşak kenar **%2–4** civarında.
+Şeffaf oran %35'in altına düşerse zemin kesilmemiş, opak oran %8'in altına
+düşerse özne yenmiş demektir.
+
+Sayısal kontrol amblemin **anlamını** denetlemiyor: IP ihlali, yaş uygunluğu,
+aynı bölümdeki iki amblemin birbirine benzemesi gibi sorunlar ancak gözle
+görülüyor. `deste-gorselleri/kontak.py {bölüm} {dosya}` bir bölümün kapaklarını
+gerçek kart zemini üstünde ızgaraya dizip tek JPEG üretiyor; bölüm bitince önce
+buna, sonra `kapaklar.html`e bakılıyor.
+
+### 5.6 Üretim durumu
+
+v1'in **92 kapağının tamamı üretildi.** Bölüm bölüm ilerlendi, her bölümün
+sonunda kontak sayfasıyla gözle bakıldı. Çıktılar:
+
+| Klasör | İçerik |
+|---|---|
+| `deste-gorselleri/ham/` | Magenta zeminli üretim çıktıları (RGB, arşiv) |
+| `deste-gorselleri/seffaf/` | Kesilmiş kapaklar (1024×1024 RGBA, uygulamaya girecek) |
+| `deste-gorselleri/_qc/` | Bölüm kontak sayfaları |
+| `kapaklar.html` | Bölüm bölüm gözden geçirme sayfası |
+
+Palet ve pembe kalıntı ölçütlerinden **hiçbir kapak hata almıyor.** 18 kapak iç
+boşluk uyarısı veriyor; hepsi maske göz deliği, çaydanlık kulpu, fener askısı
+gibi kasıtlı boşluklar.
+
+Üretim sırasında yeniden çekilen kapaklar ve nedenleri özetle: IP sızması
+(`superheroes`, `streaming`, `anime`, `tvCartoons`), palet ihlali (`genres`,
+`vehicles`), gerçek delikli doku (`basketball`), kart zeminiyle karışan gövde
+rengi (`nineties`, `retroTech`), görselde harf (`badHabits`), kadraj taşması
+(`ramadan`), konunun deste adını karşılamaması (`cars`).
 
 ---
 
-## 6. Erişilebilirlik
+## 6. Kapak dışı görsel varlık envanteri
+
+Onboarding, Nasıl Oynanır ve paywall ekranları için **ikon üretmiyoruz.** Üç
+kaynağa dağıtıyoruz ve üretilecek liste yalnızca 4 kaleme iniyor.
+
+### 6.1 SF Symbols — üretim yok
+
+Tüm arayüz ikonları SF Symbols, amber/pirinç tonuna boyanıyor (§1). Gerekçe
+maliyet değil davranış: Dynamic Type ile ölçekleniyor, RTL dillerde yön
+gerektiren semboller otomatik aynalanıyor, VoiceOver etiketleri hazır geliyor.
+Elle çizilmiş ikon kümesi bu üçünü 25 dilde tek tek üstlenmek demek.
+
+Paywall fayda listesindeki "pirinç ikon"lar da buradan:
+
+| Fayda satırı | Sembol |
+|---|---|
+| 92 temalı deste, 13 bölüm | `rectangle.stack.fill` |
+| 12.000+ kart | `square.grid.3x3.fill` |
+| 3 özel deste oluştur | `square.and.pencil` |
+| Desteleri karıştır (Mix) | `shuffle` |
+| Takım Savaşı ve Hız Turu | `flag.2.crossed.fill` |
+| Reklamsız, sınırsız oyun | `infinity` |
+| Aile Paylaşımı dahil | `person.2.fill` |
+
+### 6.2 Kodla çizilenler — üretim yok
+
+Bunlar statik görsel olarak üretilmemeli, çünkü ya **canlı veriye** ya da
+**kullanıcı durumuna** bağlı; PNG olarak dondurulursa yanlış bilgi verir.
+
+| Yer | Neden kod |
+|---|---|
+| Onboarding 1 — app ikonu + marquee çerçeve | Ampuller animasyonlu; çerçeve zaten komponent |
+| Onboarding 2 / Nasıl Oynanır 1 — yelpaze afişler | **Gerçek deste kapaklarından** diziliyor. Statik çizim, kapak seti değişince yalan söyler |
+| Onboarding 5 / Nasıl Oynanır 4 — eğme diyagramı | Telefonun eğilmesi **animasyonla** öğretiliyor; ayrıca kullanıcı dokunmatik moda geçtiyse bu sayfa gizleniyor ya da dokunma anlatımına dönüyor (§`09`). Statik görsel iki durumu karşılayamaz |
+| Paywall görsel şeridi | Aynı kapak kolajı; modal varyantta **o destenin** kartı büyük gösteriliyor |
+| Film şeridi ilerleme göstergesi, sprocket şerit, kupon tırtığı | Sayfa sayısına göre uzuyor, komponent |
+
+Eğme diyagramında yeşil/kırmızı bölge tek ayırt edici olamaz — renk körlüğü için
+ok yönü ve `DOĞRU`/`PAS` damga şekli de farklı (§7).
+
+### 6.3 Üretilecekler — 4 kalem
+
+| # | Varlık | Ölçü | Durum |
+|---|---|---|---|
+| 1 | Alnında telefon tutan figür, karşısında 3 kişi | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_forehead.png` |
+| 2 | Mim yapan figür + üstü çizili konuşma balonu | 4:3, şeffaf | **Üretildi** — `ekran-gorselleri/seffaf/ob_mime.png` |
+| 3 | App ikonu | 1024×1024 opak | 3 aday üretildi, seçim bekliyor |
+| 4 | App Store ekran görüntüleri | Cihaz başına set | Bekliyor; §`03` ASO ile birlikte |
+
+İlk ikisi deste kapağı hattının chroma-key matematiğini aynen kullanıyor
+(`ekran-gorselleri/kes.py`, `pipeline.magenta_kes`'i içe alıyor), tek fark tuvalin
+kare değil 4:3 olması — sahnede iki taraf var, kareye sıkışınca figürler küçülüyor.
+`kontrol.py` artık klasör argümanı alıyor, aynı ölçütler bu görsellere de
+uygulanıyor. Buna ek iki kural giriyor:
+
+- **İnsan figürleri silüet.** Ten rengi, saç tipi, yüz hattı, giyim kültürü
+  yok — dolu tek renk gövde. 25 dilde tek görsel kullanacağız; belirgin bir etnik
+  ya da kültürel okuma taşıyan figür bazı pazarlarda yabancı duruyor. Silüet
+  ayrıca amblem diliyle de tutarlı.
+- **Cinsiyet nötr.** Saç, etek, göğüs hattı gibi işaret yok; omuz ve duruşla
+  ayrışan üç ayrı beden.
+
+Görselde yazı yasağı burada da geçerli: konuşma balonu **boş** ve üstü çizili,
+içine "..." bile yazılmıyor.
+
+Kapaklarda karşılaşmadığımız iki hata bu iki görselde çıktı ve kural oldu:
+
+- **Ten rengi kayması.** "Silüet" denince üretici figürü şeftali/bej tonda
+  veriyor; palet kontrolünden geçse bile figür etnik okuma kazanıyor. Prompt'ta
+  krem "eski kağıt rengi" olarak tanımlanıp *NOT peach, NOT beige, NOT tan*
+  ibaresi ekleniyor.
+- **Bordo çizgi bordo zeminde kayboluyor.** Kapaklarda ince bordo kontur amblemin
+  kendi içinde kalıyor, ama bu sahnelerde bakış çizgileri figürler *arasında*
+  gidiyor ve kadife zemine düşüyor. Zemine değen her çizgi amber/altın olacak.
+
+### 6.4 App ikonu
+
+Üç aday `ekran-gorselleri/app-ikonu/` altında, karşılaştırma sayfası
+`ekran-gorselleri/_qc/app-ikonu.jpg`. Adaylar 300/120/60 px olarak yan yana
+basılıyor, çünkü ikonun asıl sınavı 60 px.
+
+| Aday | Fikir | 60 px'te |
+|---|---|---|
+| A | Ampullü marquee tabelası | Okunuyor — silüeti belirgin, parlak amber çember dikkat çekiyor |
+| B | Alnında telefon tutan profil + ampul yayı | Kafa okunuyor, telefon ince bir banda dönüşüp saç bandı gibi duruyor; ampul yayı dağılıyor |
+| C | Ampullü madalyon içinde aynı profil | Çember baskın, kafa lekeye dönüyor, telefon yok oluyor |
+
+App ikonu için katı kurallar: **alfa kanalı ve şeffaflık yasak**, köşeler yuvarlanmamış
+tam kare verilir (iOS kendi maskeler), ikonun içine metin konmaz — 25 dilde tek
+ikon kullanıyoruz.
+
+---
+
+## 7. Erişilebilirlik
 
 - Metin/zemin kontrastı: `textCream` üzerine `surfaceCard` = 11.4:1, amber buton
   üzerine `textOnAmber` = 9.8:1. Hepsi WCAG AA üstü.

@@ -1,0 +1,750 @@
+[
+  {
+    "id": "party",
+    "ad": "Parti Başlangıcı",
+    "bolum": "PARTİ",
+    "reel": "01",
+    "v1": true,
+    "konu": "Işın çelengi içinde parti şapkası"
+  },
+  {
+    "id": "icebreaker",
+    "ad": "Buz Kırıcı",
+    "bolum": "PARTİ",
+    "reel": "02",
+    "v1": true,
+    "konu": "Çatlamış buz bloğu"
+  },
+  {
+    "id": "partyFlirty",
+    "ad": "Flörtöz",
+    "bolum": "PARTİ",
+    "reel": "03",
+    "v1": true,
+    "konu": "Gül ve katlanmış kağıt not"
+  },
+  {
+    "id": "dares",
+    "ad": "Cesaret",
+    "bolum": "PARTİ",
+    "reel": "04",
+    "v1": true,
+    "konu": "Yıldız yüzlü zar"
+  },
+  {
+    "id": "karaoke",
+    "ad": "Karaoke",
+    "bolum": "PARTİ",
+    "reel": "05",
+    "v1": true,
+    "konu": "Retro mikrofon ve nota"
+  },
+  {
+    "id": "dance",
+    "ad": "Dans Hareketleri",
+    "bolum": "PARTİ",
+    "reel": "06",
+    "v1": true,
+    "konu": "Disko topu ve dans ayakkabısı"
+  },
+  {
+    "id": "bachelor",
+    "ad": "Bekarlığa Veda",
+    "bolum": "PARTİ",
+    "reel": "07",
+    "v1": true,
+    "konu": "Taç ve opak krem duvak"
+  },
+
+  {
+    "id": "jobs",
+    "ad": "Meslekler",
+    "bolum": "CANLANDIR",
+    "reel": "08",
+    "v1": true,
+    "konu": "Baret, İngiliz anahtarı, fırça"
+  },
+  {
+    "id": "emotions",
+    "ad": "Duygular ve Haller",
+    "bolum": "CANLANDIR",
+    "reel": "09",
+    "v1": true,
+    "konu": "Komedi ve trajedi maskeleri"
+  },
+  {
+    "id": "animalsAct",
+    "ad": "Hayvan Taklitleri",
+    "bolum": "CANLANDIR",
+    "reel": "10",
+    "v1": true,
+    "konu": "Saplı hayvan yüzü maskesi"
+  },
+  {
+    "id": "chores",
+    "ad": "Günlük İşler",
+    "bolum": "CANLANDIR",
+    "reel": "11",
+    "v1": true,
+    "konu": "Süpürge ve kova"
+  },
+  {
+    "id": "sportsAct",
+    "ad": "Spor Hareketleri",
+    "bolum": "CANLANDIR",
+    "reel": "12",
+    "v1": true,
+    "konu": "Düdük ve kronometre"
+  },
+  {
+    "id": "superpowers",
+    "ad": "Süper Güçler",
+    "bolum": "CANLANDIR",
+    "reel": "13",
+    "v1": true,
+    "konu": "Rozet içinde şimşek, pelerin"
+  },
+  {
+    "id": "badHabits",
+    "ad": "Kötü Alışkanlıklar",
+    "bolum": "CANLANDIR",
+    "reel": "14",
+    "v1": true,
+    "konu": "Çalan çalar saat, erteleme"
+  },
+  {
+    "id": "accents",
+    "ad": "Sesler ve Aksanlar",
+    "bolum": "CANLANDIR",
+    "reel": "15",
+    "v1": true,
+    "konu": "İç içe konuşma balonu ve ses dalgası"
+  },
+  {
+    "id": "celebImpressions",
+    "ad": "Ünlü Taklitleri",
+    "bolum": "CANLANDIR",
+    "reel": "16",
+    "v1": true,
+    "konu": "Güneş gözlüğü ve papyon"
+  },
+
+  {
+    "id": "movieClassics",
+    "ad": "Film Klasikleri",
+    "bolum": "FİLM & TV",
+    "reel": "17",
+    "v1": true,
+    "konu": "Kollu eski sinema kamerası"
+  },
+  {
+    "id": "cartoonMovies",
+    "ad": "Çizgi Film Filmleri",
+    "bolum": "FİLM & TV",
+    "reel": "18",
+    "v1": true,
+    "konu": "Kalem ve film şeridi"
+  },
+  {
+    "id": "superheroes",
+    "ad": "Süper Kahramanlar",
+    "bolum": "FİLM & TV",
+    "reel": "19",
+    "v1": true,
+    "konu": "Yükselen yumruk, hız çizgileri"
+  },
+  {
+    "id": "villains",
+    "ad": "Kötü Karakterler",
+    "bolum": "FİLM & TV",
+    "reel": "20",
+    "v1": true,
+    "konu": "Silindir şapka, bıyık, monokl"
+  },
+  {
+    "id": "tvSeries",
+    "ad": "Diziler",
+    "bolum": "FİLM & TV",
+    "reel": "21",
+    "v1": true,
+    "konu": "Antenli eski televizyon"
+  },
+  {
+    "id": "streaming",
+    "ad": "Dizi Platformu Yapımları",
+    "bolum": "FİLM & TV",
+    "reel": "22",
+    "v1": true,
+    "konu": "Ekranda oynat üçgeni, sinyal yayı"
+  },
+  {
+    "id": "anime",
+    "ad": "Anime",
+    "bolum": "FİLM & TV",
+    "reel": "23",
+    "v1": true,
+    "konu": "Stilize iri gözler, hız çizgileri"
+  },
+  {
+    "id": "horror",
+    "ad": "Korku Filmleri",
+    "bolum": "FİLM & TV",
+    "reel": "24",
+    "v1": true,
+    "konu": "Şamdan ve örümcek ağı"
+  },
+  {
+    "id": "scifi",
+    "ad": "Bilim Kurgu",
+    "bolum": "FİLM & TV",
+    "reel": "25",
+    "v1": true,
+    "konu": "Uçan daire ve ışın"
+  },
+  {
+    "id": "actors",
+    "ad": "Oyuncular",
+    "bolum": "FİLM & TV",
+    "reel": "26",
+    "v1": true,
+    "konu": "Ampullü kuliste aynası"
+  },
+  {
+    "id": "movieQuotes",
+    "ad": "Unutulmaz Replikler",
+    "bolum": "FİLM & TV",
+    "reel": "27",
+    "v1": true,
+    "konu": "Film şeridinden konuşma balonu"
+  },
+  {
+    "id": "tvCartoons",
+    "ad": "Çizgi Dizi Kahramanları",
+    "bolum": "FİLM & TV",
+    "reel": "28",
+    "v1": true,
+    "konu": "Çizgi film yıldız maskotu"
+  },
+
+  {
+    "id": "singers",
+    "ad": "Şarkıcılar",
+    "bolum": "MÜZİK",
+    "reel": "29",
+    "v1": true,
+    "konu": "Borulu gramofon, uçan notalar"
+  },
+  {
+    "id": "bands",
+    "ad": "Gruplar",
+    "bolum": "MÜZİK",
+    "reel": "30",
+    "v1": true,
+    "konu": "Elektro gitar ve çapraz baget"
+  },
+  {
+    "id": "instruments",
+    "ad": "Enstrümanlar",
+    "bolum": "MÜZİK",
+    "reel": "31",
+    "v1": true,
+    "konu": "Sarmal korno"
+  },
+  {
+    "id": "genres",
+    "ad": "Müzik Türleri",
+    "bolum": "MÜZİK",
+    "reel": "32",
+    "v1": true,
+    "konu": "Kemerli müzik dolabı"
+  },
+  {
+    "id": "lyrics",
+    "ad": "Şarkı Sözleri",
+    "bolum": "MÜZİK",
+    "reel": "33",
+    "v1": true,
+    "konu": "Kıvrılan nota kâğıdı"
+  },
+  {
+    "id": "kpop",
+    "ad": "K-Pop",
+    "bolum": "MÜZİK",
+    "reel": "34",
+    "v1": true,
+    "konu": "Parmak kalp jesti, kıvılcım"
+  },
+
+  {
+    "id": "kidsFirst",
+    "ad": "İlk Kelimeler",
+    "bolum": "ÇOCUK",
+    "reel": "35",
+    "v1": true,
+    "konu": "Yıldız başlı bebek çıngırağı"
+  },
+  {
+    "id": "animalSounds",
+    "ad": "Hayvan Sesleri",
+    "bolum": "ÇOCUK",
+    "reel": "36",
+    "v1": true,
+    "konu": "İnek başı ve ses yayı"
+  },
+  {
+    "id": "colorsShapes",
+    "ad": "Renkler ve Şekiller",
+    "bolum": "ÇOCUK",
+    "reel": "37",
+    "v1": true,
+    "konu": "İç içe daire, üçgen, kare"
+  },
+  {
+    "id": "fairyTales",
+    "ad": "Peri Masalları",
+    "bolum": "ÇOCUK",
+    "reel": "38",
+    "v1": true,
+    "konu": "Açık masal kitabı ve taç"
+  },
+  {
+    "id": "toys",
+    "ad": "Oyuncaklar",
+    "bolum": "ÇOCUK",
+    "reel": "39",
+    "v1": true,
+    "konu": "Oturan oyuncak ayı"
+  },
+  {
+    "id": "school",
+    "ad": "Okul",
+    "bolum": "ÇOCUK",
+    "reel": "40",
+    "v1": true,
+    "konu": "Cetvelli okul çantası"
+  },
+  {
+    "id": "fruits",
+    "ad": "Meyve ve Sebzeler",
+    "bolum": "ÇOCUK",
+    "reel": "41",
+    "v1": true,
+    "konu": "Elma, armut, havuç"
+  },
+  {
+    "id": "vehicles",
+    "ad": "Araçlar",
+    "bolum": "ÇOCUK",
+    "reel": "42",
+    "v1": true,
+    "konu": "Yelkenli tekne"
+  },
+  {
+    "id": "dinosaurs",
+    "ad": "Dinozorlar",
+    "bolum": "ÇOCUK",
+    "reel": "43",
+    "v1": true,
+    "konu": "Uzun boyunlu dinozor ve yumurta"
+  },
+
+  {
+    "id": "football",
+    "ad": "Futbol",
+    "bolum": "SPOR",
+    "reel": "44",
+    "v1": true,
+    "konu": "Futbol topu ve hareket yayı"
+  },
+  {
+    "id": "basketball",
+    "ad": "Basketbol",
+    "bolum": "SPOR",
+    "reel": "45",
+    "v1": true,
+    "konu": "Potadan geçen top"
+  },
+  {
+    "id": "footballers",
+    "ad": "Futbolcular",
+    "bolum": "SPOR",
+    "reel": "46",
+    "v1": true,
+    "konu": "Krampon"
+  },
+  {
+    "id": "olympics",
+    "ad": "Olimpiyat Sporları",
+    "bolum": "SPOR",
+    "reel": "47",
+    "v1": true,
+    "konu": "Meşale ve defne dalı"
+  },
+  {
+    "id": "combat",
+    "ad": "Dövüş Sporları",
+    "bolum": "SPOR",
+    "reel": "48",
+    "v1": true,
+    "konu": "Çapraz boks eldivenleri"
+  },
+  {
+    "id": "extreme",
+    "ad": "Ekstrem Sporlar",
+    "bolum": "SPOR",
+    "reel": "49",
+    "v1": true,
+    "konu": "Rampada kaykay"
+  },
+  {
+    "id": "fitness",
+    "ad": "Fitness Hareketleri",
+    "bolum": "SPOR",
+    "reel": "50",
+    "v1": true,
+    "konu": "Dambıl ve hareket yayı"
+  },
+
+  {
+    "id": "space",
+    "ad": "Uzay",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "51",
+    "v1": true,
+    "konu": "Halkalı gezegen ve hilal"
+  },
+  {
+    "id": "body",
+    "ad": "İnsan Vücudu",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "52",
+    "v1": true,
+    "konu": "Anatomik kalp ve nabız çizgisi"
+  },
+  {
+    "id": "inventions",
+    "ad": "İcatlar",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "53",
+    "v1": true,
+    "konu": "Filamentli ampul"
+  },
+  {
+    "id": "historyFigures",
+    "ad": "Tarihi Kişiler",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "54",
+    "v1": true,
+    "konu": "Kaide üstünde klasik büst"
+  },
+  {
+    "id": "famousWomen",
+    "ad": "Tarihe Geçen Kadınlar",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "55",
+    "v1": true,
+    "konu": "Kadın profilli kamea madalyon"
+  },
+  {
+    "id": "mythology",
+    "ad": "Mitoloji",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "56",
+    "v1": true,
+    "konu": "Amfora ve şimşek"
+  },
+  {
+    "id": "science",
+    "ad": "Bilim Kavramları",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "57",
+    "v1": true,
+    "konu": "Erlen şişesi ve baloncuklar"
+  },
+  {
+    "id": "books",
+    "ad": "Kitaplar",
+    "bolum": "BİLGİ & OKUL",
+    "reel": "58",
+    "v1": true,
+    "konu": "Üst üste kitap yığını"
+  },
+
+  {
+    "id": "brands",
+    "ad": "Markalar",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "59",
+    "v1": true,
+    "konu": "Boş armalı alışveriş çantası"
+  },
+  {
+    "id": "cars",
+    "ad": "Otomobil Markaları",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "60",
+    "v1": true,
+    "konu": "Klasik otomobil önden görünüm"
+  },
+  {
+    "id": "socialMedia",
+    "ad": "Sosyal Medya",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "61",
+    "v1": true,
+    "konu": "Kalp rozetli bildirim çanı"
+  },
+  {
+    "id": "videoGames",
+    "ad": "Video Oyunları",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "62",
+    "v1": true,
+    "konu": "Oyun kolu"
+  },
+  {
+    "id": "mobileGames",
+    "ad": "Mobil Oyunlar",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "63",
+    "v1": true,
+    "konu": "Ekranında yön tuşu olan telefon"
+  },
+  {
+    "id": "techCompanies",
+    "ad": "Teknoloji Şirketleri",
+    "bolum": "MARKA & TEKNOLOJİ",
+    "reel": "64",
+    "v1": true,
+    "konu": "Mikroçip"
+  },
+
+  {
+    "id": "nineties",
+    "ad": "90'lara Dönüş",
+    "bolum": "NOSTALJİ",
+    "reel": "65",
+    "v1": true,
+    "konu": "Kaset"
+  },
+  {
+    "id": "eighties",
+    "ad": "80'ler",
+    "bolum": "NOSTALJİ",
+    "reel": "66",
+    "v1": true,
+    "konu": "Dört tekerli paten"
+  },
+  {
+    "id": "twoThousands",
+    "ad": "2000'ler",
+    "bolum": "NOSTALJİ",
+    "reel": "67",
+    "v1": true,
+    "konu": "Kapaklı cep telefonu"
+  },
+  {
+    "id": "retroTech",
+    "ad": "Eski Teknoloji",
+    "bolum": "NOSTALJİ",
+    "reel": "68",
+    "v1": true,
+    "konu": "Disket"
+  },
+  {
+    "id": "childhoodGames",
+    "ad": "Sokak Oyunları",
+    "bolum": "NOSTALJİ",
+    "reel": "69",
+    "v1": true,
+    "konu": "İpli topaç"
+  },
+
+  {
+    "id": "countries",
+    "ad": "Ülkeler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "70",
+    "v1": true,
+    "konu": "Ayaklı dünya küresi"
+  },
+  {
+    "id": "cities",
+    "ad": "Şehirler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "71",
+    "v1": true,
+    "konu": "Şehir silueti"
+  },
+  {
+    "id": "capitals",
+    "ad": "Başkentler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "72",
+    "v1": true,
+    "konu": "Yıldızlı harita iğnesi"
+  },
+  {
+    "id": "flags",
+    "ad": "Bayraklar",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "73",
+    "v1": true,
+    "konu": "Boş dalgalı flama"
+  },
+  {
+    "id": "landmarks",
+    "ad": "Görülmesi Gereken Yerler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "74",
+    "v1": true,
+    "konu": "Sütunlu tapınak cephesi"
+  },
+  {
+    "id": "food",
+    "ad": "Yemekler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "75",
+    "v1": true,
+    "konu": "Kapaklı servis tabağı ve çatal kaşık"
+  },
+  {
+    "id": "drinks",
+    "ad": "İçecekler",
+    "bolum": "DÜNYA & SEYAHAT",
+    "reel": "76",
+    "v1": true,
+    "konu": "Pipetli uzun bardak"
+  },
+
+  {
+    "id": "animals",
+    "ad": "Hayvanlar",
+    "bolum": "HAYVANLAR & DOĞA",
+    "reel": "77",
+    "v1": true,
+    "konu": "Önden fil kafası"
+  },
+  {
+    "id": "seaLife",
+    "ad": "Deniz Canlıları",
+    "bolum": "HAYVANLAR & DOĞA",
+    "reel": "78",
+    "v1": true,
+    "konu": "Su fışkırtan balina"
+  },
+  {
+    "id": "birds",
+    "ad": "Kuşlar",
+    "bolum": "HAYVANLAR & DOĞA",
+    "reel": "79",
+    "v1": true,
+    "konu": "Dalda ötleğen kuş"
+  },
+  {
+    "id": "dogBreeds",
+    "ad": "Köpek Irkları",
+    "bolum": "HAYVANLAR & DOĞA",
+    "reel": "80",
+    "v1": true,
+    "konu": "Tasmalı köpek kafası"
+  },
+
+  {
+    "id": "household",
+    "ad": "Evdeki Eşyalar",
+    "bolum": "EV & GÜNLÜK HAYAT",
+    "reel": "81",
+    "v1": true,
+    "konu": "Tek kişilik koltuk"
+  },
+  {
+    "id": "everyday",
+    "ad": "Günlük İhtiyaçlar",
+    "bolum": "EV & GÜNLÜK HAYAT",
+    "reel": "82",
+    "v1": true,
+    "konu": "Açık şemsiye"
+  },
+  {
+    "id": "kitchen",
+    "ad": "Mutfak",
+    "bolum": "EV & GÜNLÜK HAYAT",
+    "reel": "83",
+    "v1": true,
+    "konu": "Düdüklü çaydanlık"
+  },
+  {
+    "id": "clothes",
+    "ad": "Kıyafetler",
+    "bolum": "EV & GÜNLÜK HAYAT",
+    "reel": "84",
+    "v1": true,
+    "konu": "Askıda tişört"
+  },
+
+  {
+    "id": "newYear",
+    "ad": "Yılbaşı",
+    "bolum": "SEZON & TATİL",
+    "reel": "85",
+    "v1": true,
+    "konu": "Gece yarısı saati ve konfeti"
+  },
+  {
+    "id": "christmas",
+    "ad": "Noel",
+    "bolum": "SEZON & TATİL",
+    "reel": "86",
+    "v1": true,
+    "konu": "Süslü çam ağacı"
+  },
+  {
+    "id": "christmasMovies",
+    "ad": "Noel Filmleri",
+    "bolum": "SEZON & TATİL",
+    "reel": "87",
+    "v1": true,
+    "konu": "Çorapta film makarası"
+  },
+  {
+    "id": "valentine",
+    "ad": "Sevgililer Günü",
+    "bolum": "SEZON & TATİL",
+    "reel": "88",
+    "v1": true,
+    "konu": "Kalp mühürlü zarf"
+  },
+  {
+    "id": "halloween",
+    "ad": "Cadılar Bayramı",
+    "bolum": "SEZON & TATİL",
+    "reel": "89",
+    "v1": true,
+    "konu": "Bal kabağı feneri"
+  },
+  {
+    "id": "ramadan",
+    "ad": "Ramazan",
+    "bolum": "SEZON & TATİL",
+    "reel": "90",
+    "v1": true,
+    "konu": "Asılı fener"
+  },
+  {
+    "id": "eid",
+    "ad": "Bayram",
+    "bolum": "SEZON & TATİL",
+    "reel": "91",
+    "v1": true,
+    "konu": "Şekerlik ve sarılı şekerler"
+  },
+  {
+    "id": "summer",
+    "ad": "Yaz",
+    "bolum": "SEZON & TATİL",
+    "reel": "92",
+    "v1": true,
+    "konu": "Külahta dondurma"
+  }
+]

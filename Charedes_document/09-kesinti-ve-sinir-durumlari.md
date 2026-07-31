@@ -51,7 +51,7 @@ kısıtlı kullanıcı için bu bir çıkmaz sokaktı.
 Düzeltme: `Yatay çeviremiyorum` seçildiğinde oyun **portrait'te** açılır.
 Kelime daha küçük punto ile (Oswald Bold 48–64) ve dokunmatik cevap ile oynanır.
 Bu mod tilt kullanmaz, dolayısıyla telefonun alna konması gerekmez — kullanıcı
-telefonu elinde tutup ekranı başkasına gösterir. `01` §6'da "motor kısıtlılığı
+telefonu elinde tutup ekranı başkasına gösterir. `01` §7'de "motor kısıtlılığı
 olan kullanıcı için zorunlu" denen erişilebilirlik yolu ancak böyle tamamlanıyor.
 
 ---
