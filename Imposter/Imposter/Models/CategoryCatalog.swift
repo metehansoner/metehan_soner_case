@@ -20,7 +20,7 @@ struct CategoryDef: Identifiable, Hashable {
 enum CategoryCatalog {
     static let all: [CategoryDef] = [
         .init(id: "party", titleKey: "categories.party", descKey: "categories.partyDesc", imageName: "category_party", isFree: true),
-        .init(id: "football", titleKey: "categories.football", descKey: "categories.footballDesc", imageName: "category_football", isFree: true),
+        .init(id: "football", titleKey: "categories.football", descKey: "categories.footballDesc", imageName: "category_football", isFree: false),
         .init(id: "food", titleKey: "categories.food", descKey: "categories.foodDesc", imageName: "category_food", isFree: false),
         .init(id: "celebs", titleKey: "categories.celebs", descKey: "categories.celebsDesc", imageName: "category_celebs", isFree: false),
         .init(id: "hobbies", titleKey: "categories.hobbies", descKey: "categories.hobbiesDesc", imageName: "category_hobbies", isFree: false),
@@ -34,7 +34,12 @@ enum CategoryCatalog {
         .init(id: "places", titleKey: "categories.places", descKey: "categories.placesDesc", imageName: "category_places", isFree: false),
         .init(id: "animals", titleKey: "categories.animals", descKey: "categories.animalsDesc", imageName: "category_animals", isFree: false),
         .init(id: "sports", titleKey: "categories.sports", descKey: "categories.sportsDesc", imageName: "category_sports", isFree: false),
-        .init(id: "newyear", titleKey: "categories.newyear", descKey: "categories.newyearDesc", imageName: "category_newyear", isFree: false)
+        .init(id: "newyear", titleKey: "categories.newyear", descKey: "categories.newyearDesc", imageName: "category_newyear", isFree: false),
+        .init(id: "worldcup", titleKey: "categories.worldcup", descKey: "categories.worldcupDesc", imageName: "category_worldcup", isFree: false),
+        .init(id: "fashion", titleKey: "categories.fashion", descKey: "categories.fashionDesc", imageName: "category_fashion", isFree: false),
+        .init(id: "games", titleKey: "categories.games", descKey: "categories.gamesDesc", imageName: "category_games", isFree: false),
+        .init(id: "tech", titleKey: "categories.tech", descKey: "categories.techDesc", imageName: "category_tech", isFree: false),
+        .init(id: "music", titleKey: "categories.music", descKey: "categories.musicDesc", imageName: "category_music", isFree: false)
     ]
 
     static func recommendedImposters(for playerCount: Int) -> Int {

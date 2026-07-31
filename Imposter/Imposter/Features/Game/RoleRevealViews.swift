@@ -63,7 +63,8 @@ struct DarkCapsuleStyle: ButtonStyle {
     }
 }
 
-/// Continuous elastic column: cover then black reveal. Release snaps back.
+/// Signature reveal: a sealed card that only opens while you hold your finger down.
+/// Release re-seals it instantly — nobody peeks over your shoulder.
 struct RoleRevealView: View {
     let player: AssignedPlayer
     let hint: String?
@@ -72,166 +73,237 @@ struct RoleRevealView: View {
     var onDone: () -> Void
 
     @Bindable private var l10n = LocalizationManager.shared
-    @State private var scrollUp: CGFloat = 0
-    @State private var hintBobbing = false
-    /// Continue only after the user has peeked the secret at least once.
-    @State private var hasPeeked = false
 
-    private let revealFraction: CGFloat = 0.26
+    @State private var isHolding = false
+    @State private var fill: CGFloat = 0
+    @State private var isOpen = false
+    @State private var hasOpenedOnce = false
+    @State private var revealWork: DispatchWorkItem?
+    @State private var sealPulse = false
+
+    private let holdDuration: Double = 0.5
 
     var body: some View {
-        GeometryReader { geo in
-            let pageH = geo.size.height
-            let revealH = pageH * revealFraction
-            let maxScroll = revealH
-            let peekThreshold = revealH * 0.35
+        ZStack {
+            backdrop
 
-            ZStack(alignment: .top) {
-                Color.black.ignoresSafeArea()
+            GeometryReader { geo in
+                let cardHeight = min(max(geo.size.height * 0.48, 280), 400)
 
                 VStack(spacing: 0) {
-                    coverPage(height: pageH)
-                        .frame(width: geo.size.width, height: pageH)
+                    Text(l10n.t("reveal.turnOf", ["name": player.name]))
+                        .font(AppFont.display(34, weight: .black))
+                        .foregroundStyle(accentText)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .frame(maxWidth: .infinity)
 
-                    revealPage(height: revealH)
-                        .frame(width: geo.size.width, height: revealH)
+                    Spacer(minLength: 8)
+
+                    sealCard
+                        .frame(height: cardHeight)
+                        .padding(.horizontal, 22)
+
+                    Spacer(minLength: 8)
+
+                    footer
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 112, alignment: .bottom)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
                 }
-                .offset(y: -scrollUp)
+                .frame(width: geo.size.width, height: geo.size.height)
             }
-            .frame(width: geo.size.width, height: pageH, alignment: .top)
-            .clipped()
-            .contentShape(Rectangle())
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 8)
-                    .onChanged { value in
-                        let up = max(0, -value.translation.height)
-                        if up <= maxScroll {
-                            scrollUp = up
-                        } else {
-                            let over = up - maxScroll
-                            scrollUp = maxScroll + over * 0.18
-                        }
-                        if scrollUp >= peekThreshold, !hasPeeked {
-                            hasPeeked = true
-                            Haptics.selection()
-                        }
-                    }
-                    .onEnded { _ in
-                        Haptics.light()
-                        withAnimation(.interpolatingSpring(stiffness: 240, damping: 24)) {
-                            scrollUp = 0
-                        }
-                    }
-            )
         }
-        .ignoresSafeArea()
-        .onAppear { hintBobbing = true }
+        .onAppear { sealPulse = true }
+        .onDisappear { revealWork?.cancel() }
     }
 
-    private func coverPage(height: CGFloat) -> some View {
+    // MARK: Backdrop
+
+    private var backdrop: some View {
+        player.accent.ignoresSafeArea()
+    }
+
+    // MARK: Seal card
+
+    private var sealCard: some View {
         ZStack {
-            player.accent.ignoresSafeArea()
+            RoundedRectangle(cornerRadius: 34, style: .continuous)
+                .fill(Color.black)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 34, style: .continuous)
+                        .stroke(Color.white.opacity(isOpen ? 0.28 : 0.16), lineWidth: 1.5)
+                )
+                .shadow(color: .black.opacity(0.35), radius: 22, y: 14)
 
-            VStack(spacing: 0) {
-                Text(player.name)
-                    .font(AppFont.display(32, weight: .black))
-                    .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                    .padding(.top, 76)
+            sealedFace.opacity(isOpen ? 0 : 1)
+            openFace.opacity(isOpen ? 1 : 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
+        .scaleEffect(isHolding ? 0.98 : 1)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isHolding)
+        .gesture(holdGesture)
+    }
 
-                Spacer(minLength: 4)
-
-                Image(player.avatarImageName)
-                    .resizable()
-                    .interpolation(.high)
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
-                    .frame(maxHeight: height * (hasPeeked ? 0.50 : 0.56))
-                    .padding(.horizontal, 4)
-                    .shadow(color: .black.opacity(0.22), radius: 14, y: 8)
-
-                Spacer(minLength: 8)
-
-                if hasPeeked {
-                    // After peek: hand phone to next player (or start if last).
-                    if !isLastPlayer {
-                        Text(l10n.t("pass.givePhone", ["name": nextPlayerName ?? ""]))
-                            .font(AppFont.display(28, weight: .black))
-                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 28)
-                            .padding(.bottom, 14)
-                            .transition(.opacity)
-                    }
-
-                    Button {
-                        Haptics.light()
-                        onDone()
-                    } label: {
-                        Text(isLastPlayer ? l10n.t("pass.startGame") : l10n.t("common.continue"))
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                } else {
-                    // Only swipe hint — no "give phone" yet.
-                    VStack(spacing: 8) {
-                        Text(l10n.t("pass.swipeHint"))
-                            .font(AppFont.ui(17, weight: .bold))
-                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 24)
-
-                        Image(systemName: "chevron.up")
-                            .font(.system(size: 22, weight: .black))
-                            .foregroundStyle(needsDarkText ? AppColors.textOnLight : .white)
-                    }
-                    .offset(y: hintBobbing ? -7 : 5)
-                    .animation(
-                        .easeInOut(duration: 0.85).repeatForever(autoreverses: true),
-                        value: hintBobbing
+    private var sealedFace: some View {
+        VStack(spacing: 22) {
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.08))
+                    .frame(width: 132, height: 132)
+                Circle()
+                    .stroke(Color.white.opacity(0.22), lineWidth: 6)
+                Circle()
+                    .trim(from: 0, to: fill)
+                    .stroke(
+                        Color.white,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
                     )
-                    .padding(.bottom, 40)
-                }
+                    .rotationEffect(.degrees(-90))
+                Image(systemName: "hand.tap.fill")
+                    .font(.system(size: 46, weight: .bold))
+                    .foregroundStyle(.white)
+                    .scaleEffect(sealPulse ? 1.06 : 0.94)
+                    .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: sealPulse)
             }
-            .animation(.spring(response: 0.35, dampingFraction: 0.86), value: hasPeeked)
+            .frame(width: 132, height: 132)
+
+            VStack(spacing: 6) {
+                Text(l10n.t("reveal.holdTitle"))
+                    .font(AppFont.display(21, weight: .black))
+                    .foregroundStyle(.white)
+                Text(l10n.t("reveal.holdHint"))
+                    .font(AppFont.ui(14, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
         }
     }
 
-    private func revealPage(height: CGFloat) -> some View {
-        VStack(spacing: 10) {
-            Spacer(minLength: 12)
-
+    private var openFace: some View {
+        VStack(spacing: 14) {
             switch player.reveal {
             case .impostor:
                 Image(systemName: "theatermasks.fill")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 40, weight: .bold))
                     .foregroundStyle(AppColors.stateDanger)
-                Text(l10n.t("pass.imposter"))
-                    .font(AppFont.display(28, weight: .black))
+                Text(l10n.t("reveal.imposterTag"))
+                    .font(AppFont.display(30, weight: .black))
                     .foregroundStyle(AppColors.stateDanger)
+                    .multilineTextAlignment(.center)
                 if let hint {
-                    Text(l10n.t("pass.hint", ["hint": hint]))
-                        .font(AppFont.display(18, weight: .bold))
-                        .foregroundStyle(AppColors.textSecondary)
+                    Text(l10n.t("reveal.hint", ["hint": hint]))
+                        .font(AppFont.ui(15, weight: .bold))
+                        .foregroundStyle(Color.white.opacity(0.78))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                } else {
+                    Text(l10n.t("reveal.imposterBody"))
+                        .font(AppFont.ui(15, weight: .bold))
+                        .foregroundStyle(Color.white.opacity(0.78))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
             case .word(let word):
-                Image(systemName: "person.3.fill")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(AppColors.stateSuccess)
+                Text(l10n.t("reveal.crewLabel"))
+                    .font(AppFont.ui(14, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.65))
+                    .textCase(.uppercase)
                 Text(word)
-                    .font(AppFont.display(28, weight: .black))
+                    .font(AppFont.display(38, weight: .black))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.6)
                     .padding(.horizontal, 20)
+                Text(l10n.t("reveal.crewBody"))
+                    .font(AppFont.ui(14, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.72))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
             }
-
-            Spacer(minLength: 10)
         }
+        .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+    }
+
+    // MARK: Footer
+
+    @ViewBuilder
+    private var footer: some View {
+        if hasOpenedOnce {
+            VStack(spacing: 10) {
+                if !isLastPlayer, let nextPlayerName {
+                    Text(l10n.t("reveal.passNext", ["name": nextPlayerName]))
+                        .font(AppFont.display(18, weight: .black))
+                        .foregroundStyle(accentText)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                }
+                Button {
+                    Haptics.light()
+                    onDone()
+                } label: {
+                    Text(isLastPlayer ? l10n.t("reveal.startGame") : l10n.t("common.continue"))
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            }
+            .transition(.opacity)
+        } else {
+            Label(l10n.t("reveal.releaseHint"), systemImage: "eye.slash.fill")
+                .font(AppFont.ui(14, weight: .bold))
+                .foregroundStyle(accentText.opacity(0.85))
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    // MARK: Hold gesture
+
+    private var holdGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { _ in
+                guard !isHolding else { return }
+                startHold()
+            }
+            .onEnded { _ in
+                endHold()
+            }
+    }
+
+    private func startHold() {
+        isHolding = true
+        Haptics.selection()
+        withAnimation(.easeInOut(duration: holdDuration)) { fill = 1 }
+        let work = DispatchWorkItem {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                isOpen = true
+                hasOpenedOnce = true
+            }
+            Haptics.success()
+        }
+        revealWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + holdDuration, execute: work)
+    }
+
+    private func endHold() {
+        isHolding = false
+        revealWork?.cancel()
+        revealWork = nil
+        withAnimation(.easeOut(duration: 0.2)) {
+            fill = 0
+            isOpen = false
+        }
+        Haptics.light()
+    }
+
+    private var accentText: Color {
+        needsDarkText ? AppColors.textOnLight : .white
     }
 
     private var needsDarkText: Bool {

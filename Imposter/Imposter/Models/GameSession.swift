@@ -1,22 +1,29 @@
 import SwiftUI
 
-/// Session-only game setup. Cleared on every cold start (players never persist).
 @Observable
 final class GameSession {
     var players: [Player]
     var selectedMode: GameMode
     var selectedCategoryIDs: Set<String> = []
-    /// Categories unlocked for this session via rewarded ad (stub until ads are wired).
     var adUnlockedCategoryIDs: Set<String> = []
-    /// English secret-word keys already used this session (avoid repeats across rounds).
     var usedSecretWordKeys: Set<String> = []
     var imposterCount = 1
     var roundDurationSeconds = RoundDurationLimits.defaultSeconds
     var imposterHintsEnabled = true
 
+    private static let savedPlayerNamesKey = "savedPlayerNames"
+
     init(mode: GameMode = AppSettingsStore.shared.lastGameMode) {
         selectedMode = mode
-        players = (0..<PlayerLimits.minCount).map { _ in Player() }
+        if let saved = Self.loadSavedPlayers() {
+            players = saved
+        } else {
+            players = (0..<PlayerLimits.minCount).map { _ in Player() }
+        }
+    }
+
+    var hasSavedRoster: Bool {
+        canContinuePlayers
     }
 
     var canContinuePlayers: Bool {
@@ -57,6 +64,12 @@ final class GameSession {
         Haptics.light()
     }
 
+    func savePlayers() {
+        guard canContinuePlayers else { return }
+        let names = namedPlayers.map(\.name)
+        UserDefaults.standard.set(names, forKey: Self.savedPlayerNamesKey)
+    }
+
     func resetPlayersForNewLaunch() {
         players = (0..<PlayerLimits.minCount).map { _ in Player() }
         selectedCategoryIDs = []
@@ -66,5 +79,15 @@ final class GameSession {
         roundDurationSeconds = RoundDurationLimits.defaultSeconds
         imposterHintsEnabled = true
         selectedMode = AppSettingsStore.shared.lastGameMode
+        UserDefaults.standard.removeObject(forKey: Self.savedPlayerNamesKey)
+    }
+
+    private static func loadSavedPlayers() -> [Player]? {
+        guard let names = UserDefaults.standard.stringArray(forKey: savedPlayerNamesKey),
+              names.count >= PlayerLimits.minCount,
+              names.count <= PlayerLimits.maxCount,
+              names.allSatisfy({ !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+        else { return nil }
+        return names.map { Player(name: $0.trimmingCharacters(in: .whitespacesAndNewlines)) }
     }
 }

@@ -4,50 +4,49 @@ struct LanguageSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var l10n = LocalizationManager.shared
 
-    private let codes = LocalizationManager.supportedLocales
+    private var codes: [String] {
+        LocalizationManager.supportedLocales.sorted {
+            displayName(for: $0).localizedStandardCompare(displayName(for: $1)) == .orderedAscending
+        }
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(AppColors.textSecondary.opacity(0.4))
-                .frame(width: 40, height: 5)
-                .padding(.top, 10)
-                .padding(.bottom, 16)
+        ZStack {
+            OceanBackground()
 
-            Text(l10n.t("settings.language"))
-                .font(AppFont.display(30, weight: .black))
-                .foregroundStyle(AppColors.textPrimary)
-                .padding(.bottom, 12)
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(AppColors.textSecondary.opacity(0.4))
+                    .frame(width: 40, height: 5)
+                    .padding(.top, 10)
+                    .padding(.bottom, 10)
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(codes, id: \.self) { code in
-                        languageRow(code: code)
+                ScreenTitle(text: l10n.t("settings.language"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 12)
+
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(codes, id: \.self) { code in
+                            languageRow(code: code)
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
                 }
-                .padding(.horizontal, 8)
-            }
-            .scrollIndicators(.hidden)
+                .scrollIndicators(.hidden)
 
-            Button {
-                Haptics.light()
-                dismiss()
-            } label: {
-                Text(l10n.t("common.back"))
+                Button {
+                    Haptics.light()
+                    dismiss()
+                } label: {
+                    Text(l10n.t("common.done"))
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.horizontal, 20)
+                .padding(.vertical, 18)
             }
-            .buttonStyle(SecondaryCapsuleButtonStyle())
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            LinearGradient(
-                colors: [AppColors.bgPrimaryMid, AppColors.bgPrimary],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
         .presentationCornerRadius(32)
@@ -62,22 +61,37 @@ struct LanguageSheet: View {
             Haptics.medium()
             l10n.setLanguage(code)
         } label: {
-            HStack {
+            HStack(spacing: 12) {
                 Text(name)
-                    .font(AppFont.display(18, weight: .bold))
+                    .font(AppFont.display(17, weight: .bold))
                     .foregroundStyle(AppColors.textPrimary)
+
                 Spacer()
+
                 if selected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(AppColors.accentCyan)
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20, weight: .bold))
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(AppColors.textOnLight, AppColors.accentCyan)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(selected ? AppColors.surfaceCardElevated : AppColors.surfaceCard.opacity(0.7))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(
+                                selected ? AppColors.accentCyan : AppColors.accentCyan.opacity(0.12),
+                                lineWidth: selected ? 2 : 1
+                            )
+                    )
+            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .animation(.easeOut(duration: 0.18), value: selected)
     }
 
     private func displayName(for code: String) -> String {

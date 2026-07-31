@@ -18,6 +18,7 @@ enum LivePhase: Equatable {
     case passPhone(Int)
     case reveal(Int)
     case ready
+    case clueRound(Int)
     case discussion
     case drawing
     case voting
@@ -76,6 +77,11 @@ final class LiveGame {
     let hintsEnabled: Bool
     let roundDurationSeconds: Int
     let mode: GameMode
+    /// Double Agent mode: the plausible decoy word the impostor secretly receives.
+    let decoyWord: String?
+    /// Randomised clue speaking order (indices into `players`) so the impostor's
+    /// slot isn't predictable during the guided clue round.
+    let clueOrder: [Int]
 
     var phase: LivePhase
     var remainingSeconds: Int
@@ -87,9 +93,12 @@ final class LiveGame {
     var strokes: [DrawStroke] = []
     var currentStroke: DrawStroke?
     var selectedColor: Color = .black
+    var selectedLineWidth: CGFloat = 5
     var drawerIndex = 0
     var showDrawerOverlay = true
     var showExitConfirm = false
+
+    static let brushSizes: [CGFloat] = [3, 5, 9]
 
     static let palette: [Color] = [
         .black,
@@ -116,8 +125,22 @@ final class LiveGame {
         hintsEnabled = session.imposterHintsEnabled
         roundDurationSeconds = session.roundDurationSeconds
         remainingSeconds = session.roundDurationSeconds
-        mode = session.selectedMode
+        let selectedMode = session.selectedMode
+        mode = selectedMode
         phase = .reveal(0)
+
+        let resolvedDecoy: String?
+        if selectedMode.usesDecoyWord {
+            let decoyEntry = WordBank.randomWord(
+                categoryIDs: session.selectedCategoryIDs,
+                locale: locale,
+                excluding: session.usedSecretWordKeys
+            )
+            resolvedDecoy = decoyEntry.word == entry.word ? nil : decoyEntry.word
+        } else {
+            resolvedDecoy = nil
+        }
+        decoyWord = resolvedDecoy
 
         let impostorCount = min(session.imposterCount, max(1, named.count - 2))
         let shuffled = named.shuffled()
@@ -125,14 +148,25 @@ final class LiveGame {
 
         players = named.enumerated().map { index, player in
             let isImposter = impostorIDs.contains(player.id)
+            let reveal: PlayerReveal
+            if isImposter {
+                if let resolvedDecoy {
+                    reveal = .word(resolvedDecoy)
+                } else {
+                    reveal = .impostor
+                }
+            } else {
+                reveal = .word(entry.word)
+            }
             return AssignedPlayer(
                 id: player.id,
                 name: player.name,
                 isImposter: isImposter,
                 avatarIndex: (index % 15) + 1,
-                reveal: isImposter ? .impostor : .word(entry.word)
+                reveal: reveal
             )
         }
+        clueOrder = Array(players.indices).shuffled()
     }
 
     var impostors: [AssignedPlayer] { players.filter(\.isImposter) }
@@ -144,6 +178,12 @@ final class LiveGame {
     func player(at index: Int) -> AssignedPlayer? {
         guard players.indices.contains(index) else { return nil }
         return players[index]
+    }
+
+    /// Player whose turn it is in the guided clue round, by speaking position.
+    func cluePlayer(atPosition pos: Int) -> AssignedPlayer? {
+        guard clueOrder.indices.contains(pos) else { return nil }
+        return player(at: clueOrder[pos])
     }
 
     func advanceAfterReveal() {
@@ -166,9 +206,24 @@ final class LiveGame {
             currentStroke = nil
             phase = .drawing
         } else {
-            phase = .discussion
+            phase = .clueRound(0)
         }
         Haptics.medium()
+    }
+
+    /// Advance the guided clue round; after everyone speaks, open free discussion.
+    func advanceClue() {
+        guard case .clueRound(let pos) = phase else { return }
+        let next = pos + 1
+        if next < players.count {
+            phase = .clueRound(next)
+            Haptics.medium()
+        } else {
+            remainingSeconds = roundDurationSeconds
+            isPaused = false
+            phase = .discussion
+            Haptics.medium()
+        }
     }
 
     func tick() {
@@ -185,7 +240,7 @@ final class LiveGame {
 
     func beginStroke(at point: CGPoint) {
         guard !isPaused, !showDrawerOverlay, phase == .drawing else { return }
-        currentStroke = DrawStroke(points: [point], color: selectedColor)
+        currentStroke = DrawStroke(points: [point], color: selectedColor, lineWidth: selectedLineWidth)
     }
 
     func appendStroke(point: CGPoint) {

@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Sticky bottom CTA: dominant PLAY + compact count chip
 struct PlayBar: View {
     let playTitle: String
     let count: Int
@@ -66,10 +65,11 @@ struct PlayBar: View {
 struct ScreenChromeHeader: View {
     let title: String
     var onBack: (() -> Void)?
+    var onInfo: (() -> Void)?
     var onSettings: (() -> Void)?
 
     var body: some View {
-        HStack {
+        HStack(spacing: 4) {
             if let onBack {
                 Button(action: onBack) {
                     Image(systemName: "chevron.left")
@@ -80,19 +80,32 @@ struct ScreenChromeHeader: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                Color.clear.frame(width: 44, height: 44)
+                Color.clear.frame(width: trailingWidth, height: 44)
             }
 
-            Spacer()
+            Spacer(minLength: 4)
             ScreenTitle(text: title)
-            Spacer()
+            Spacer(minLength: 4)
 
-            if let onSettings {
-                HeaderCircleIconButton(systemName: "gearshape.fill", size: 44, action: onSettings)
-            } else {
-                Color.clear.frame(width: 44, height: 44)
+            HStack(spacing: 2) {
+                if let onInfo {
+                    HeaderCircleIconButton(systemName: "info.circle.fill", size: 44, action: onInfo)
+                }
+                if let onSettings {
+                    HeaderCircleIconButton(systemName: "gearshape.fill", size: 44, action: onSettings)
+                }
+                if onInfo == nil && onSettings == nil {
+                    Color.clear.frame(width: 44, height: 44)
+                }
             }
+            .frame(minWidth: trailingWidth, alignment: .trailing)
         }
+    }
+
+    private var trailingWidth: CGFloat {
+        let count = (onInfo != nil ? 1 : 0) + (onSettings != nil ? 1 : 0)
+        if count <= 1 { return 44 }
+        return CGFloat(count) * 44 + CGFloat(count - 1) * 2
     }
 }
 

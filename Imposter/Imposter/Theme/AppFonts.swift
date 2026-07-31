@@ -19,6 +19,11 @@ enum AppFont {
             ?? .system(size: size, weight: weight, design: .rounded)
     }
 
+    /// Yellow section eyebrows (Play feel, Account, Briefing room…).
+    static func section(_ size: CGFloat = 13) -> Font {
+        display(size, weight: .black)
+    }
+
     private static func custom(_ family: String, size: CGFloat, weight: Font.Weight) -> Font? {
         let candidates = postScriptCandidates(family: family, weight: weight)
         for name in candidates {

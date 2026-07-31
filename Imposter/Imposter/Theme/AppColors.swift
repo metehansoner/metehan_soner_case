@@ -66,7 +66,6 @@ struct OceanBackground: View {
         ZStack {
             AppColors.screenGradient
 
-            // Center electric spotlight
             RadialGradient(
                 colors: [
                     AppColors.bgGlow.opacity(0.75),
@@ -78,7 +77,6 @@ struct OceanBackground: View {
                 endRadius: 380
             )
 
-            // Soft cyan wash from upper-mid
             RadialGradient(
                 colors: [
                     AppColors.bgGlowCyan.opacity(0.28),
@@ -89,32 +87,8 @@ struct OceanBackground: View {
                 endRadius: 260
             )
 
-            // Imposter Party stage motif — not a generic square grid.
-            PartyStagePattern()
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            AppColors.accentCyan.opacity(0.10),
-                            Color.white.opacity(0.07),
-                            AppColors.accentCyan.opacity(0.04)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    style: StrokeStyle(lineWidth: 1.2, lineCap: .round)
-                )
+            TwinklingStarField(stars: Self.starField)
 
-            // Tiny scattered stars
-            TinyStars(seed: 11, count: 42)
-                .fill(Color.white.opacity(0.28))
-
-            TinyStars(seed: 29, count: 28)
-                .fill(AppColors.accentYellow.opacity(0.20))
-
-            TinyStars(seed: 47, count: 22)
-                .fill(AppColors.accentCyan.opacity(0.18))
-
-            // Soft vignette so content pops
             RadialGradient(
                 colors: [.clear, Color.black.opacity(0.18)],
                 center: .center,
@@ -124,68 +98,80 @@ struct OceanBackground: View {
         }
         .ignoresSafeArea()
     }
+
+    private static let starField: [TwinkleStar] = {
+        var stars: [TwinkleStar] = []
+        stars.append(contentsOf: TwinkleStar.make(seed: 11, count: 72, tint: .white, baseOpacity: 0.34))
+        stars.append(contentsOf: TwinkleStar.make(seed: 29, count: 48, tint: AppColors.accentYellow, baseOpacity: 0.26))
+        stars.append(contentsOf: TwinkleStar.make(seed: 47, count: 40, tint: AppColors.accentCyan, baseOpacity: 0.24))
+        stars.append(contentsOf: TwinkleStar.make(seed: 73, count: 28, tint: .white, baseOpacity: 0.18))
+        return stars
+    }()
 }
 
-/// Perspective stage lines — unique to Imposter Party atmosphere.
-private struct PartyStagePattern: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let vanishing = CGPoint(x: rect.midX, y: rect.height * 0.18)
+private struct TwinkleStar: Identifiable {
+    let id: Int
+    let x: CGFloat
+    let y: CGFloat
+    let size: CGFloat
+    let phase: Double
+    let speed: Double
+    let tint: Color
+    let baseOpacity: Double
 
-        // Soft horizon arc
-        let horizonY = rect.height * 0.42
-        path.move(to: CGPoint(x: 0, y: horizonY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.width, y: horizonY),
-            control: CGPoint(x: rect.midX, y: horizonY - 18)
-        )
-
-        // Perspective rays from vanishing point (lower stage)
-        let rayCount = 11
-        for i in 0..<rayCount {
-            let t = CGFloat(i) / CGFloat(rayCount - 1)
-            let bottomX = rect.width * (-0.15 + t * 1.3)
-            path.move(to: vanishing)
-            path.addLine(to: CGPoint(x: bottomX, y: rect.height + 20))
-        }
-
-        // Curved stage rings
-        for ring in 1...4 {
-            let progress = CGFloat(ring) / 4.5
-            let y = horizonY + (rect.height - horizonY) * progress
-            let inset = rect.width * (0.42 - progress * 0.38)
-            let left = inset
-            let right = rect.width - inset
-            path.move(to: CGPoint(x: left, y: y))
-            path.addQuadCurve(
-                to: CGPoint(x: right, y: y),
-                control: CGPoint(x: rect.midX, y: y + 10 * (1 - progress))
+    static func make(seed: UInt64, count: Int, tint: Color, baseOpacity: Double) -> [TwinkleStar] {
+        var rng = StarRNG(seed: seed)
+        return (0..<count).map { index in
+            TwinkleStar(
+                id: Int(seed) * 1000 + index,
+                x: CGFloat(rng.nextUnit()),
+                y: CGFloat(rng.nextUnit()),
+                size: 1.2 + CGFloat(rng.nextUnit()) * 3.2,
+                phase: rng.nextUnit() * .pi * 2,
+                speed: 0.18 + rng.nextUnit() * 0.35,
+                tint: tint,
+                baseOpacity: baseOpacity * (0.7 + rng.nextUnit() * 0.6)
             )
         }
-
-        return path
     }
 }
 
-/// Small 4-point stars with deterministic scatter (looks random, stays stable).
-private struct TinyStars: Shape {
-    var seed: UInt64
-    var count: Int
+private struct TwinklingStarField: View {
+    let stars: [TwinkleStar]
 
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        var rng = StarRNG(seed: seed)
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 12.0)) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            Canvas { canvas, size in
+                for star in stars {
+                    let wave = sin(time * star.speed + star.phase)
+                    let soft = 0.5 + 0.5 * wave
+                    let spark = pow(max(0, wave), 16) * 0.22
+                    let opacity = min(1, star.baseOpacity * (0.72 + 0.28 * soft) + spark)
+                    let center = CGPoint(x: star.x * size.width, y: star.y * size.height)
+                    let drawSize = star.size * (1 + spark * 0.2)
 
-        for _ in 0..<count {
-            let x = CGFloat(rng.nextUnit()) * rect.width
-            let y = CGFloat(rng.nextUnit()) * rect.height
-            let size = 1.4 + CGFloat(rng.nextUnit()) * 2.4
-            path.addPath(Self.star(at: CGPoint(x: x, y: y), size: size))
+                    if spark > 0.12 {
+                        let glow = Path(ellipseIn: CGRect(
+                            x: center.x - drawSize * 1.3,
+                            y: center.y - drawSize * 1.3,
+                            width: drawSize * 2.6,
+                            height: drawSize * 2.6
+                        ))
+                        canvas.fill(glow, with: .color(star.tint.opacity(opacity * 0.1)))
+                    }
+
+                    canvas.fill(
+                        starPath(at: center, size: drawSize),
+                        with: .color(star.tint.opacity(opacity))
+                    )
+                }
+            }
         }
-        return path
+        .allowsHitTesting(false)
     }
 
-    private static func star(at center: CGPoint, size: CGFloat) -> Path {
+    private func starPath(at center: CGPoint, size: CGFloat) -> Path {
         var path = Path()
         let outer = size
         let inner = size * 0.34

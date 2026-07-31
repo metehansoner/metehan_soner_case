@@ -1,0 +1,1 @@
+More words per category, smarter hints, and smoother voting & results screens.

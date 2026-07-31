@@ -3,14 +3,17 @@ import UIKit
 import GoogleMobileAds
 
 enum AdMobConfig {
-    /// `true` = Google sample rewarded ads (reliable for testing unlock flow).
-    /// `false` = your production unit `category unlock`.
-    static var useTestAds = true
+    /// Debug only. Release/App Store builds always use production units.
+    #if DEBUG
+    static let useTestAds = true
+    #else
+    static let useTestAds = false
+    #endif
 
-    static let productionAppID = "ca-app-pub-6002701312080831~7057138562"
-    static let productionRewardedUnitID = "ca-app-pub-6002701312080831/5740187461"
+    static let productionAppID = "ca-app-pub-6002701312080831~8808328227"
+    static let productionRewardedUnitID = "ca-app-pub-6002701312080831/3524211955"
 
-    /// Official Google sample rewarded unit.
+    /// Official Google sample rewarded unit (DEBUG only).
     static let testRewardedUnitID = "ca-app-pub-3940256099942544/1712485313"
 
     static var activeRewardedUnitID: String {
@@ -116,22 +119,6 @@ final class RewardedAdService: NSObject {
             rewardedAd = ad
             return ad
         } catch {
-            // If production unit has no fill yet, automatically try Google test ads.
-            if !AdMobConfig.useTestAds {
-                do {
-                    let ad = try await RewardedAd.load(
-                        with: AdMobConfig.testRewardedUnitID,
-                        request: Request()
-                    )
-                    ad.fullScreenContentDelegate = self
-                    rewardedAd = ad
-                    return ad
-                } catch {
-                    lastErrorMessage = error.localizedDescription
-                    rewardedAd = nil
-                    throw error
-                }
-            }
             lastErrorMessage = error.localizedDescription
             rewardedAd = nil
             throw error

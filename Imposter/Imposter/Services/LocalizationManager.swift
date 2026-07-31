@@ -36,7 +36,10 @@ final class LocalizationManager {
 
     func t(_ key: String, _ args: [String: String] = [:]) -> String {
         _ = localeCode
-        var value = strings[key] ?? LocalizationManager.sharedFallback[key] ?? key
+        var value = strings[key]
+            ?? Self.loadJSON(named: "en")?[key]
+            ?? LocalizationManager.sharedFallback[key]
+            ?? key
         for (placeholder, replacement) in args {
             value = value.replacingOccurrences(of: "{\(placeholder)}", with: replacement)
         }
@@ -53,14 +56,24 @@ final class LocalizationManager {
         localeCode = code
         AppSettingsStore.shared.languageOverride = code
         load(locale: code)
+        Task { @MainActor in
+            await NotificationService.refreshSchedule()
+        }
     }
 
     private func load(locale: String) {
-        if let dict = Self.loadJSON(named: locale) {
-            strings = dict
+        // Always start from English so newly added keys never show as raw key names
+        // when a locale file hasn't been updated yet.
+        let english = Self.loadJSON(named: "en") ?? Self.sharedFallback
+        if locale == "en" {
+            strings = english
             return
         }
-        strings = Self.loadJSON(named: "en") ?? Self.sharedFallback
+        if let dict = Self.loadJSON(named: locale) {
+            strings = english.merging(dict) { _, localized in localized }
+            return
+        }
+        strings = english
     }
 
     private static func resolveInitialLocale() -> String {

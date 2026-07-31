@@ -8,11 +8,10 @@ struct CategoriesView: View {
     @Bindable private var l10n = LocalizationManager.shared
     @Bindable private var store = SubscriptionStore.shared
     @State private var showSettings = false
-    @State private var showFullPaywall = false
+    @State private var showHowTo = false
     @State private var showCategoryPaywall = false
+    @State private var showFullPaywall = false
     @State private var pendingLockedCategoryID: String?
-    /// Alternates between full paywall and category (ad + yearly) paywall.
-    @State private var preferCategoryPaywallNext = true
     @State private var adErrorMessage: String?
 
     var body: some View {
@@ -26,6 +25,10 @@ struct CategoriesView: View {
                         Haptics.light()
                         onBack()
                     },
+                    onInfo: {
+                        Haptics.light()
+                        showHowTo = true
+                    },
                     onSettings: {
                         Haptics.light()
                         showSettings = true
@@ -35,13 +38,20 @@ struct CategoriesView: View {
                 .padding(.top, 8)
 
                 ScrollView {
-                    LazyVStack(spacing: 14) {
+                    surpriseButton
+                        .padding(.horizontal, 16)
+                        .padding(.top, 14)
+
+                    LazyVGrid(
+                        columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+                        spacing: 12
+                    ) {
                         ForEach(CategoryCatalog.all) { category in
                             categoryCard(category)
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    .padding(.top, 12)
                     .padding(.bottom, 120)
                 }
                 .scrollIndicators(.hidden)
@@ -95,6 +105,7 @@ struct CategoriesView: View {
                         Task {
                             store.selectedPlan = .yearly
                             await store.purchaseSelectedPlan()
+                            guard store.isPremium else { return }
                             showCategoryPaywall = false
                             pendingLockedCategoryID = nil
                             adErrorMessage = nil
@@ -107,6 +118,7 @@ struct CategoriesView: View {
             }
         }
         .navigationBarHidden(true)
+        .onSwipeBack(perform: onBack)
         .id(store.isPremium)
         .animation(.easeOut(duration: 0.2), value: showCategoryPaywall)
         .onAppear {
@@ -117,16 +129,55 @@ struct CategoriesView: View {
         .sheet(isPresented: $showSettings) {
             SettingsSheet()
         }
+        .sheet(isPresented: $showHowTo) {
+            HowToPlaySheet(mode: session.selectedMode)
+        }
         .fullScreenCover(isPresented: $showFullPaywall) {
             PaywallView(presentation: .modal) {
                 showFullPaywall = false
-                pendingLockedCategoryID = nil
             }
         }
     }
 
     private func isLocked(_ category: CategoryDef) -> Bool {
         category.isLocked(adUnlockedIDs: session.adUnlockedCategoryIDs)
+    }
+
+    private var surpriseButton: some View {
+        Button {
+            guard store.isPremium else {
+                Haptics.warning()
+                showFullPaywall = true
+                return
+            }
+            guard let pick = CategoryCatalog.all.randomElement() else { return }
+            Haptics.success()
+            session.selectedCategoryIDs = [pick.id]
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "dice.fill")
+                    .font(.system(size: 18, weight: .bold))
+                Text(l10n.t("categories.surprise"))
+                    .font(AppFont.display(18, weight: .black))
+                Spacer()
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16, weight: .bold))
+            }
+            .foregroundStyle(AppColors.textPrimary)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(AppColors.drawCardGradient)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .stroke(AppColors.accentCyan.opacity(0.6), lineWidth: 1.5)
+                    )
+                    .shadow(color: AppColors.accentCyan.opacity(0.4), radius: 14, y: 4)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func categoryCard(_ category: CategoryDef) -> some View {
@@ -137,12 +188,7 @@ struct CategoriesView: View {
             if locked {
                 Haptics.warning()
                 pendingLockedCategoryID = category.id
-                if preferCategoryPaywallNext {
-                    showCategoryPaywall = true
-                } else {
-                    showFullPaywall = true
-                }
-                preferCategoryPaywallNext.toggle()
+                showCategoryPaywall = true
                 return
             }
             Haptics.medium()
@@ -152,58 +198,59 @@ struct CategoriesView: View {
                 session.selectedCategoryIDs.insert(category.id)
             }
         } label: {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text(l10n.t(category.titleKey))
-                            .font(AppFont.display(22, weight: .black))
-                            .foregroundStyle(AppColors.textPrimary)
-                        if locked {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                        if selected && !locked {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AppColors.accentCyan)
-                        }
-                    }
+            VStack(spacing: 8) {
+                ZStack(alignment: .topTrailing) {
+                    Image(category.imageName)
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                        .frame(height: 92)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 6)
 
-                    Text(l10n.t(category.descKey))
-                        .font(AppFont.ui(13))
-                        .foregroundStyle(AppColors.textSecondary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(3)
+                    if locked {
+                        badge(systemName: "lock.fill", bg: AppColors.overlayScrim, fg: AppColors.textPrimary)
+                    } else if selected {
+                        badge(systemName: "checkmark", bg: AppColors.accentCyan, fg: AppColors.textOnLight)
+                    }
                 }
 
-                Spacer(minLength: 4)
-
-                Image(category.imageName)
-                    .resizable()
-                    .interpolation(.high)
-                    .scaledToFit()
-                    .frame(width: 108, height: 108)
-                    .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
+                Text(l10n.t(category.titleKey))
+                    .font(AppFont.display(17, weight: .black))
+                    .foregroundStyle(AppColors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 12)
             }
-            .padding(.leading, 18)
-            .padding(.trailing, 10)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity, minHeight: 118, alignment: .leading)
+            .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(AppColors.surfaceCard)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .stroke(
                                 selected && !locked
                                     ? AppColors.accentCyan
                                     : AppColors.accentCyan.opacity(0.12),
-                                lineWidth: selected && !locked ? 2 : 1
+                                lineWidth: selected && !locked ? 2.5 : 1
                             )
                     )
                     .opacity(locked ? 0.72 : 1)
             )
+            .shadow(color: selected && !locked ? AppColors.accentCyan.opacity(0.35) : .clear, radius: 12)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: selected)
         }
         .buttonStyle(.plain)
+    }
+
+    private func badge(systemName: String, bg: Color, fg: Color) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 12, weight: .black))
+            .foregroundStyle(fg)
+            .frame(width: 26, height: 26)
+            .background(Circle().fill(bg))
+            .padding(8)
     }
 }

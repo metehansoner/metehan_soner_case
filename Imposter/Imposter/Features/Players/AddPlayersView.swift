@@ -1,9 +1,7 @@
 import SwiftUI
 
 enum AddPlayersPresentation {
-    /// Cold start / app relaunch — continue goes to Home.
     case launch
-    /// Opened from Home profile — edit names, then return.
     case profile
 }
 
@@ -17,17 +15,19 @@ struct AddPlayersView: View {
     @FocusState private var focusedPlayerID: UUID?
     @State private var showSettings = false
 
+    private var namedCount: Int { session.namedPlayers.count }
+
     var body: some View {
         ZStack {
             OceanBackground()
 
             VStack(spacing: 0) {
                 header
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
                     .padding(.top, 8)
 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(spacing: 12) {
                         ForEach(Array(session.players.enumerated()), id: \.element.id) { index, player in
                             playerRow(player: player, displayIndex: index)
                         }
@@ -36,44 +36,50 @@ struct AddPlayersView: View {
                             addPlayerButton
                         }
 
-                        Text(l10n.t("players.minHint"))
-                            .font(AppFont.ui(13))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .padding(.top, 4)
-
-                        if session.players.count >= PlayerLimits.maxCount {
+                        if namedCount < PlayerLimits.minCount {
+                            Text(l10n.t("players.minHint"))
+                                .font(AppFont.ui(13, weight: .bold))
+                                .foregroundStyle(AppColors.textSecondary)
+                                .padding(.top, 2)
+                        } else if session.players.count >= PlayerLimits.maxCount {
                             Text(l10n.t("players.maxHint"))
-                                .font(AppFont.ui(13))
+                                .font(AppFont.ui(13, weight: .bold))
                                 .foregroundStyle(AppColors.accentYellow)
+                                .padding(.top, 2)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 14)
                     .padding(.bottom, 120)
                 }
                 .scrollIndicators(.hidden)
+                .scrollDismissesKeyboard(.interactively)
 
-                VStack(spacing: 0) {
-                    Button {
-                        guard session.canContinuePlayers else { return }
-                        onContinue()
-                    } label: {
-                        Text(presentation == .profile ? l10n.t("common.done") : l10n.t("common.continue"))
-                    }
-                    .buttonStyle(PrimaryButtonStyle(enabled: session.canContinuePlayers))
-                    .disabled(!session.canContinuePlayers)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                    .padding(.top, 12)
-                    .background(
-                        LinearGradient(
-                            colors: [AppColors.bgPrimary.opacity(0), AppColors.bgPrimary],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .ignoresSafeArea()
+                Button {
+                    guard session.canContinuePlayers else { return }
+                    Haptics.medium()
+                    onContinue()
+                } label: {
+                    Text(
+                        presentation == .profile
+                            ? l10n.t("common.done")
+                            : l10n.t("players.enterLobby")
                     )
                 }
+                .buttonStyle(PrimaryButtonStyle(enabled: session.canContinuePlayers))
+                .disabled(!session.canContinuePlayers)
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 16)
+                .background(
+                    LinearGradient(
+                        colors: [AppColors.bgPrimary.opacity(0), AppColors.bgPrimary],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea(edges: .bottom)
+                    .allowsHitTesting(false)
+                )
             }
         }
         .navigationBarHidden(true)
@@ -83,24 +89,18 @@ struct AddPlayersView: View {
     }
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 4) {
             if presentation == .profile {
                 HeaderCircleIconButton(systemName: "xmark") {
                     onClose?()
                 }
             } else {
-                Color.clear.frame(width: 42, height: 42)
+                Color.clear.frame(width: 44, height: 44)
             }
 
-            Spacer()
-
-            ScreenTitle(
-                text: presentation == .profile
-                    ? l10n.t("players.profileTitle")
-                    : l10n.t("players.title")
-            )
-
-            Spacer()
+            Spacer(minLength: 4)
+            ScreenTitle(text: l10n.t("players.screenTitle"))
+            Spacer(minLength: 4)
 
             HeaderCircleIconButton(systemName: "gearshape.fill") {
                 Haptics.light()
@@ -111,31 +111,35 @@ struct AddPlayersView: View {
 
     private func playerRow(player: Player, displayIndex: Int) -> some View {
         let isFocused = focusedPlayerID == player.id
+        let accent = AssignedPlayer.accents[displayIndex % AssignedPlayer.accents.count]
+        let avatar = String(format: "player_%02d", (displayIndex % 15) + 1)
+        let canRemove = session.players.count > PlayerLimits.minCount
 
         return HStack(spacing: 14) {
-            Text("\(displayIndex + 1)")
-                .font(AppFont.display(17, weight: .black))
-                .foregroundStyle(isFocused ? AppColors.textOnLight : AppColors.textPrimary)
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle()
-                        .fill(isFocused ? AppColors.btnPrimaryBg : AppColors.surfaceCard)
-                        .overlay(
-                            Circle()
-                                .stroke(
-                                    isFocused
-                                        ? AppColors.btnPrimaryBg.opacity(0.9)
-                                        : AppColors.accentCyan.opacity(0.35),
-                                    lineWidth: 1.5
-                                )
-                        )
-                )
+            ZStack {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 42, height: 42)
+                Image(avatar)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .padding(3)
+                    .frame(width: 42, height: 42)
+            }
+            .overlay(
+                Circle()
+                    .stroke(
+                        isFocused ? AppColors.accentCyan : Color.white.opacity(0.2),
+                        lineWidth: isFocused ? 2 : 1
+                    )
+            )
 
             ZStack(alignment: .leading) {
                 if player.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Text(l10n.t("players.placeholder", ["n": "\(displayIndex + 1)"]))
                         .font(AppFont.display(18, weight: .bold))
-                        .foregroundStyle(AppColors.textSecondary.opacity(0.55))
+                        .foregroundStyle(AppColors.textSecondary.opacity(0.5))
                         .lineLimit(1)
                         .allowsHitTesting(false)
                 }
@@ -157,55 +161,60 @@ struct AddPlayersView: View {
                     }
             }
 
-            if session.players.count > PlayerLimits.minCount {
+            if canRemove {
                 Button {
-                    if focusedPlayerID == player.id {
-                        focusedPlayerID = nil
-                    }
+                    Haptics.light()
+                    if focusedPlayerID == player.id { focusedPlayerID = nil }
                     session.removePlayer(id: player.id)
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(AppColors.textSecondary.opacity(0.55))
+                        .foregroundStyle(AppColors.textSecondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(AppColors.surfaceCardElevated.opacity(0.92))
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(AppColors.surfaceCard.opacity(0.92))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(
-                            isFocused ? AppColors.accentCyan.opacity(0.7) : AppColors.accentCyan.opacity(0.18),
+                            isFocused ? AppColors.accentCyan.opacity(0.65) : accent.opacity(0.28),
                             lineWidth: isFocused ? 2 : 1
                         )
                 )
         )
-        .animation(.easeInOut(duration: 0.18), value: isFocused)
+        .animation(.easeInOut(duration: 0.15), value: isFocused)
     }
 
     private var addPlayerButton: some View {
         Button {
+            Haptics.selection()
             session.addPlayer()
             focusedPlayerID = session.players.last?.id
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: "plus")
+                    .font(.system(size: 15, weight: .black))
                 Text(l10n.t("players.add"))
-                    .font(AppFont.ui(16, weight: .bold))
+                    .font(AppFont.display(16, weight: .black))
             }
-            .foregroundStyle(AppColors.textPrimary)
+            .foregroundStyle(AppColors.accentCyan)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 15)
             .background(
-                Capsule()
-                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                    .foregroundStyle(AppColors.textPrimary.opacity(0.7))
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(AppColors.surfaceCard.opacity(0.45))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(AppColors.accentCyan.opacity(0.35), lineWidth: 1.5)
+                    )
             )
         }
+        .buttonStyle(.plain)
     }
 
     private func bindingName(for id: UUID) -> Binding<String> {
