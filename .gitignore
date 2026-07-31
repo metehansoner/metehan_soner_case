@@ -84,6 +84,20 @@ Desktop.ini
 *.sublime-workspace
 
 # ===================================
+# Xcode / Swift
+# ===================================
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# ===================================
 # Git
 # ===================================
 .git/
