@@ -43,6 +43,11 @@ enum DeckSection: String, CaseIterable, Identifiable, Sendable {
 
     var dominantTone: Color { Color(hex: dominantHex) }
 
+    /// Koyu zeminde tek başına duran ince öğeler için (Mix karışım göstergesi).
+    /// `movieTV` gibi neredeyse siyah tonlar 5px'lik bir çubukta kaybolduğu için
+    /// afiş gradient'iyle aynı açma uygulanıyor.
+    var meterTone: Color { Color.scaling(hex: dominantHex, minimumChannel: 0.62).color }
+
     /// Deste kartının afiş zemini — `ornek-ekranlar.html` `.art.*` kuralları.
     ///
     /// Mockup dört bölüm için elle yazılmış gradient veriyor; kalan dokuzu

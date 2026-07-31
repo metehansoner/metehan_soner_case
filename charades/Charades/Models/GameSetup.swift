@@ -92,6 +92,26 @@ final class GameSetup {
         selectedDeckIDs = [deckID]
     }
 
+    /// Kaydedilmiş karışımı uygularken (§05 §6) tüm seçim bir kerede değişiyor.
+    func select(all deckIDs: [String]) {
+        selectedDeckIDs = Array(deckIDs.prefix(MixLimits.deckRange.upperBound))
+    }
+
+    /// Mix kurulumunda kartın üzerinde gösterilen sıra numarası (1'den başlar).
+    func mixOrder(of deckID: String) -> Int? {
+        selectedDeckIDs.firstIndex(of: deckID).map { $0 + 1 }
+    }
+
+    /// §05 §6: üst sınıra dayanınca yeni deste eklenmiyor, seçili olan çıkarılabiliyor.
+    func canToggleInMix(_ deckID: String) -> Bool {
+        isSelected(deckID) || selectedDeckIDs.count < MixLimits.deckRange.upperBound
+    }
+
+    /// Karışım oynanabilir mi — §02 §6: tek deste seçiliyken `OYNA` kapalı.
+    var isMixReady: Bool {
+        MixLimits.deckRange.contains(selectedDeckIDs.count)
+    }
+
     func clearSelection() {
         selectedDeckIDs.removeAll()
     }

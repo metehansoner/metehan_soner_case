@@ -186,8 +186,8 @@ final class LiveGame {
         // §04 §3: tur başında seçili destelerin kelimeleri karıştırılıyor,
         // `Set<String>` yerine kuyruk — de-duplication dilden bağımsız `k`
         // anahtarı üzerinden, kullanıcı ortada dil değiştirse bile bozulmuyor.
-        let cards = deckIDs.flatMap { CardBank.shared.cards(in: $0, difficulty: difficulty) }
-        pool = WordPool(cards: cards)
+        // §05 §6: desteler ayrı kuyruklarda kalıyor, tek havuzda birleşmiyor.
+        pool = WordPool(byDeck: CardBank.shared.cardsByDeck(in: deckIDs, difficulty: difficulty))
 
         remaining = duration
         remainingExact = TimeInterval(duration)

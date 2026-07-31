@@ -147,7 +147,7 @@ final class CustomCard {
 // MARK: - Container
 
 enum CustomDeckStore {
-    static let schema = Schema([CustomDeck.self, CustomCard.self])
+    static let schema = Schema([CustomDeck.self, CustomCard.self, SavedMix.self])
 
     /// §05 §7: iCloud v1'de yok — `.none`. Şema açmaya hazır.
     static func makeContainer(inMemory: Bool = false) -> ModelContainer {

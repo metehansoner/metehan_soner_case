@@ -17,6 +17,9 @@ struct DeckCard: View {
     /// soluklaşıp `ANLATMA DESTESİ` etiketi alıyor. Kilit **değil** — seçilebilir
     /// kalıyor, kullanıcı yalnızca ne aldığını biliyor.
     var isOffMode: Bool = false
+    /// §05 §6: Mix kurulumunda seçili kartlar onay yerine **kaçıncı sırada**
+    /// seçildiklerini gösteriyor — karışım göstergesindeki renk sırası bu.
+    var selectionOrder: Int?
 
     @Environment(LocalizationManager.self) private var l10n
 
@@ -35,10 +38,6 @@ struct DeckCard: View {
 
             reelTag
             ribbon
-
-            if isSelected {
-                selectionTick
-            }
         }
         .padding(5)
         // Kilitli kartın sepyası kadar sert değil: bu bir engel değil uyarı.
@@ -108,6 +107,13 @@ struct DeckCard: View {
         .overlay(alignment: .bottomLeading) {
             if isOffMode, !isLocked {
                 offModeTag.padding(7)
+            }
+        }
+        // Seçim rozeti de aynı sebeple afiş alanının içinde: 3 kolonlu Mix
+        // ızgarasında şeridin üstündeyken deste adının son harfini yiyordu.
+        .overlay(alignment: .bottomTrailing) {
+            if isSelected {
+                selectionTick.padding(7)
             }
         }
     }
@@ -253,19 +259,26 @@ struct DeckCard: View {
     }
 
     private var selectionTick: some View {
-        Image(systemName: "checkmark")
-            .font(.system(size: 11, weight: .bold))
+        Group {
+            if let selectionOrder {
+                Text("\(selectionOrder)")
+                    .font(AppFont.display(12, weight: .bold))
+                    .monospacedDigit()
+            } else {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .bold))
+            }
+        }
             .foregroundStyle(AppColors.textOnAmber)
             .frame(width: 20, height: 20)
             .background(Circle().fill(AppColors.accentAmber))
             .shadow(color: AppColors.accentAmber.opacity(0.75), radius: 6)
-            .padding(9)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
     }
 
     private var accessibilityLabel: String {
         var parts = [l10n.t(deck.titleKey)]
         if let cardCount { parts.append(l10n.t("deck.cardCount", ["count": "\(cardCount)"])) }
+        if let selectionOrder { parts.append(l10n.t("mix.selection.order", ["order": "\(selectionOrder)"])) }
         if isLocked { parts.append(l10n.t("deck.locked.stamp")) }
         if isOffMode, !isLocked { parts.append(l10n.t("deck.describeOnly.badge")) }
         if let ribbonKey, !isLocked { parts.append(l10n.t(ribbonKey)) }

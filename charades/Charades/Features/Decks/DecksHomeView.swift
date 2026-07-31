@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Ana ekran (ekran 4) — 02-ekran-akisi.md §4.
@@ -16,6 +17,10 @@ struct DecksHomeView: View {
     @Environment(SubscriptionStore.self) private var subscriptions
     @Environment(AppRouter.self) private var router
     @Environment(GameSetup.self) private var setup
+    @Environment(\.modelContext) private var modelContext
+
+    /// §05 §6: kaydedilmiş karışımlar `BENİM DESTELERİM` bölümünde görünüyor.
+    @Query(sort: \SavedMix.sortIndex) private var savedMixes: [SavedMix]
 
     @State private var filter: DeckFilter = .all
     @State private var collapseProgress: Double = 0
@@ -140,6 +145,32 @@ struct DecksHomeView: View {
         onPlay()
     }
 
+    /// §05 §6: kayıtlı karışımın tek amacı hızlı tekrar oynamak — Mod Seçimi
+    /// atlanıyor, mod zaten Mix. Karışımdaki desteler katalogdan düşüp ikinin
+    /// altına indiyse oynanamaz; kullanıcı kurulumda tamamlıyor.
+    private func playSavedMix(_ mix: SavedMix) {
+        setup.select(all: mix.deckIDs)
+        setup.mode = .mix
+
+        guard mix.isPlayable else {
+            router.push(.mix)
+            return
+        }
+        guard subscriptions.isPremium else {
+            Haptics.lockedWall()
+            router.openPaywall(.mix)
+            return
+        }
+        Haptics.primaryButton()
+        router.setupStep = .preset
+    }
+
+    private func editSavedMix(_ mix: SavedMix) {
+        setup.select(all: mix.deckIDs)
+        setup.mode = .mix
+        router.push(.mix)
+    }
+
     // MARK: İçerik
 
     private var sectionRow: some View {
@@ -191,6 +222,25 @@ struct DecksHomeView: View {
             ),
             spacing: 12
         ) {
+            // Karışımlar yalnızca `BENİM DESTELERİM`de: bir filtre seçiliyken
+            // ızgara o filtrenin sonucunu göstermeli, karışımın bölümü yok.
+            if filter == .all {
+                ForEach(savedMixes) { mix in
+                    Button { playSavedMix(mix) } label: {
+                        SavedMixCard(mix: mix)
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(l10n.t("mix.saved.edit"), systemImage: "slider.horizontal.3") {
+                            editSavedMix(mix)
+                        }
+                        Button(l10n.t("mix.saved.delete"), systemImage: "trash", role: .destructive) {
+                            modelContext.delete(mix)
+                        }
+                    }
+                }
+            }
+
             ForEach(visibleDecks) { deck in
                 let isLocked = deck.isLocked(
                     isPremium: subscriptions.isPremium,
@@ -215,6 +265,11 @@ struct DecksHomeView: View {
                 .onLongPressGesture(minimumDuration: 0.3) {
                     guard !isLocked else {
                         router.openPaywall(.lockedDeck(deck.id))
+                        return
+                    }
+                    // §05 §6: 8 destelik karışım tavanı burada da geçerli.
+                    guard setup.canToggleInMix(deck.id) else {
+                        Haptics.stepperLimit()
                         return
                     }
                     setup.toggle(deck.id)

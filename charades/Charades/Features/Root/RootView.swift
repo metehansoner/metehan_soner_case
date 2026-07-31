@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Navigasyon kabuğu — 02-ekran-akisi.md §5.
@@ -8,6 +9,8 @@ import SwiftUI
 /// `GameFlowView` render ediliyor (P4), böylece oyun sırasında geri butonu ve
 /// swipe-back olmuyor.
 struct RootView: View {
+    @Environment(\.modelContext) private var modelContext
+
     @State private var router = AppRouter()
     @State private var setup = GameSetup()
     @State private var liveGame: LiveGame?
@@ -204,6 +207,9 @@ struct RootView: View {
     }
 
     #if DEBUG
+    /// İçeriği üretilmiş desteler (§10 §4) — boş havuzla tur başlamıyor.
+    private static let debugMixDecks = ["party", "movieClassics", "cities"]
+
     /// Simülatör doğrulaması. Tilt sensörü ve ekran döndürme simülatörde
     /// olmadığı için oyun fazlarına başka türlü girilemiyor.
     ///
@@ -212,18 +218,30 @@ struct RootView: View {
     ///   -ModeSelect            Mod Seçimi sheet'i
     ///   -Preset party          Tur Ön Ayar sheet'i, verilen deste seçili
     ///   -HowTo                 Nasıl Oynanır slider'ı
-    ///   -StartGame party       turu başlat (Yatay Çevir ekranı)
+    ///   -StartGame a,b         turu başlat (Yatay Çevir ekranı); virgülle Mix
     ///   -SkipRotate            cihaz yatay gelmiş gibi davran
     ///   -TouchAnswers          dokunmatik cevap (tilt yerine ekran yarıları)
     ///   -ShortRound            süre 12 sn (tur sonu ekranını hızlı görmek için)
     ///   -Premium               abonelik açık (kilitli modları denemek için)
     ///   -TeamRoster            takım modu + örnek takım/oyuncu adları, 1 tur
     ///   -TeamSetup             Takım Kurulumu ekranı
+    ///   -MixSelection [a,b]    premium + verilen desteler seçili (varsayılan 3)
+    ///   -MixSetup              Mix Kurulumu ekranı
+    ///   -SavedMix              örnek bir kayıtlı karışım ekler
     private func applyDebugArguments() {
         let arguments = ProcessInfo.processInfo.arguments
 
         func value(after flag: String) -> String? {
             arguments.drop(while: { $0 != flag }).dropFirst().first
+        }
+
+        /// Virgülle ayrılmış liste Mix'i tek argümanla kurabilsin diye.
+        func deckIDs(_ raw: String) -> [String] {
+            raw.split(separator: ",").map(String.init)
+        }
+
+        func savedMixCount() -> Int {
+            (try? modelContext.fetchCount(FetchDescriptor<SavedMix>())) ?? 0
         }
 
         if arguments.contains("-Premium") {
@@ -250,19 +268,31 @@ struct RootView: View {
             setup.roundsPerTeam = 1
         }
 
-        if arguments.contains("-TeamSetup") {
+        // Mix premium; kurulum ekranını duvarsız görebilmek için.
+        if arguments.contains("-MixSelection") {
+            SubscriptionStore.shared.debugPremiumOverride = true
+            setup.select(all: value(after: "-MixSelection").map(deckIDs) ?? Self.debugMixDecks)
+            setup.mode = .mix
+        }
+        if arguments.contains("-SavedMix"), savedMixCount() == 0 {
+            modelContext.insert(SavedMix(name: "Cuma Gecesi", deckIDs: Self.debugMixDecks))
+        }
+
+        if arguments.contains("-MixSetup") {
+            router.push(.mix)
+        } else if arguments.contains("-TeamSetup") {
             router.push(.teamSetup)
         } else if let id = value(after: "-DeckDetail") {
             router.openDeckDetail(id)
         } else if arguments.contains("-ModeSelect") {
             router.beginSetup()
-        } else if let id = value(after: "-Preset") {
-            setup.select(only: id)
+        } else if let ids = value(after: "-Preset") {
+            setup.select(all: deckIDs(ids))
             router.setupStep = .preset
         } else if arguments.contains("-HowTo") {
             router.openHowToPlay(for: setup.mode)
-        } else if let id = value(after: "-StartGame") {
-            setup.select(only: id)
+        } else if let ids = value(after: "-StartGame") {
+            setup.select(all: deckIDs(ids))
             startGame()
             if arguments.contains("-SkipRotate") {
                 liveGame?.deviceBecameLandscape()
@@ -277,7 +307,7 @@ struct RootView: View {
     private func destination(for route: AppRoute) -> some View {
         switch route {
         case .mix:
-            PlaceholderScreen(titleKey: "featured.mix", packageNote: "P7")
+            MixSetupView { router.setupStep = .preset }
         case .customList:
             PlaceholderScreen(titleKey: "featured.customDeck", packageNote: "P8")
         case .customEditor(let id):

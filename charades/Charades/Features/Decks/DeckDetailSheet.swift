@@ -191,7 +191,8 @@ struct DeckDetailSheet: View {
                 dismiss()
             }
             .buttonStyle(SecondaryButtonStyle())
-            .disabled(isLocked)
+            // §05 §6: karışım 8 destede tavan yapıyor; sınır her kapıda geçerli.
+            .disabled(isLocked || !setup.canToggleInMix(deck.id))
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
