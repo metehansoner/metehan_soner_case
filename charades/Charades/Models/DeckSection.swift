@@ -23,22 +23,45 @@ enum DeckSection: String, CaseIterable, Identifiable, Sendable {
 
     /// §8: her bölüme paletin içinden baskın bir ton atanıyor — ızgarada göz
     /// bölümleri ayırt ediyor ama palet dışına çıkılmıyor.
-    var dominantTone: Color {
+    var dominantHex: UInt32 {
         switch self {
-        case .party: AppColors.accentAmber
-        case .actOut: AppColors.accentTeal
-        case .movieTV: AppColors.bgVelvetDeep
-        case .music: AppColors.accentBrass
-        case .kids: AppColors.surfacePoster
-        case .sports: AppColors.stateCorrect
-        case .knowledge: AppColors.accentTeal
-        case .brands: AppColors.accentGold
-        case .nostalgia: AppColors.accentAmberDeep
-        case .world: AppColors.accentTeal
-        case .animals: AppColors.stateCorrect
-        case .home: AppColors.surfaceTicket
-        case .seasonal: AppColors.stateSkip
+        case .party: 0xF0A93B      // accentAmber
+        case .actOut: 0x2F7F7C     // accentTeal
+        case .movieTV: 0x2B0E15    // bgVelvetDeep
+        case .music: 0xA8791F      // accentBrass
+        case .kids: 0xF4E7CE       // surfacePoster
+        case .sports: 0x4F8F5B     // stateCorrect
+        case .knowledge: 0x2F7F7C  // accentTeal
+        case .brands: 0xE3C36A     // accentGold
+        case .nostalgia: 0xD2861F  // accentAmberDeep
+        case .world: 0x2F7F7C      // accentTeal
+        case .animals: 0x4F8F5B    // stateCorrect
+        case .home: 0xE8D3A9       // surfaceTicket
+        case .seasonal: 0xC0392B   // stateSkip
         }
+    }
+
+    var dominantTone: Color { Color(hex: dominantHex) }
+
+    /// Deste kartının afiş zemini — `ornek-ekranlar.html` `.art.*` kuralları.
+    ///
+    /// Mockup dört bölüm için elle yazılmış gradient veriyor; kalan dokuzu
+    /// elle uydurmak yerine hepsi baskın tondan türetiliyor. Ton önce en
+    /// parlak kanalı 0.45'e çıkacak kadar açılıyor (koyu bordo bu yüzden
+    /// mockup'taki `#6d2530`e denk düşüyor), sonra %62 ve dış halka onun
+    /// karartılmış hâli oluyor.
+    var artGradient: EllipticalGradient {
+        let inner = Color.scaling(hex: dominantHex, minimumChannel: 0.45)
+        return EllipticalGradient(
+            gradient: Gradient(stops: [
+                .init(color: inner.color, location: 0),
+                .init(color: inner.scaled(by: 0.42), location: 0.62),
+                .init(color: inner.scaled(by: 0.16), location: 1),
+            ]),
+            center: UnitPoint(x: 0.5, y: 0.34),
+            startRadiusFraction: 0,
+            endRadiusFraction: 0.78
+        )
     }
 
     /// §2: sezon bölümü yalnızca bir destesinin penceresi açıkken görünür.

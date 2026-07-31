@@ -35,30 +35,40 @@ struct FilmStripProgress: View {
 /// §3 "Film şeridi (sprocket)": kenarda tekrarlayan yuvarlatılmış kare deliği.
 /// Deste kartı kenarı, oyun kartının üst/alt bandı ve tur sonu ekranı kullanıyor.
 struct SprocketStrip: View {
+    var axis: Axis = .horizontal
     var holeSize: CGFloat = 7
     var spacing: CGFloat = 7
     var holeColor: Color = AppColors.bgFilmBlack
 
     var body: some View {
         Canvas { context, size in
+            let length = axis == .horizontal ? size.width : size.height
+            let breadth = axis == .horizontal ? size.height : size.width
             let step = holeSize + spacing
-            let count = max(1, Int((size.width + spacing) / step))
+            let count = max(1, Int((length + spacing) / step))
             let used = CGFloat(count) * step - spacing
-            var x = (size.width - used) / 2
-            let y = (size.height - holeSize) / 2
+
+            var offset = (length - used) / 2
+            let cross = (breadth - holeSize) / 2
 
             for _ in 0..<count {
+                let origin = axis == .horizontal
+                    ? CGPoint(x: offset, y: cross)
+                    : CGPoint(x: cross, y: offset)
                 context.fill(
                     Path(
-                        roundedRect: CGRect(x: x, y: y, width: holeSize, height: holeSize),
+                        roundedRect: CGRect(origin: origin, size: CGSize(width: holeSize, height: holeSize)),
                         cornerRadius: holeSize * 0.28
                     ),
                     with: .color(holeColor)
                 )
-                x += step
+                offset += step
             }
         }
-        .frame(height: holeSize + 4)
+        .frame(
+            width: axis == .vertical ? holeSize + 4 : nil,
+            height: axis == .horizontal ? holeSize + 4 : nil
+        )
         .allowsHitTesting(false)
     }
 }

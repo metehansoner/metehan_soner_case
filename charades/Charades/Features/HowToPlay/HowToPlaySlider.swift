@@ -1,0 +1,300 @@
+import SwiftUI
+
+/// Ekran 9 — Nasıl Oynanır (§ `02` §4).
+///
+/// Onboarding 3 adıma indikten sonra **detaylı anlatımın tek sahibi bu ekran**
+/// (§ `03` §1): onboarding ikna ediyor, bu slider talimat veriyor. Pratik
+/// sonucu, slider kısaltılmıyor — yedeği yok.
+///
+/// Gösterim kuralı § `02` §4: mod başına bir kez otomatik
+/// (`AppSettingsStore.howToSeenModes`), sonrasında Deste Detayı ve Duraklat
+/// ekranındaki `?` butonundan her zaman.
+struct HowToPlaySlider: View {
+    let mode: GameMode
+    /// Otomatik gösterimde son sayfanın butonu `HAZIRIZ` ve tur başlıyor;
+    /// `?` ile açıldığında `KAPAT` ve hiçbir şey başlamıyor.
+    var startsRound: Bool
+    var onClose: () -> Void
+    var onFinish: () -> Void
+
+    @Environment(LocalizationManager.self) private var l10n
+    @Environment(AppSettingsStore.self) private var settings
+
+    @State private var index = 0
+
+    #if DEBUG
+    /// Simülatörde sayfa kaydırılamıyor; `-HowToPage 4` doğrudan o sayfayı açıyor.
+    private var debugStartPage: Int? {
+        let arguments = ProcessInfo.processInfo.arguments
+        return arguments.drop(while: { $0 != "-HowToPage" }).dropFirst().first.flatMap(Int.init)
+    }
+    #endif
+
+    var body: some View {
+        SheetScaffold(title: l10n.t("howToPlay.title"), onClose: onClose) {
+            VStack(spacing: 0) {
+                FilmStripProgress(total: pages.count, current: index)
+                    .frame(width: 132)
+                    .padding(.bottom, 4)
+
+                TabView(selection: $index) {
+                    ForEach(Array(pages.enumerated()), id: \.offset) { offset, page in
+                        HowToPlayPage(page: page)
+                            .tag(offset)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+
+                Text(l10n.t("howToPlay.pageCount", ["current": "\(index + 1)", "total": "\(pages.count)"]))
+                    .font(AppFont.display(11, weight: .semibold))
+                    .tracking(2.6)
+                    .textCase(.uppercase)
+                    .foregroundStyle(AppColors.accentBrass)
+                    .padding(.bottom, 12)
+
+                Button(l10n.t(isLastPage ? finishKey : "howToPlay.next")) {
+                    Haptics.primaryButton()
+                    advance()
+                }
+                .buttonStyle(MarqueeButtonStyle())
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
+            }
+            .animation(.easeOut(duration: 0.2), value: index)
+            #if DEBUG
+            .onAppear {
+                if let page = debugStartPage { index = min(page, pages.count) - 1 }
+            }
+            #endif
+        }
+    }
+
+    private var isLastPage: Bool { index >= pages.count - 1 }
+    private var finishKey: String { startsRound ? "howToPlay.ready" : "common.close" }
+
+    private func advance() {
+        guard isLastPage else {
+            index += 1
+            return
+        }
+        settings.markHowToPlaySeen(mode)
+        onFinish()
+    }
+
+    /// § `02` §4'teki dört sayfa. İki kural içeriği moda göre değiştiriyor:
+    ///
+    /// 1. `Canlandır`da sayfa 2 ve 3 **yer değişiyor** ve metinler tersine
+    ///    dönüyor — o modda telefonu canlandıran tutuyor (§ `04` §1).
+    /// 2. Sayfa 4 `usesTilt == false` **veya** kullanıcı ayarlardan `DOKUN`
+    ///    seçtiyse gizleniyor (§ `09` §9): olmayan bir jesti anlatan sayfa,
+    ///    kullanıcıyı oyunun bozuk olduğuna ikna ediyor.
+    private var pages: [HowToPage] {
+        let deck = HowToPage(
+            titleKey: "howToPlay.deck.title",
+            bodyKey: "howToPlay.deck.body",
+            artwork: .posterFan
+        )
+        let forehead = HowToPage(
+            titleKey: mode == .actOut ? "howToPlay.hold.actOut.title" : "howToPlay.hold.title",
+            bodyKey: mode == .actOut ? "howToPlay.hold.actOut.body" : "howToPlay.hold.body",
+            artwork: .illustration("ob_forehead")
+        )
+        let mime = HowToPage(
+            titleKey: mode == .actOut ? "howToPlay.mime.actOut.title" : "howToPlay.mime.title",
+            bodyKey: mode == .actOut ? "howToPlay.mime.actOut.body" : "howToPlay.mime.body",
+            emphasisKey: "howToPlay.mime.emphasis",
+            artwork: .illustration("ob_mime")
+        )
+        let tilt = HowToPage(
+            titleKey: "howToPlay.tilt.title",
+            bodyKey: "howToPlay.tilt.body",
+            artwork: .tiltDiagram
+        )
+
+        var pages = mode == .actOut ? [deck, mime, forehead] : [deck, forehead, mime]
+        if mode.usesTilt, !settings.prefersTouchAnswers {
+            pages.append(tilt)
+        }
+        return pages
+    }
+}
+
+// MARK: - Sayfa
+
+struct HowToPage {
+    enum Artwork {
+        /// Yelpaze gibi açılmış 4 afiş — üretilmiş görsel yok, kart anatomisi
+        /// zaten kodda (§ `01` §4), dört kopyası açıyla diziliyor.
+        case posterFan
+        case illustration(String)
+        /// Telefonun iki yöne eğildiği yeşil/kırmızı diyagram.
+        case tiltDiagram
+    }
+
+    let titleKey: String
+    let bodyKey: String
+    var emphasisKey: String?
+    let artwork: Artwork
+}
+
+private struct HowToPlayPage: View {
+    let page: HowToPage
+
+    @Environment(LocalizationManager.self) private var l10n
+
+    var body: some View {
+        VStack(spacing: 0) {
+            artwork
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 12)
+
+            Text(l10n.t(page.titleKey))
+                .font(AppFont.display(20, weight: .bold))
+                .tracking(2.4)
+                .textCase(.uppercase)
+                .foregroundStyle(AppColors.textCream)
+                .padding(.top, 10)
+
+            VStack(spacing: 2) {
+                Text(l10n.t(page.bodyKey))
+                    .font(AppFont.ui(13))
+                    .foregroundStyle(AppColors.textSecondary)
+
+                if let emphasisKey = page.emphasisKey {
+                    Text(l10n.t(emphasisKey))
+                        .font(AppFont.ui(13, weight: .bold))
+                        .foregroundStyle(AppColors.textCream)
+                }
+            }
+            .multilineTextAlignment(.center)
+            .padding(.top, 7)
+            .padding(.horizontal, 26)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 6)
+    }
+
+    @ViewBuilder
+    private var artwork: some View {
+        switch page.artwork {
+        case .posterFan:
+            PosterFanArt()
+        case .illustration(let name):
+            Image(name)
+                .resizable()
+                .scaledToFit()
+        case .tiltDiagram:
+            TiltDiagramArt()
+        }
+    }
+}
+
+// MARK: - Çizilen görseller
+
+/// Sayfa 1: dört afişin yelpazesi. Kapak görselleri zaten bundle'da (§ `05` §8),
+/// ayrı bir illüstrasyon üretmek yerine gerçek kapaklar diziliyor — kullanıcı
+/// bir sonraki ekranda tam olarak bunları görecek.
+private struct PosterFanArt: View {
+    private static let deckIDs = ["party", "movieClassics", "animals", "nineties"]
+    private static let angles: [Double] = [-16, -5.5, 5.5, 16]
+
+    var body: some View {
+        ZStack {
+            ForEach(Array(Self.deckIDs.enumerated()), id: \.offset) { index, id in
+                let angle = Self.angles[index]
+                MiniPoster(deckID: id)
+                    .rotationEffect(.degrees(angle), anchor: .bottom)
+                    .offset(x: CGFloat(angle) * 3.6, y: abs(angle) * 0.9)
+                    .zIndex(Double(index))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 12)
+    }
+}
+
+private struct MiniPoster: View {
+    let deckID: String
+
+    var body: some View {
+        let section = DeckCatalog.deck(deckID)?.section ?? .party
+        RoundedRectangle(cornerRadius: 8)
+            .fill(AppColors.surfaceCard)
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(AppColors.accentGold.opacity(0.55), lineWidth: 1)
+            }
+            .overlay {
+                VStack(spacing: 0) {
+                    ZStack {
+                        section.artGradient
+                        Image("deck_\(deckID)")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(7)
+                    }
+                    Rectangle()
+                        .fill(AppColors.surfaceTicket)
+                        .frame(height: 11)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .padding(3)
+            }
+            .frame(width: 74, height: 99)
+            .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
+    }
+}
+
+/// Sayfa 4: telefonun öne (DOĞRU, yeşil) ve arkaya (PAS, kırmızı) eğilişi.
+/// Ok yönleri dilden ve RTL'den bağımsız (§ `04` §2, § `06` §2).
+private struct TiltDiagramArt: View {
+    @Environment(LocalizationManager.self) private var l10n
+
+    var body: some View {
+        HStack(spacing: 38) {
+            tilt(
+                angle: -22,
+                color: AppColors.stateCorrect,
+                systemImage: "arrow.down",
+                label: l10n.t("game.stamp.correct")
+            )
+            tilt(
+                angle: 22,
+                color: AppColors.stateSkip,
+                systemImage: "arrow.up",
+                label: l10n.t("game.stamp.skip")
+            )
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func tilt(angle: Double, color: Color, systemImage: String, label: String) -> some View {
+        VStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 11)
+                .strokeBorder(color, lineWidth: 2.5)
+                .background {
+                    RoundedRectangle(cornerRadius: 11).fill(AppColors.surfaceCard.opacity(0.85))
+                }
+                .overlay(alignment: .top) {
+                    Capsule()
+                        .fill(color.opacity(0.5))
+                        .frame(width: 22, height: 3.5)
+                        .padding(.top, 7)
+                }
+                .overlay {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(color)
+                }
+                .frame(width: 62, height: 104)
+                .rotationEffect(.degrees(angle))
+                .shadow(color: color.opacity(0.35), radius: 12)
+
+            Text(label)
+                .font(AppFont.display(13, weight: .semibold))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundStyle(color)
+        }
+    }
+}

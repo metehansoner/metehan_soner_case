@@ -191,21 +191,23 @@ def check_json_files(seeds: list[dict], strict: bool, r: Report) -> None:
 
 
 def check_assets(seeds: list[dict], r: Report) -> None:
-    """#4 — deck_{id} imageset. Kapaklar P3'te asset catalog'a girecek;
-    şimdilik teslim klasöründeki 92 PNG ile çapraz kontrol (uyarı)."""
+    """#4 — deck_{id} imageset. Kapaklar `DeckCovers/` altında (P3)."""
+    covers_dir = ASSETS / "DeckCovers"
     teslim = ROOT.parent / "Charedes_document" / "teslim" / "deste-kapaklari"
     covers = {p.stem for p in teslim.glob("deck_*.png")} if teslim.exists() else set()
     for s in seeds:
         if not s["v1"]:
             continue
         name = f"deck_{s['id']}"
-        imageset = ASSETS / f"{name}.imageset"
+        imageset = covers_dir / f"{name}.imageset"
+        if not imageset.exists():
+            imageset = ASSETS / f"{name}.imageset"
         if imageset.exists():
             continue
         if name in covers:
-            r.warn(f"#4: {name} teslimde var, asset catalog'da yok (P3)")
+            r.warn(f"#4: {name} teslimde var, asset catalog'da yok")
         else:
-            r.warn(f"#4: {name} ne asset catalog'da ne teslimde")
+            r.err(f"#4: {name} ne asset catalog'da ne teslimde")
 
 
 def check_localization_keys(seeds: list[dict], r: Report) -> None:

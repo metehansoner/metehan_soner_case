@@ -35,6 +35,19 @@ enum AppColors {
     static let stateWarning = Color(hex: 0xE0A030)
     static let stateLocked = Color(hex: 0x6E5B4B)
 
+    // MARK: Takım renkleri — §04 §1
+
+    /// Ekran 11 mockup'ında 1. ve 2. takımın noktası `accentAmber` ve
+    /// `accentTeal`. 3. ve 4. paletin geri kalanından: kırmızı, § `08` B2'nin
+    /// perde arası mockup'ında takım noktası olarak zaten bu değerle duruyor.
+    /// Takım rengi yalnızca kimlik taşıyor — hiçbir yerde doğru/pas anlamına
+    /// gelmiyor, o yüzden `stateSkip` ile aynı tonu paylaşması karıştırmıyor.
+    static let teamColors: [Color] = [accentAmber, accentTeal, stateSkip, accentGold]
+
+    static func team(_ index: Int) -> Color {
+        teamColors[index % teamColors.count]
+    }
+
     // MARK: Metin
 
     static let textCream = Color(hex: 0xF6EBD6)
@@ -98,5 +111,32 @@ extension Color {
             blue: Double(hex & 0xFF) / 255,
             opacity: opacity
         )
+    }
+
+    /// Bir token'dan gradient basamağı türetmek için. Renk hep aynı hue'da
+    /// kalsın diye kanallar birlikte ölçekleniyor; `Color`'ın kendi
+    /// `brightness`/`opacity` modifier'ları render katmanında çalıştığı için
+    /// gradient durağı olarak kullanılamıyor.
+    struct Scaled {
+        let red: Double
+        let green: Double
+        let blue: Double
+
+        var color: Color { Color(.sRGB, red: red, green: green, blue: blue, opacity: 1) }
+
+        func scaled(by factor: Double) -> Color {
+            Color(.sRGB, red: red * factor, green: green * factor, blue: blue * factor, opacity: 1)
+        }
+    }
+
+    /// Koyu token'ları gradient'in iç halkası olacak kadar açar; zaten parlak
+    /// olan token'a dokunmaz.
+    static func scaling(hex: UInt32, minimumChannel: Double) -> Scaled {
+        let red = Double((hex >> 16) & 0xFF) / 255
+        let green = Double((hex >> 8) & 0xFF) / 255
+        let blue = Double(hex & 0xFF) / 255
+        let peak = max(red, green, blue)
+        let factor = peak > 0 ? max(1, minimumChannel / peak) : 1
+        return Scaled(red: min(1, red * factor), green: min(1, green * factor), blue: min(1, blue * factor))
     }
 }

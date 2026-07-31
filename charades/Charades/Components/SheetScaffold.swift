@@ -1,0 +1,90 @@
+import SwiftUI
+
+/// Sheet iskeleti — `ornek-ekranlar.html` `.sheet` / `.grabber` / `.sheet-head`.
+///
+/// Mod Seçimi, Tur Ön Ayar ve Nasıl Oynanır zincirleme açılıyor (§ `02` §3):
+/// üçü de aynı sheet'in içinde adım değiştiriyor, ayrı ayrı sunulmuyor. Bu
+/// yüzden başlık çubuğu ortak bir iskelet — adım değişince yalnızca içerik
+/// çapraz geçiş yapıyor, sheet yeniden açılmıyor.
+struct SheetScaffold<Content: View>: View {
+    let title: String
+    /// Zincirin ilk adımında yok; sonraki adımlarda sola dönüş.
+    var onBack: (() -> Void)?
+    var onClose: () -> Void
+    @ViewBuilder var content: Content
+
+    @Environment(LocalizationManager.self) private var l10n
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(AppColors.accentGold.opacity(0.6))
+                .frame(width: 38, height: 4)
+                .padding(.top, 9)
+
+            HStack(spacing: 10) {
+                if let onBack {
+                    circleButton(systemImage: "chevron.left", label: l10n.t("common.back"), action: onBack)
+                }
+
+                Text(title)
+                    .font(AppFont.display(21, weight: .bold))
+                    .tracking(2.6)
+                    .textCase(.uppercase)
+                    .foregroundStyle(AppColors.textCream)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
+
+                circleButton(systemImage: "xmark", label: l10n.t("common.close"), action: onClose)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 16)
+
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background {
+            LinearGradient(
+                stops: [
+                    .init(color: Color(hex: 0x4A1720), location: 0),
+                    .init(color: AppColors.bgVelvetDeep, location: 0.26),
+                    .init(color: AppColors.surfaceCard, location: 1),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(AppColors.accentGold.opacity(0.5))
+                    .frame(height: 1)
+            }
+            .overlay { GrainOverlay() }
+            .ignoresSafeArea()
+        }
+        .presentationCornerRadius(28)
+        .presentationBackground(.clear)
+    }
+
+    private func circleButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.secondaryButton()
+            action()
+        } label: {
+            Image(systemName: systemImage)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(AppColors.textSecondary)
+                .frame(width: 30, height: 30)
+                .background {
+                    Circle()
+                        .fill(AppColors.surfaceCardRaised.opacity(0.9))
+                        .overlay {
+                            Circle().strokeBorder(AppColors.accentGold.opacity(0.45), lineWidth: 1)
+                        }
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+}

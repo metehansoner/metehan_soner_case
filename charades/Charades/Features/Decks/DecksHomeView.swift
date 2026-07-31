@@ -1,0 +1,297 @@
+import SwiftUI
+
+/// Ana ekran (ekran 4) — 02-ekran-akisi.md §4.
+///
+/// Kök ekran bu; tab bar yok. Header ve filtre satırı üstte sabit, scroll
+/// aşağı indikçe logo küçülüyor ama chip satırı ve iki buton yerinde kalıyor.
+/// Alt bölge bağlama göre çalışan bir aksiyon alanı: seçim varsa PlayBar,
+/// yoksa tüm dikey alan ızgaraya kalıyor.
+struct DecksHomeView: View {
+    /// Oyun `NavigationStack`in yerine render edildiği için turu `RootView`
+    /// başlatıyor (§02 §5); buradan yalnızca "başlatılabilir" sinyali gidiyor.
+    var onPlay: () -> Void
+
+    @Environment(LocalizationManager.self) private var l10n
+    @Environment(AppSettingsStore.self) private var settings
+    @Environment(SubscriptionStore.self) private var subscriptions
+    @Environment(AppRouter.self) private var router
+    @Environment(GameSetup.self) private var setup
+
+    @State private var filter: DeckFilter = .all
+    @State private var collapseProgress: Double = 0
+
+    private var dailyFreeDeckID: String? { DeckCatalog.dailyFreeDeckID() }
+
+    var body: some View {
+        ZStack {
+            VelvetBackground(showsLightLeak: true)
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    scrollOffsetReader
+
+                    if !subscriptions.isPremium,
+                       let dailyFreeDeckID,
+                       let deck = DeckCatalog.deck(dailyFreeDeckID) {
+                        NowShowingStrip(deck: deck) { router.openDeckDetail(deck.id) }
+                            .padding(.horizontal, 18)
+                            .padding(.top, 15)
+                    }
+
+                    sectionRow
+
+                    FeaturedRow(
+                        onMix: { router.push(.mix) },
+                        onWordBasket: { router.push(.wordBasket) },
+                        onCustomDecks: { router.push(.customList) }
+                    )
+
+                    if visibleDecks.isEmpty {
+                        emptyState
+                    } else {
+                        deckGrid
+                    }
+                }
+                .padding(.bottom, 24)
+            }
+            .coordinateSpace(name: Self.scrollSpace)
+            .scrollIndicators(.hidden)
+            .safeAreaInset(edge: .top, spacing: 0) { topBar }
+            .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
+        }
+    }
+
+    // MARK: Üst sabit alan
+
+    private var topBar: some View {
+        VStack(spacing: 12) {
+            HeaderBar(
+                collapseProgress: collapseProgress,
+                // §1: makara ikonu arşivde kayıt varken görünüyor. Replay
+                // deposu P15'te geliyor; o zamana kadar arşiv boş.
+                archiveCount: 0,
+                isPremium: subscriptions.isPremium,
+                onTapVIP: { router.openPaywall(.vipButton) },
+                onTapArchive: { router.push(.archive) },
+                onTapSettings: { router.isShowingSettings = true }
+            )
+
+            FilterChipRow(
+                selection: $filter,
+                favoriteCount: settings.favoriteDeckIDs.count
+            )
+        }
+        .padding(.bottom, 10)
+        .background {
+            LinearGradient(
+                colors: [
+                    AppColors.bgVelvetDeep.opacity(0.98),
+                    AppColors.bgVelvetDeep.opacity(collapseProgress > 0.1 ? 0.94 : 0),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .background(collapseProgress > 0.1 ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(.clear))
+            .ignoresSafeArea(edges: .top)
+        }
+    }
+
+    @ViewBuilder
+    private var bottomBar: some View {
+        if setup.hasSelection {
+            PlayBar(
+                deckCount: setup.selectedDeckIDs.count,
+                cardCount: setup.selectedCardCount,
+                isMix: setup.isMix,
+                isPremium: subscriptions.isPremium,
+                isPlayEnabled: isPlayEnabled,
+                onPlay: play
+            )
+        }
+    }
+
+    /// §10 §4: katalogda tanımlı ama kelime dosyası henüz üretilmemiş deste
+    /// kilitli değil **içeriksiz**. `CardBank` boş havuzla tur başlatmıyor,
+    /// o yüzden buton da açılmıyor.
+    private var isPlayEnabled: Bool {
+        setup.selectedDeckIDs.allSatisfy { DeckCatalog.contentReadyIDs.contains($0) }
+    }
+
+    /// §05 §1: `Canlandır` seçiliyken `describe` desteler soluklaşıyor —
+    /// "Periyodik Tablo" vücut diliyle canlandırılamıyor ve kullanıcı kötü turun
+    /// suçunu uygulamaya atıyor.
+    private func isOffMode(_ deck: DeckDef) -> Bool {
+        !deck.isRecommended(inActOutMode: setup.mode == .actOut)
+    }
+
+    private func play() {
+        // §09 §9: 2+ deste Mix demek ve Mix premium.
+        if setup.isMix, !subscriptions.isPremium {
+            router.openPaywall(.mix)
+            return
+        }
+        if setup.isMix {
+            setup.mode = .mix
+        } else if setup.mode == .mix || !setup.mode.needsDeckSelection {
+            // Tek deste seçiliyken Mix ya da Kendi Kelimelerin kalamaz;
+            // önceki turdan taşınan mod burada düşüyor.
+            setup.mode = .classic
+        }
+        onPlay()
+    }
+
+    // MARK: İçerik
+
+    private var sectionRow: some View {
+        HStack {
+            Text(l10n.t(filter == .all ? "decks.mine" : filter.titleKey))
+                .font(AppFont.ui(10.5, weight: .bold))
+                .tracking(2.4)
+                .textCase(.uppercase)
+                .foregroundStyle(AppColors.accentGold)
+
+            Spacer()
+
+            gridToggle
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 19)
+        .padding(.bottom, 10)
+    }
+
+    /// §4: 2 kolon / 3 kolon anahtarı. İkon o an geçerli düzeni gösteriyor.
+    private var gridToggle: some View {
+        Button {
+            settings.gridColumns = settings.gridColumns == 2 ? 3 : 2
+        } label: {
+            let side = settings.gridColumns
+            Grid(horizontalSpacing: 2.5, verticalSpacing: 2.5) {
+                ForEach(0..<side, id: \.self) { _ in
+                    GridRow {
+                        ForEach(0..<side, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(AppColors.accentBrass)
+                                .frame(width: 5, height: 5)
+                        }
+                    }
+                }
+            }
+            .frame(width: 34, height: 34)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(l10n.t("decks.gridToggle"))
+    }
+
+    private var deckGrid: some View {
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(.flexible(), spacing: 12),
+                count: settings.gridColumns
+            ),
+            spacing: 12
+        ) {
+            ForEach(visibleDecks) { deck in
+                let isLocked = deck.isLocked(
+                    isPremium: subscriptions.isPremium,
+                    dailyFreeDeckID: dailyFreeDeckID
+                )
+                Button {
+                    router.openDeckDetail(deck.id)
+                } label: {
+                    DeckCard(
+                        deck: deck,
+                        isSelected: setup.isSelected(deck.id),
+                        isLocked: isLocked,
+                        isDailyFree: deck.id == dailyFreeDeckID && !deck.isFree,
+                        cardCount: DeckCardCounts.count(for: deck.id),
+                        isOffMode: isOffMode(deck)
+                    )
+                }
+                .buttonStyle(.plain)
+                // Uzun basış seçimi doğrudan değiştiriyor; kısa dokunuş her
+                // zaman detaya gidiyor. İki deste seçip Mix'e girmek isteyen
+                // kullanıcı için detay sheet'inden geçmek gereksiz adım.
+                .onLongPressGesture(minimumDuration: 0.3) {
+                    guard !isLocked else {
+                        router.openPaywall(.lockedDeck(deck.id))
+                        return
+                    }
+                    setup.toggle(deck.id)
+                }
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 14)
+        .animation(.easeOut(duration: 0.2), value: settings.gridColumns)
+    }
+
+    /// §6: filtre sonucu boş → film şeridi ikonu + açıklama.
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "film.stack")
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(AppColors.accentBrass)
+
+            Text(l10n.t("decks.empty"))
+                .textStyle(.body)
+                .foregroundStyle(AppColors.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 40)
+        .padding(.vertical, 64)
+    }
+
+    // MARK: Filtreleme
+
+    private var visibleDecks: [DeckDef] {
+        let decks = DeckCatalog.visibleDecks()
+        switch filter {
+        case .all:
+            return decks
+        case .popular:
+            // Sıra Remote Config'ten geliyor; katalog sırası değil o sıra geçerli.
+            let ranking = Dictionary(
+                uniqueKeysWithValues: DeckCatalog.popularDeckIDs.enumerated().map { ($1, $0) }
+            )
+            return decks.filter { ranking[$0.id] != nil }
+                .sorted { (ranking[$0.id] ?? 0) < (ranking[$1.id] ?? 0) }
+        case .new:
+            return decks.filter { $0.isNew() }.sorted { $0.addedAt > $1.addedAt }
+        case .favorites:
+            return decks.filter { settings.isFavorite($0.id) }
+        case .section(let section):
+            return decks.filter { $0.section == section }
+        }
+    }
+
+    // MARK: Scroll takibi
+
+    private static let scrollSpace = "decksHome"
+
+    /// Header'ın küçülmesi için scroll konumu. `onScrollGeometryChange` iOS 18
+    /// istiyor, hedef iOS 17 (§07 §1) — bu yüzden preference key ile.
+    private var scrollOffsetReader: some View {
+        GeometryReader { geometry in
+            Color.clear.preference(
+                key: ScrollOffsetKey.self,
+                value: geometry.frame(in: .named(Self.scrollSpace)).minY
+            )
+        }
+        .frame(height: 0)
+        .onPreferenceChange(ScrollOffsetKey.self) { offset in
+            let progress = min(1, max(0, -offset / 52))
+            if abs(progress - collapseProgress) > 0.01 {
+                collapseProgress = progress
+            }
+        }
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
