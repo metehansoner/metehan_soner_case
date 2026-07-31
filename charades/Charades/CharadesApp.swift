@@ -1,8 +1,10 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct CharadesApp: App {
     @Bindable private var l10n = LocalizationManager.shared
+    private let customDeckContainer = CustomDeckStore.makeContainer()
 
     init() {
         // § `01` §2: font ailesi seçili dile bağlı ve restart'sız değişmesi gerekiyor.
@@ -18,5 +20,6 @@ struct CharadesApp: App {
                 .environment(\.locale, Locale(identifier: l10n.localeCode))
                 .preferredColorScheme(.dark)
         }
+        .modelContainer(customDeckContainer)
     }
 }

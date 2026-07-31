@@ -1,219 +1,291 @@
 import SwiftUI
+import SwiftData
 
-/// Paket 1 komponent galerisi: tema katmanının tamamı tek ekranda görünsün diye.
-/// Gerçek navigasyon kabuğu ve deste ızgarası P3'te bunun yerine geçecek.
+/// Paket 2 veri katmanı demosu. Gerçek navigasyon kabuğu P3'te bunun yerine geçecek.
 struct RootView: View {
-    @Bindable private var settings = AppSettingsStore.shared
     @Bindable private var l10n = LocalizationManager.shared
+    @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
+    @Environment(\.modelContext) private var modelContext
 
-    @State private var switchOn = true
-    @State private var page = 1
-    @State private var showsCurtain = false
+    private var dailyFreeID: String? { DeckCatalog.dailyFreeDeckID() }
+    private var newCount: Int { DeckCatalog.v1.filter { $0.isNew() }.count }
 
     var body: some View {
         ZStack {
-            VelvetBackground(showsCurtain: showsCurtain, showsLightLeak: true)
+            VelvetBackground(showsCurtain: false, showsLightLeak: true)
 
             ScrollView {
-                VStack(spacing: 28) {
-                    logoPlaque
-                    buttonsSection
-                    switchSection
-                    filmStripSection
-                    bulbsSection
-                    typeScaleSection
-                    paletteSection
-                    effectsSection
+                VStack(spacing: 22) {
+                    header
+                    catalogSummary
+                    filterStrip
+                    sampleDecks
+                    customDeckDemo
                 }
-                .padding(.horizontal, 22)
-                .padding(.vertical, 32)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 28)
             }
         }
     }
 
-    // MARK: Logo
+    // MARK: Üst
 
-    private var logoPlaque: some View {
+    private var header: some View {
         VStack(spacing: 8) {
             Text(l10n.t("app.name"))
                 .textStyle(.marquee)
                 .foregroundStyle(AppColors.surfacePoster)
-                .shadow(color: AppColors.accentAmber.opacity(0.5), radius: 20)
-                .padding(.horizontal, 26)
-                .padding(.vertical, 14)
-                .overlay { BulbFrame(countPerEdge: 9, diameter: 5, color: AppColors.accentAmber) }
+                .shadow(color: AppColors.accentAmber.opacity(0.45), radius: 16)
 
-            Text("Grand Marquee")
+            Text(l10n.t("data.catalog.title"))
                 .textStyle(.sectionLabel)
                 .foregroundStyle(AppColors.accentGold)
         }
         .padding(.bottom, 4)
     }
 
-    // MARK: Bölümler
+    private var catalogSummary: some View {
+        DemoCard {
+            Text(
+                l10n.t(
+                    "data.catalog.summary",
+                    [
+                        "v1": "\(DeckCatalog.v1.count)",
+                        "total": "\(DeckCatalog.all.count)",
+                        "ready": "\(DeckCatalog.contentReadyIDs.count)",
+                    ]
+                )
+            )
+            .textStyle(.bodyStrong)
+            .foregroundStyle(AppColors.textCream)
 
-    private var buttonsSection: some View {
-        Card("Buttons") {
-            Button(l10n.t("common.play")) {}
-                .buttonStyle(MarqueeButtonStyle())
-
-            Button(l10n.t("common.play")) {}
-                .buttonStyle(MarqueeButtonStyle())
-                .disabled(true)
-
-            Button("Secondary") {}
-                .buttonStyle(SecondaryButtonStyle())
-
-            Button("Secondary") {}
-                .buttonStyle(SecondaryButtonStyle())
-                .disabled(true)
-        }
-    }
-
-    private var switchSection: some View {
-        Card("MarqueeSwitch") {
-            HStack {
-                Text("Titreşim")
-                    .textStyle(.bodyStrong)
-                    .foregroundStyle(AppColors.textCream)
-                Spacer()
-                MarqueeSwitch(isOn: $switchOn)
+            if let dailyFreeID, let deck = DeckCatalog.deck(dailyFreeID) {
+                Text(l10n.t("data.dailyFree", ["title": l10n.t(deck.titleKey)]))
+                    .textStyle(.caption)
+                    .foregroundStyle(AppColors.accentAmber)
             }
-        }
-    }
 
-    private var filmStripSection: some View {
-        Card("FilmStripProgress · SprocketStrip") {
-            FilmStripProgress(total: 4, current: page)
-                .onTapGesture { page = (page + 1) % 4 }
-            SprocketStrip(holeColor: AppColors.bgFilmBlack)
-                .background(AppColors.surfacePoster)
-                .clipShape(RoundedRectangle(cornerRadius: 3))
-        }
-    }
-
-    private var bulbsSection: some View {
-        Card("BulbRow") {
-            BulbRow(count: 12, diameter: 5, color: AppColors.accentAmber)
-            BulbRow(count: 12, diameter: 5, color: AppColors.accentAmber, isLit: false)
-        }
-    }
-
-    private var typeScaleSection: some View {
-        Card("Tip ölçeği") {
-            row("screenTitle", .screenTitle, AppColors.textCream)
-            row("posterTitle", .posterTitle, AppColors.textCream)
-            row("gameWord 34", .gameWord(34), AppColors.textCream)
-            row("sectionLabel", .sectionLabel, AppColors.accentGold)
-            row("body", .body, AppColors.textCream)
-            row("caption", .caption, AppColors.textSecondary)
-            row("creditsName", .creditsName, AppColors.textCream)
-        }
-    }
-
-    private func row(_ label: String, _ style: AppTextStyle, _ color: Color) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(label)
+            Text(l10n.t("data.newChip", ["count": "\(newCount)"]))
                 .textStyle(.caption)
-                .foregroundStyle(AppColors.textMuted)
-                .frame(width: 96, alignment: .leading)
-            Text("Sessiz Sinema")
-                .textStyle(style)
-                .foregroundStyle(color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+                .foregroundStyle(AppColors.textSecondary)
+
+            sectionCounts
         }
     }
 
-    private var paletteSection: some View {
-        Card("Palet") {
-            ForEach(Self.paletteGroups, id: \.0) { name, colors in
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(name)
+    private var sectionCounts: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(DeckSection.allCases) { section in
+                let count = DeckCatalog.decks(in: section).count
+                HStack {
+                    Circle()
+                        .fill(section.dominantTone)
+                        .frame(width: 8, height: 8)
+                    Text(l10n.t(section.titleKey))
+                        .textStyle(.caption)
+                        .foregroundStyle(AppColors.textSecondary)
+                    Spacer()
+                    Text("\(count)")
                         .textStyle(.caption)
                         .foregroundStyle(AppColors.textMuted)
-                    HStack(spacing: 5) {
-                        ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(color)
-                                .frame(height: 26)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .strokeBorder(AppColors.textMuted.opacity(0.25), lineWidth: 0.5)
-                                }
-                        }
+                }
+            }
+        }
+        .padding(.top, 6)
+    }
+
+    // MARK: Filtre chip'leri
+
+    private var filterStrip: some View {
+        DemoCard {
+            Text(l10n.t("filter.all"))
+                .textStyle(.sectionLabel)
+                .foregroundStyle(AppColors.accentGold)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(DeckFilter.standardOrder) { filter in
+                        Text(l10n.t(filter.titleKey))
+                            .textStyle(.sectionLabel)
+                            .foregroundStyle(
+                                filter == .all ? AppColors.textOnAmber : AppColors.textCream
+                            )
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background {
+                                Capsule()
+                                    .fill(filter == .all ? AppColors.accentAmber : AppColors.surfaceCardRaised)
+                                    .overlay {
+                                        Capsule()
+                                            .strokeBorder(AppColors.accentGold.opacity(0.35), lineWidth: 1)
+                                    }
+                            }
                     }
                 }
             }
         }
     }
 
-    private var effectsSection: some View {
-        Card("Doku katmanları") {
-            effectRow("Kadife perde", isOn: $showsCurtain)
-            effectRow("Film efektleri (grain)", isOn: $settings.filmEffectsEnabled)
-            effectRow("Scanline", isOn: $settings.scanlinesEnabled)
+    // MARK: Örnek desteler
 
-            RoundedRectangle(cornerRadius: 6)
-                .fill(AppColors.surfacePoster)
-                .frame(height: 44)
-                .overlay { ScanlineOverlay() }
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-    }
-
-    private func effectRow(_ title: String, isOn: Binding<Bool>) -> some View {
-        HStack {
-            Text(title)
-                .textStyle(.body)
-                .foregroundStyle(AppColors.textCream)
-            Spacer()
-            MarqueeSwitch(isOn: isOn)
-        }
-    }
-
-    private static let paletteGroups: [(String, [Color])] = [
-        ("Arka plan", [
-            AppColors.bgFilmBlack, AppColors.bgVelvetDeep, AppColors.bgVelvetMid,
-            AppColors.bgVelvetLight, AppColors.bgSpotlight,
-        ]),
-        ("Yüzey", [
-            AppColors.surfaceCard, AppColors.surfaceCardRaised,
-            AppColors.surfacePoster, AppColors.surfaceTicket,
-        ]),
-        ("Accent", [
-            AppColors.accentAmber, AppColors.accentAmberDeep,
-            AppColors.accentGold, AppColors.accentBrass, AppColors.accentTeal,
-        ]),
-        ("Durum", [
-            AppColors.stateCorrect, AppColors.stateSkip,
-            AppColors.stateWarning, AppColors.stateLocked,
-        ]),
-    ]
-}
-
-/// Galeri bölümü kabuğu — §4'teki sheet/kart anatomisinin sade hâli.
-private struct Card<Content: View>: View {
-    let title: String
-    @ViewBuilder let content: Content
-
-    init(_ title: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(title)
+    private var sampleDecks: some View {
+        DemoCard {
+            Text(l10n.t("data.contentReady"))
                 .textStyle(.sectionLabel)
                 .foregroundStyle(AppColors.accentGold)
+
+            ForEach(Array(DeckCatalog.contentReadyIDs.sorted()), id: \.self) { id in
+                if let deck = DeckCatalog.deck(id) {
+                    sampleRow(deck)
+                }
+            }
+        }
+    }
+
+    private func sampleRow(_ deck: DeckDef) -> some View {
+        let cards = CardBank.shared.cards(in: deck.id)
+        let locked = deck.isLocked(isPremium: false, dailyFreeDeckID: dailyFreeID)
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("REEL \(deck.reelLabel)")
+                    .textStyle(.reelLabel)
+                    .foregroundStyle(AppColors.accentBrass)
+
+                Text(l10n.t(deck.titleKey))
+                    .textStyle(.posterTitle)
+                    .foregroundStyle(AppColors.surfacePoster)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                Spacer()
+
+                if deck.isFree {
+                    badge(l10n.t("deck.free.badge"), AppColors.stateCorrect)
+                } else if dailyFreeID == deck.id {
+                    badge(l10n.t("deck.dailyFree.badge"), AppColors.accentAmber)
+                } else if locked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AppColors.stateLocked)
+                }
+            }
+
+            Text(l10n.t(deck.descKey))
+                .textStyle(.caption)
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(2)
+
+            HStack(spacing: 10) {
+                metaPill(deck.playability.rawValue.uppercased())
+                metaPill(deck.difficulty.rawValue.uppercased())
+                metaPill(deck.localization.rawValue.uppercased())
+
+                Spacer()
+
+                Text(
+                    l10n.t(
+                        "data.cards.loaded",
+                        [
+                            "count": "\(cards.count)",
+                            "localize": deck.localization.rawValue,
+                        ]
+                    )
+                )
+                .textStyle(.caption)
+                .foregroundStyle(AppColors.textMuted)
+            }
+
+            if !deck.isRecommended(inActOutMode: true) {
+                badge(l10n.t("playability.describe.badge"), AppColors.stateWarning)
+            }
+
+            if let first = cards.first {
+                Text(first.text(for: l10n.localeCode))
+                    .textStyle(.body)
+                    .foregroundStyle(AppColors.textCream)
+                    .padding(.top, 2)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    // MARK: Custom deste
+
+    private var customDeckDemo: some View {
+        DemoCard {
+            Text(l10n.t("data.customDeck.demo"))
+                .textStyle(.sectionLabel)
+                .foregroundStyle(AppColors.accentGold)
+
+            Text("\(customDecks.count) / \(CustomDeckLimits.maxDeckCount(isPremium: true))")
+                .textStyle(.bodyStrong)
+                .foregroundStyle(AppColors.textCream)
+
+            Button {
+                seedCustomDeckIfNeeded()
+            } label: {
+                Text(customDecks.isEmpty ? "Seed demo deck" : "Already seeded")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .disabled(!customDecks.isEmpty)
+
+            if let deck = customDecks.first {
+                Text("\(deck.name) · \(deck.wordCount) · \(l10n.t(deck.cover.titleKey))")
+                    .textStyle(.caption)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+        }
+    }
+
+    private func seedCustomDeckIfNeeded() {
+        guard customDecks.isEmpty else { return }
+        let deck = CustomDeck(
+            name: "Cuma Gecesi",
+            languageCode: l10n.localeCode,
+            words: ["Kahve", "Traktör", "Uzaylı", "Pingpong", "Fenerbahçe", "Sinemacı"],
+            savedFromBasket: true
+        )
+        modelContext.insert(deck)
+        try? modelContext.save()
+    }
+
+    // MARK: Küçük parçalar
+
+    private func badge(_ text: String, _ color: Color) -> some View {
+            Text(text)
+            .textStyle(.reelLabel)
+            .foregroundStyle(AppColors.textOnAmber)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(color))
+    }
+
+    private func metaPill(_ text: String) -> some View {
+        Text(text)
+            .textStyle(.reelLabel)
+            .foregroundStyle(AppColors.textMuted)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background {
+                Capsule()
+                    .strokeBorder(AppColors.textMuted.opacity(0.4), lineWidth: 1)
+            }
+    }
+}
+
+private struct DemoCard<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 14)
-                .fill(AppColors.surfaceCard.opacity(0.85))
+                .fill(AppColors.surfaceCard.opacity(0.88))
                 .overlay {
                     RoundedRectangle(cornerRadius: 14)
                         .strokeBorder(AppColors.accentGold.opacity(0.28), lineWidth: 1)
@@ -224,5 +296,6 @@ private struct Card<Content: View>: View {
 
 #Preview {
     RootView()
+        .modelContainer(CustomDeckStore.makeContainer(inMemory: true))
         .preferredColorScheme(.dark)
 }

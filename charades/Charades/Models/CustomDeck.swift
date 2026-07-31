@@ -1,0 +1,169 @@
+import Foundation
+import SwiftData
+
+// MARK: - Limitler
+
+/// §05 §7 tablosu + §09 §4'ün tavsiye satırı.
+/// SwiftData modelleri MainActor dışında da yaşayabildiği için limitler
+/// `nonisolated` — aksi hâlde Swift 6 varsayılan izolasyonu init'i kırıyor.
+enum CustomDeckLimits: Sendable {
+    nonisolated static let maxNameLength = 24
+    nonisolated static let maxWords = 100
+    /// Oynamak için gereken minimum.
+    nonisolated static let minWordsToPlay = 5
+    /// §09 §4: "60 saniyelik bir turda ~15 kelime geçiyor." Engel değil, tavsiye.
+    nonisolated static let recommendedWordCount = 20
+
+    /// Ücretsizde 1 taslak (oynanamaz), Premium'da 3.
+    nonisolated static func maxDeckCount(isPremium: Bool) -> Int { isPremium ? 3 : 1 }
+}
+
+/// §05 §7: 12 hazır retro afiş şablonu — soyut ve konusuz, böylece custom içerik
+/// ızgaranın tasarımını bozamıyor. Çizimleri P8'deki `CoverPicker`'da.
+enum CustomDeckCover: Int, CaseIterable, Identifiable, Sendable {
+    case velvet = 0
+    case filmStrip
+    case spotlight
+    case star
+    case ticket
+    case marquee
+    case reel
+    case curtain
+    case clapper
+    case sunburst
+    case posterFrame
+    case bulbBorder
+
+    nonisolated var id: Int { rawValue }
+    nonisolated var titleKey: String { "customDeck.cover.\(String(describing: self))" }
+
+    /// §05 §7: kaydedilen sepete şablon **deterministik** atanır — aynı isim aynı
+    /// kapağı alır. Rastgele olsaydı kullanıcı aynı sepeti iki kez kaydettiğinde
+    /// farklı kapak görürdü.
+    nonisolated static func deterministic(for name: String) -> CustomDeckCover {
+        let all = allCases
+        return all[Int(name.stableHash % UInt64(all.count))]
+    }
+}
+
+private extension String {
+    /// FNV-1a. Swift'in `hashValue`'su süreç başına rastgeleleştiği için
+    /// kalıcı bir atama üretmiyor.
+    nonisolated var stableHash: UInt64 {
+        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+        for byte in utf8 {
+            hash ^= UInt64(byte)
+            hash = hash &* 0x0000_0100_0000_01b3
+        }
+        return hash
+    }
+}
+
+// MARK: - SwiftData şeması
+
+/// §05 §7: `UserDefaults`'a JSON gömmekten daha temiz; sıralama ve silme kolay.
+///
+/// iCloud senkronizasyonu v1'de kapalı (`.none`) ama şema hazır tutuluyor:
+/// CloudKit'in şartları — her alanın varsayılan değeri var, `.unique` kısıtı yok,
+/// ilişkiler opsiyonel ve ters ilişkisi tanımlı — baştan sağlanıyor. Sonradan
+/// açmak `ModelConfiguration`'da tek satır olacak.
+@Model
+final class CustomDeck {
+    var uuid: UUID = UUID()
+    var name: String = ""
+    /// `CustomDeckCover.rawValue`. Ham int tutuluyor; CloudKit enum bilmiyor.
+    var coverTemplate: Int = 0
+    /// Premium'da Photos'tan seçilen görsel (sepia + grain + altın çerçeve
+    /// uygulanmış hâli). Şablon kullanılıyorsa `nil`.
+    var coverImageData: Data?
+    /// §05 §7: custom kelimeler çevrilmez, kullanıcının yazdığı dilde kalır.
+    /// Deste kartında `TR` gibi küçük bir etiket olarak görünüyor.
+    var languageCode: String = "en"
+    var createdAt: Date = Date.now
+    var updatedAt: Date = Date.now
+    /// Izgaradaki sıra; kullanıcı sürükleyerek değiştirebiliyor.
+    var sortIndex: Int = 0
+    /// Kelime Sepeti'nden kaydedilmiş mi (§05 §7'deki iki kapıdan hangisi).
+    var savedFromBasket: Bool = false
+
+    @Relationship(deleteRule: .cascade, inverse: \CustomCard.deck)
+    var cards: [CustomCard]? = []
+
+    init(
+        name: String,
+        languageCode: String,
+        words: [String] = [],
+        cover: CustomDeckCover? = nil,
+        savedFromBasket: Bool = false,
+        sortIndex: Int = 0
+    ) {
+        uuid = UUID()
+        self.name = String(name.prefix(CustomDeckLimits.maxNameLength))
+        self.languageCode = languageCode
+        coverTemplate = (cover ?? .deterministic(for: name)).rawValue
+        self.savedFromBasket = savedFromBasket
+        self.sortIndex = sortIndex
+        createdAt = .now
+        updatedAt = .now
+        cards = words.prefix(CustomDeckLimits.maxWords).enumerated().map {
+            CustomCard(text: $1, order: $0)
+        }
+    }
+
+    var cover: CustomDeckCover {
+        CustomDeckCover(rawValue: coverTemplate) ?? .velvet
+    }
+
+    var orderedCards: [CustomCard] {
+        (cards ?? []).sorted { $0.order < $1.order }
+    }
+
+    var wordCount: Int { cards?.count ?? 0 }
+
+    var canPlay: Bool { wordCount >= CustomDeckLimits.minWordsToPlay }
+
+    /// §09 §4: 20 kelimenin altında bilgi satırı gösteriliyor.
+    var isBelowRecommended: Bool { wordCount < CustomDeckLimits.recommendedWordCount }
+
+    /// Custom kartlar oyun döngüsüne katalog kartlarıyla aynı tipte giriyor;
+    /// `d = 0` oldukları için zorluk filtresinden muaf kalıyorlar (§09 §4).
+    func toCards() -> [Card] {
+        orderedCards.map { Card(k: "custom.\(uuid.uuidString).\($0.order)", t: [languageCode: $0.text], d: 0) }
+    }
+}
+
+@Model
+final class CustomCard {
+    var text: String = ""
+    var order: Int = 0
+    var deck: CustomDeck?
+
+    init(text: String, order: Int) {
+        self.text = text
+        self.order = order
+    }
+}
+
+// MARK: - Container
+
+enum CustomDeckStore {
+    static let schema = Schema([CustomDeck.self, CustomCard.self])
+
+    /// §05 §7: iCloud v1'de yok — `.none`. Şema açmaya hazır.
+    static func makeContainer(inMemory: Bool = false) -> ModelContainer {
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: inMemory,
+            cloudKitDatabase: .none
+        )
+        do {
+            return try ModelContainer(for: schema, configurations: configuration)
+        } catch {
+            // Şema migrate edilemiyorsa bellek içi container'la açılıyor:
+            // custom desteler kaybolur ama uygulama açılmayı reddetmez.
+            assertionFailure("SwiftData container açılamadı: \(error)")
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            return try! ModelContainer(for: schema, configurations: fallback)
+        }
+    }
+}
