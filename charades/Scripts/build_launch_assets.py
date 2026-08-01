@@ -2,17 +2,14 @@
 """
 Açılış (ekran 1) görsellerini üretir — 02-ekran-akisi.md §4, 08-sinematik-detaylar.md A3.
 
-Neden görsel, neden çizim değil: A3'ün son maddesi statik launch screen ile
-devamlılık istiyor. iOS'un gösterdiği launch screen bir storyboard, orada
-SwiftUI çizimi çalıştırılamıyor. Aynı kareyi iki teknolojiyle iki kez çizmek
-kaçınılmaz olarak ayrışıyor ve tam da kaçınılmak istenen zıplamayı üretiyor.
-Bu yüzden iki kare de **aynı PNG**: storyboard `UIImageView` ile, `CurtainReveal`
-`Image` ile aynı dosyayı aynı ölçekleme kuralıyla (aspect fill / sabit boyut)
-gösteriyor.
+Neden görsel, neden çizim değil: launch screen ile `CurtainReveal` aynı kapalı
+perde PNG'sini paylaşıyor; sistem açılışından animasyona geçerken zıplama olmaz.
+İkon perdenin arkasındadır — storyboard'da yok, perde açılınca SwiftUI sahnesinde
+belirir (`ornek-ekranlar.html` 1a → 1b).
 
 Üretilenler:
-  launch_curtain — tam ekran kapalı perde (dikey kıvrımlar)
-  launch_plaque  — pirinç çerçeve + krem paspartu + app ikonu
+  launch_curtain — tam ekran kapalı perde (dikey kıvrımlar); launch screen bunu kullanır
+  launch_plaque  — pirinç çerçeve + krem paspartu + app ikonu; yalnızca perde açılınca
 
 Kullanım:
   /tmp/charades_venv/bin/python Scripts/build_launch_assets.py

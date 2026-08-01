@@ -6,10 +6,9 @@ import SwiftUI
 /// yerine perde açılışına çevirmek. §08'in temel ilkesi burada da geçerli —
 /// **var olan bir beklemeyi süslüyor, yeni bekleme yaratmıyor.**
 ///
-/// Perde ve levha, statik launch screen'in gösterdiği **aynı iki PNG**
-/// (`LaunchScreen.storyboard`). Aynı kareyi iki kez çizmek yerine tek dosyayı
-/// paylaşmak, sistem açılış ekranından bu view'a geçerken hiçbir şeyin yerinden
-/// zıplamamasını garanti ediyor.
+/// Launch screen yalnızca kapalı perdeyi gösterir (`ornek-ekranlar.html` 1a).
+/// İkon perdenin **arkasındadır**; perde iki yana çekilince sahne, spot ve
+/// çerçeveli ikon belirir (1b).
 struct CurtainRevealView: View {
     var onFinish: () -> Void
 
@@ -18,40 +17,38 @@ struct CurtainRevealView: View {
 
     @State private var isOpen = false
     @State private var showsStage = false
-    @State private var showsLoader = false
 
-    /// §08 A3: toplam 1,2 saniye.
-    private let total: TimeInterval = 1.2
+    /// Splash süresi — perde + sahne görünümü.
+    private let total: TimeInterval = 2.0
     private let plaqueSide: CGFloat = 168
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Perdenin arkası: ışığın vurduğu sahne.
+                // Perdenin arkası — sahne, spot, ikon, wordmark.
                 AppColors.screenBackground
-                EllipticalGradient(
-                    colors: [AppColors.bgSpotlight.opacity(0.32), .clear],
-                    center: .center,
-                    startRadiusFraction: 0,
-                    endRadiusFraction: 0.75
-                )
+
+                spotCone
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .opacity(showsStage ? 1 : 0)
+
+                plaque
+                    .opacity(showsStage ? 1 : 0)
 
                 wordmark
                     .frame(maxHeight: .infinity, alignment: .center)
                     .offset(y: plaqueSide / 2 + 54)
                     .opacity(showsStage ? 1 : 0)
 
+                // Kanatlar en üstte: kapalıyken sahneyi tamamen örter.
                 panel(.leading, size: geometry.size)
                 panel(.trailing, size: geometry.size)
 
-                plaque
-
-                if showsLoader {
-                    loader
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                        .padding(.bottom, 54)
-                        .transition(.opacity)
-                }
+                // 1b — `ornek-ekranlar.html` `.splash-load`: perde açılınca alt kenarda.
+                loader
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .padding(.bottom, 56)
+                    .opacity(showsStage ? 1 : 0)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
@@ -64,6 +61,30 @@ struct CurtainRevealView: View {
     }
 
     // MARK: Katmanlar
+
+    /// Sahne ışığı — `ornek-ekranlar.html` `.spotcone`. Perde açılınca üstten
+    /// ikona düşen konik amber huzme; kapalıyken yok.
+    private var spotCone: some View {
+        GeometryReader { geometry in
+            let width = min(geometry.size.width * 0.64, 280)
+            let height = geometry.size.height * 0.52
+            LinearGradient(
+                colors: [
+                    AppColors.accentAmber.opacity(0.30),
+                    AppColors.bgSpotlight.opacity(0.14),
+                    .clear,
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(width: width, height: height)
+            .clipShape(SpotConeShape())
+            .blur(radius: 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .offset(y: -geometry.size.height * 0.06)
+        }
+        .allowsHitTesting(false)
+    }
 
     /// Kadife kanat. Kenara giderken `scaleX` 0.6'ya düşüyor: gerçek sahne
     /// perdesi kenara toplanınca kalınlaşır, düz kaydırma bunu kaçırıyor (A3).
@@ -81,17 +102,15 @@ struct CurtainRevealView: View {
             .offset(x: isOpen ? (isLeading ? -size.width * 0.62 : size.width * 0.62) : 0)
     }
 
-    /// Çerçeveli app ikonu. Perdenin **üstünde** duruyor: launch screen'de de
-    /// öyle görünüyor ve açılış boyunca yerinden kımıldamayan tek öğe o.
+    /// Çerçeveli app ikonu — perdenin arkasında; kanatlar açılınca görünür.
     private var plaque: some View {
         Image("launch_plaque")
             .frame(width: plaqueSide, height: plaqueSide)
             .overlay {
-                // Ana ekrandaki logo ampulleriyle aynı ritim; iki ekran
-                // arasında kesinti değil süreklilik oluyor (§02 §4).
-                BulbFrame(countPerEdge: 6, diameter: 4, color: AppColors.accentAmber)
-                    .padding(-9)
+                BulbRing(countPerSide: 8, diameter: 4, color: AppColors.accentAmber, isLit: showsStage)
+                    .padding(-11)
             }
+            .shadow(color: AppColors.accentAmber.opacity(showsStage ? 0.55 : 0), radius: 36, y: 0)
             .shadow(color: .black.opacity(0.55), radius: 26, y: 14)
     }
 
@@ -102,6 +121,7 @@ struct CurtainRevealView: View {
                 .appTracking(6)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream)
+                .shadow(color: AppColors.accentAmber.opacity(showsStage ? 0.5 : 0), radius: 11)
 
             HStack(spacing: 8) {
                 rule
@@ -121,18 +141,16 @@ struct CurtainRevealView: View {
             .frame(height: 1)
     }
 
-    /// §02 §4 madde 5: **normal açılışta hiç görünmüyor.** Yalnızca katalog
-    /// hazırlığı perde animasyonundan uzun sürerse.
+    /// Alt kenar yükleme — kayan amber şerit + "Makara yükleniyor"
+    /// (`ornek-ekranlar.html` `.load-track` / `.load-txt`).
     private var loader: some View {
         VStack(spacing: 10) {
-            ProgressView()
-                .progressViewStyle(.circular)
-                .tint(AppColors.accentAmber)
+            ReelLoadTrack()
             Text(l10n.t("launch.loading"))
-                .font(AppFont.ui(9.5, weight: .semibold))
-                .appTracking(2.4)
+                .font(AppFont.ui(8, weight: .semibold))
+                .appTracking(2.6)
                 .textCase(.uppercase)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(Color(hex: 0x6F6152))
         }
     }
 
@@ -145,7 +163,10 @@ struct CurtainRevealView: View {
             // §02 §4: Reduced Motion'da perde animasyonu yerine 200 ms fade.
             // Çerçeveli ikon yine görünüyor, ampuller sabit yanıyor.
             await prepareCatalog()
-            withAnimation(.easeOut(duration: 0.2)) { showsStage = true }
+            withAnimation(.easeOut(duration: 0.2)) {
+                isOpen = true
+                showsStage = true
+            }
             try? await Task.sleep(for: .milliseconds(200))
             onFinish()
             return
@@ -171,17 +192,52 @@ struct CurtainRevealView: View {
     /// Deste kataloğu ilk erişimde kuruluyor (§05 §2). Kelime dosyaları
     /// okunmuyor — onlar deste seçilince geliyor (§05 §5).
     private func prepareCatalog() async {
-        let loader = Task { @MainActor in _ = DeckCatalog.v1 }
+        await Task { @MainActor in _ = DeckCatalog.v1 }.value
+    }
+}
 
-        // Gösterge hazırlık uzarsa devreye giriyor; normal açılışta bu bekleme
-        // hazırlıktan önce bitiyor ve gösterge hiç çizilmiyor.
-        let watchdog = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(total))
-            guard !Task.isCancelled else { return }
-            withAnimation(.easeIn(duration: 0.2)) { showsLoader = true }
-        }
+/// 104×2 pt ray, içinde %42 amber dilim soldan sağa kayıyor (1,4 sn döngü).
+private struct ReelLoadTrack: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var travel: CGFloat = 0
 
-        await loader.value
-        watchdog.cancel()
+    private let trackWidth: CGFloat = 104
+    private let segmentRatio: CGFloat = 0.42
+
+    var body: some View {
+        let segment = trackWidth * segmentRatio
+        Capsule()
+            .fill(AppColors.accentGold.opacity(0.22))
+            .frame(width: trackWidth, height: 2)
+            .overlay(alignment: .leading) {
+                Capsule()
+                    .fill(AppColors.accentAmber)
+                    .frame(width: segment, height: 2)
+                    .shadow(color: AppColors.accentAmber.opacity(0.8), radius: 4)
+                    .offset(x: reduceMotion ? (trackWidth - segment) / 2 : travel)
+            }
+            .clipped()
+            .onAppear {
+                guard !reduceMotion else { return }
+                travel = -segment * 1.1
+                withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: false)) {
+                    travel = trackWidth + segment * 0.4
+                }
+            }
+    }
+}
+
+/// Üstte dar, altta geniş — sahne spotunun trapez kesiti
+/// (`clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%)`).
+private struct SpotConeShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let topInset = rect.width * 0.38
+        path.move(to: CGPoint(x: topInset, y: 0))
+        path.addLine(to: CGPoint(x: rect.width - topInset, y: 0))
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+        return path
     }
 }

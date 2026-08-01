@@ -54,6 +54,50 @@ struct BulbFrame: View {
     }
 }
 
+/// Dört kenarı saran ampul halkası — splash ikon çerçevesi (`ornek-ekranlar.html`
+/// `ringBulbs`). Köşeler iki kez sayılmasın diye yan kenarlar uçları atlar.
+struct BulbRing: View {
+    var countPerSide = 8
+    var diameter: CGFloat = 4
+    var color: Color = AppColors.accentAmber
+    var isLit = true
+
+    var body: some View {
+        GeometryReader { geometry in
+            let points = Self.positions(in: geometry.size, perSide: countPerSide)
+            BulbTimeline { level in
+                ZStack {
+                    ForEach(Array(points.enumerated()), id: \.offset) { index, point in
+                        Bulb(
+                            diameter: diameter,
+                            color: color,
+                            level: isLit ? level(index) : 0
+                        )
+                        .position(point)
+                    }
+                }
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private static func positions(in size: CGSize, perSide: Int) -> [CGPoint] {
+        let n = max(perSide, 2)
+        var points: [CGPoint] = []
+        for index in 0..<n {
+            let t = CGFloat(index) / CGFloat(n - 1)
+            points.append(CGPoint(x: t * size.width, y: 0))
+            points.append(CGPoint(x: t * size.width, y: size.height))
+        }
+        for index in 1..<(n - 1) {
+            let t = CGFloat(index) / CGFloat(n - 1)
+            points.append(CGPoint(x: 0, y: t * size.height))
+            points.append(CGPoint(x: size.width, y: t * size.height))
+        }
+        return points
+    }
+}
+
 /// Nabız hesabını tek yerde tutar; her ampul kendi `TimelineView`'ını kurmasın diye.
 private struct BulbTimeline<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
