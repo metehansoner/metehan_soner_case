@@ -2,12 +2,9 @@ import SwiftUI
 
 /// Ana ekran header'ı — 02-ekran-akisi.md §1 ve §4 (ekran 4).
 ///
-/// Tab bar yok; ayarlar bu satırdaki dişliden sheet olarak açılıyor. Scroll
-/// aşağı indikçe logo 44 → 24'e küçülüyor ama VIP ve dişli butonları boyutunu
-/// koruyor — ikisi de her zaman erişilebilir kalmalı.
+/// Tab bar yok; ayarlar bu satırdaki dişliden sheet olarak açılıyor. Logo
+/// boyutu sabit — kaydırınca küçülmez. VIP ve dişli her zaman erişilebilir.
 struct HeaderBar: View {
-    /// 0 = tepede, 1 = tamamen küçülmüş.
-    var collapseProgress: Double
     /// §1: makara ikonu **yalnızca** arşivde en az bir kayıt varken görünür.
     /// Boş bir arşive giden kalıcı buton header'ı gereksiz kalabalıklaştırıyor.
     var archiveCount: Int
@@ -18,9 +15,6 @@ struct HeaderBar: View {
     var onTapSettings: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
-
-    private var logoSize: CGFloat { 44 - 20 * collapseProgress }
-    private var taglineOpacity: Double { max(0, 1 - collapseProgress * 2.2) }
 
     /// Logo ortada duruyor, butonlar onun üstünde: makara ikonu belirince sağ
     /// küme genişliyor ve uzun dillerde plaka butonların altına giriyor. Geniş
@@ -60,23 +54,18 @@ struct HeaderBar: View {
                 }
             }
 
-            if taglineOpacity > 0 {
-                tagline
-                    .opacity(taglineOpacity)
-                    .frame(height: 14 * taglineOpacity)
-            }
+            tagline
         }
         .padding(.horizontal, 16)
         .padding(.top, 6)
-        .padding(.bottom, 8 - 4 * collapseProgress)
-        .animation(.easeOut(duration: 0.18), value: collapseProgress)
+        .padding(.bottom, 8)
     }
 
     /// §4: logo Oswald Bold, çevresinde 14 ampul, sıralı yanıp sönme.
     private var logoPlaque: some View {
         Text(l10n.t("app.name"))
-            .font(AppFont.display(logoSize, weight: .bold))
-            .appTracking(2 + 3 * (1 - collapseProgress))
+            .font(AppFont.display(34, weight: .bold))
+            .appTracking(3.5)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textCream)
             .lineLimit(1)
@@ -87,7 +76,6 @@ struct HeaderBar: View {
                 BulbFrame(countPerEdge: 7, diameter: 3.5, color: AppColors.accentAmber)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 1)
-                    .opacity(1 - collapseProgress * 0.55)
             }
             .accessibilityAddTraits(.isHeader)
     }
@@ -103,6 +91,7 @@ struct HeaderBar: View {
             goldRule
         }
         .frame(maxWidth: 260)
+        .frame(height: 14)
     }
 
     private var goldRule: some View {

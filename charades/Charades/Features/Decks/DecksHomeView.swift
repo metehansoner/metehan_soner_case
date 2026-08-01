@@ -3,10 +3,9 @@ import SwiftUI
 
 /// Ana ekran (ekran 4) — 02-ekran-akisi.md §4.
 ///
-/// Kök ekran bu; tab bar yok. Header ve filtre satırı üstte sabit, scroll
-/// aşağı indikçe logo küçülüyor ama chip satırı ve iki buton yerinde kalıyor.
-/// Alt bölge bağlama göre çalışan bir aksiyon alanı: seçim varsa PlayBar,
-/// yoksa tüm dikey alan ızgaraya kalıyor.
+/// Kök ekran bu; tab bar yok. Header ve filtre satırı üstte sabit. Alt bölge
+/// bağlama göre çalışan bir aksiyon alanı: seçim varsa PlayBar, yoksa tüm
+/// dikey alan ızgaraya kalıyor.
 struct DecksHomeView: View {
     /// Oyun `NavigationStack`in yerine render edildiği için turu `RootView`
     /// başlatıyor (§02 §5); buradan yalnızca "başlatılabilir" sinyali gidiyor.
@@ -27,7 +26,6 @@ struct DecksHomeView: View {
     @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
 
     @State private var filter: DeckFilter = .all
-    @State private var collapseProgress: Double = 0
     /// §04 §4.3 giriş noktası 1: header'daki makara koşullu, sayısı da rozette.
     @State private var archiveCount = 0
 
@@ -44,8 +42,6 @@ struct DecksHomeView: View {
 
             ScrollView {
                 VStack(spacing: 0) {
-                    scrollOffsetReader
-
                     if showsLapseNotice {
                         LapseNoticeCard(
                             onSeeTicket: {
@@ -84,7 +80,6 @@ struct DecksHomeView: View {
                 }
                 .padding(.bottom, 24)
             }
-            .coordinateSpace(name: Self.scrollSpace)
             .scrollIndicators(.hidden)
             .safeAreaInset(edge: .top, spacing: 0) { topBar }
             .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
@@ -104,7 +99,6 @@ struct DecksHomeView: View {
     private var topBar: some View {
         VStack(spacing: 12) {
             HeaderBar(
-                collapseProgress: collapseProgress,
                 // §1: makara ikonu **yalnızca** arşivde kayıt varken görünüyor.
                 archiveCount: archiveCount,
                 isPremium: subscriptions.isPremium,
@@ -123,16 +117,8 @@ struct DecksHomeView: View {
         }
         .padding(.bottom, 10)
         .background {
-            LinearGradient(
-                colors: [
-                    AppColors.bgVelvetDeep.opacity(0.98),
-                    AppColors.bgVelvetDeep.opacity(collapseProgress > 0.1 ? 0.94 : 0),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .background(collapseProgress > 0.1 ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(.clear))
-            .ignoresSafeArea(edges: .top)
+            AppColors.bgVelvetDeep.opacity(0.98)
+                .ignoresSafeArea(edges: .top)
         }
     }
 
@@ -412,34 +398,5 @@ struct DecksHomeView: View {
         case .section(let section):
             return decks.filter { $0.section == section }
         }
-    }
-
-    // MARK: Scroll takibi
-
-    private static let scrollSpace = "decksHome"
-
-    /// Header'ın küçülmesi için scroll konumu. `onScrollGeometryChange` iOS 18
-    /// istiyor, hedef iOS 17 (§07 §1) — bu yüzden preference key ile.
-    private var scrollOffsetReader: some View {
-        GeometryReader { geometry in
-            Color.clear.preference(
-                key: ScrollOffsetKey.self,
-                value: geometry.frame(in: .named(Self.scrollSpace)).minY
-            )
-        }
-        .frame(height: 0)
-        .onPreferenceChange(ScrollOffsetKey.self) { offset in
-            let progress = min(1, max(0, -offset / 52))
-            if abs(progress - collapseProgress) > 0.01 {
-                collapseProgress = progress
-            }
-        }
-    }
-}
-
-private struct ScrollOffsetKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
     }
 }
