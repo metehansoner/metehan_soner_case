@@ -14,9 +14,10 @@ struct SaveBasketBanner: View {
     @Environment(SubscriptionStore.self) private var subscription
     @Environment(\.modelContext) private var modelContext
 
-    @Query private var decks: [CustomDeck]
+    @Query(sort: \CustomDeck.sortIndex) private var decks: [CustomDeck]
 
     @State private var isNaming = false
+    @State private var isPickingOverwrite = false
     @State private var draftName = ""
     @State private var savedName: String?
 
@@ -81,9 +82,25 @@ struct SaveBasketBanner: View {
             TextField(l10n.t("basket.save.placeholder"), text: $draftName)
                 .textInputAutocapitalization(.words)
             Button(l10n.t("common.cancel"), role: .cancel) {}
-            Button(l10n.t("basket.save.confirm"), action: save)
+            Button(l10n.t("basket.save.confirm"), action: confirmName)
         } message: {
             Text(l10n.t("basket.save.body", count: words.count))
+        }
+        // §09 §255: slot doluyken sessiz başarısızlık yok — üzerine yazılacak
+        // deste seçiliyor.
+        .confirmationDialog(
+            l10n.t("customDeck.slotsFull"),
+            isPresented: $isPickingOverwrite,
+            titleVisibility: .visible
+        ) {
+            ForEach(decks, id: \.uuid) { deck in
+                Button(deck.name, role: .destructive) {
+                    overwrite(deck)
+                }
+            }
+            Button(l10n.t("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(l10n.t("basket.save.noSlot"))
         }
     }
 
@@ -108,25 +125,49 @@ struct SaveBasketBanner: View {
         return String(name.prefix(CustomDeckLimits.maxNameLength))
     }
 
-    private func save() {
-        guard isSlotAvailable else {
-            Haptics.lockedWall()
+    private var resolvedName: String {
+        let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? defaultName : String(trimmed.prefix(CustomDeckLimits.maxNameLength))
+    }
+
+    private func confirmName() {
+        if isSlotAvailable {
+            insertNew(named: resolvedName)
+        } else {
+            isPickingOverwrite = true
+        }
+    }
+
+    private func overwrite(_ deck: CustomDeck) {
+        let name = resolvedName
+        deck.name = name
+        deck.languageCode = l10n.localeCode
+        deck.coverTemplate = CustomDeckCover.deterministic(for: name).rawValue
+        deck.savedFromBasket = true
+        deck.replaceWords(words)
+        finish(saved: name, wordCount: words.count, created: false)
+    }
+
+    private func insertNew(named name: String) {
+        let deck = CustomDeck(
+            name: name,
+            languageCode: l10n.localeCode,
+            savedFromBasket: true,
+            sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
+        )
+        modelContext.insert(deck)
+        deck.replaceWords(words)
+        finish(saved: name, wordCount: words.count, created: true)
+    }
+
+    private func finish(saved name: String, wordCount: Int, created: Bool) {
+        guard modelContext.persistCustomDecks() else {
+            Haptics.purchaseFailed()
             return
         }
-        let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let name = trimmed.isEmpty ? defaultName : trimmed
-        modelContext.insert(
-            CustomDeck(
-                name: name,
-                languageCode: l10n.localeCode,
-                words: words,
-                savedFromBasket: true,
-                sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
-            )
-        )
-        // Sepetten kaydedilen deste boş doğmuyor; `word_count` burada gerçek
-        // bir dağılım veriyor.
-        Analytics.customDeckCreate(wordCount: words.count)
+        if created {
+            Analytics.customDeckCreate(wordCount: wordCount)
+        }
         // Taslak artık kalıcı bir deste; bir sonraki açılışta sepete geri
         // dolmasın, kullanıcı aynı kelimeleri iki kayıtta görmesin.
         AppSettingsStore.shared.clearBasketDraft()

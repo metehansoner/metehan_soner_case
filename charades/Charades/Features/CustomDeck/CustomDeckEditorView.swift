@@ -185,7 +185,10 @@ struct CustomDeckEditorView: View {
     private func wordsBinding(_ deck: CustomDeck) -> Binding<[String]> {
         Binding(
             get: { deck.words },
-            set: { deck.replaceWords($0) }
+            set: {
+                deck.replaceWords($0)
+                modelContext.persistCustomDecks()
+            }
         )
     }
 
@@ -201,8 +204,7 @@ struct CustomDeckEditorView: View {
 
             HStack(spacing: 10) {
                 Button {
-                    Haptics.primaryButton()
-                    router.pop()
+                    commitAndPop()
                 } label: {
                     // İki butonun yüksekliği eşit kalmalı: `KAYDET VE OYNA`
                     // uzun dillerde iki satıra taşıp yanındakini kısa bırakıyor.
@@ -253,20 +255,33 @@ struct CustomDeckEditorView: View {
             sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
         )
         modelContext.insert(deck)
+        modelContext.persistCustomDecks()
         createdID = deck.uuid
         Analytics.customDeckCreate(wordCount: 0)
     }
 
     private func discardIfEmpty() {
-        guard let deck, deck.wordCount == 0 else { return }
+        guard let deck else { return }
+        // Çıkmadan önce flush: ilişki henüz yazılmamışsa kelimeli deste
+        // yanlışlıkla "boş" sayılıp silinmesin.
+        modelContext.persistCustomDecks()
+        guard deck.wordCount == 0 else { return }
         let name = deck.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard name.isEmpty || name == l10n.t("customDeck.defaultName") else { return }
         modelContext.delete(deck)
+        modelContext.persistCustomDecks()
+    }
+
+    private func commitAndPop() {
+        Haptics.primaryButton()
+        modelContext.persistCustomDecks()
+        router.pop()
     }
 
     private func play(_ deck: CustomDeck) {
         // §09 §9: yazmak ücretsiz, oynamak Tam Bilet. Duvar burada çıkıyor —
         // kullanıcı destesini bitirmiş, ne satın alacağını görüyor.
+        modelContext.persistCustomDecks()
         guard subscription.isPremium else {
             Haptics.lockedWall()
             router.openPaywall(.customDeck)

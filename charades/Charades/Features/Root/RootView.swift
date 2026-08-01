@@ -594,13 +594,13 @@ struct RootView: View {
 
         if arguments.contains("-CustomDeck"), customDeckCount() == 0 {
             let count = value(after: "-CustomDeck").flatMap(Int.init) ?? 6
-            modelContext.insert(
-                CustomDeck(
-                    name: "Ofis Muhabbeti",
-                    languageCode: LocalizationManager.shared.localeCode,
-                    words: Self.debugSeedWords(count)
-                )
+            let deck = CustomDeck(
+                name: "Ofis Muhabbeti",
+                languageCode: LocalizationManager.shared.localeCode
             )
+            modelContext.insert(deck)
+            deck.replaceWords(Self.debugSeedWords(count))
+            modelContext.persistCustomDecks()
         }
         if arguments.contains("-Basket") {
             let count = value(after: "-Basket").flatMap(Int.init) ?? 7

@@ -92,7 +92,6 @@ final class CustomDeck {
     init(
         name: String,
         languageCode: String,
-        words: [String] = [],
         cover: CustomDeckCover? = nil,
         savedFromBasket: Bool = false,
         sortIndex: Int = 0
@@ -105,9 +104,9 @@ final class CustomDeck {
         self.sortIndex = sortIndex
         createdAt = .now
         updatedAt = .now
-        cards = words.prefix(CustomDeckLimits.maxWords).enumerated().map {
-            CustomCard(text: $1, order: $0)
-        }
+        // Kelimeler burada üretilmiyor: context'e girmeden kurulan `CustomCard`
+        // ilişkisi diske yazılmıyor. Çağıran `insert` + `replaceWords` yapıyor.
+        cards = []
     }
 
     var cover: CustomDeckCover {
@@ -145,17 +144,23 @@ final class CustomDeck {
     /// Mevcut satırlar yeniden kullanılıp fazlası **açıkça siliniyor**: ilişkiden
     /// çıkarılan `CustomCard` depoda öksüz kalıyor (cascade yalnızca deste
     /// silinince işliyor) ve her kelime eklemede birikirdi.
+    ///
+    /// Yeni kartlar `modelContext.insert` ile bağlanıyor — yalnızca diziye
+    /// eklemek SwiftData'da kalıcı ilişki kurmayabiliyor.
     func replaceWords(_ words: [String]) {
         var survivors = orderedCards
         while survivors.count > words.count {
-            modelContext?.delete(survivors.removeLast())
+            let removed = survivors.removeLast()
+            modelContext?.delete(removed)
         }
         for (index, text) in words.prefix(CustomDeckLimits.maxWords).enumerated() {
             if index < survivors.count {
                 survivors[index].text = text
                 survivors[index].order = index
             } else {
-                survivors.append(CustomCard(text: text, order: index))
+                let card = CustomCard(text: text, order: index)
+                modelContext?.insert(card)
+                survivors.append(card)
             }
         }
         cards = survivors
@@ -195,6 +200,21 @@ enum CustomDeckStore {
             assertionFailure("SwiftData container açılamadı: \(error)")
             let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             return try! ModelContainer(for: schema, configurations: fallback)
+        }
+    }
+}
+
+extension ModelContext {
+    /// Autosave'e güvenmek çökme / hızlı kill'de kayıp bırakıyor; kayıt
+    /// noktalarında açıkça flush ediyoruz.
+    @discardableResult
+    func persistCustomDecks() -> Bool {
+        do {
+            try save()
+            return true
+        } catch {
+            assertionFailure("SwiftData save failed: \(error)")
+            return false
         }
     }
 }

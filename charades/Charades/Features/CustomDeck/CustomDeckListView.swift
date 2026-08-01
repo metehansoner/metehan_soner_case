@@ -230,6 +230,7 @@ struct CustomDeckListView: View {
             sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
         )
         modelContext.insert(deck)
+        modelContext.persistCustomDecks()
         Analytics.customDeckCreate(wordCount: 0)
         router.push(.customEditor(deck.uuid.uuidString))
     }
@@ -239,5 +240,6 @@ struct CustomDeckListView: View {
         deckPendingDeletion = nil
         Haptics.deckDeselected()
         modelContext.delete(deck)
+        modelContext.persistCustomDecks()
     }
 }

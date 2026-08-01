@@ -320,6 +320,7 @@ struct MixSetupView: View {
         modelContext.insert(
             SavedMix(name: name, deckIDs: setup.selectedDeckIDs, sortIndex: topIndex)
         )
+        modelContext.persistCustomDecks()
         Haptics.purchaseSucceeded()
     }
 
