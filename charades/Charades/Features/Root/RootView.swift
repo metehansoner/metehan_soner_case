@@ -272,7 +272,6 @@ struct RootView: View {
         }
         .sheet(isPresented: $router.isShowingSettings, onDismiss: resumeAfterSettings) {
             SettingsSheet(
-                onClose: { router.isShowingSettings = false },
                 onManageSubscription: manageSubscription,
                 onUpgrade: requestPaywallAfterSettings,
                 onOpenArchive: requestArchiveAfterSettings

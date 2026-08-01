@@ -10,7 +10,8 @@ struct SheetScaffold<Content: View>: View {
     let title: String
     /// Zincirin ilk adımında yok; sonraki adımlarda sola dönüş.
     var onBack: (() -> Void)?
-    var onClose: () -> Void
+    /// Yoksa çarpı gizlenir — saf sheet'lerde (Ayarlar) grabber yeter.
+    var onClose: (() -> Void)?
     @ViewBuilder var content: Content
 
     @Environment(LocalizationManager.self) private var l10n
@@ -36,7 +37,9 @@ struct SheetScaffold<Content: View>: View {
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
 
-                circleButton(systemImage: "xmark", label: l10n.t("common.close"), action: onClose)
+                if let onClose {
+                    circleButton(systemImage: "xmark", label: l10n.t("common.close"), action: onClose)
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 14)

@@ -7,7 +7,6 @@ import UserNotifications
 ///
 /// Beş grup, 15 satır.
 struct SettingsSheet: View {
-    var onClose: () -> Void
     var onManageSubscription: () -> Void
     /// Replay premium bir özellik; kilitli anahtara dokunuş paywall'a gidiyor.
     /// Ayarlar sheet'i `AppRouter`ı görmüyor, kabuk kapatıp açıyor.
@@ -31,7 +30,7 @@ struct SettingsSheet: View {
     @State private var archiveStats: (count: Int, bytes: Int64) = (0, 0)
 
     var body: some View {
-        SheetScaffold(title: l10n.t("settings.title"), onClose: onClose) {
+        SheetScaffold(title: l10n.t("settings.title")) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     playGroup
