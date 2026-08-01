@@ -94,7 +94,7 @@ struct MixSetupView: View {
             VStack(spacing: 2) {
                 Text(l10n.t("featured.mix"))
                     .font(AppFont.display(19, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
@@ -153,7 +153,7 @@ struct MixSetupView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(l10n.t("mix.selected", count: selectionCount))
                     .font(AppFont.display(12.5, weight: .semibold))
-                    .tracking(1.6)
+                    .appTracking(1.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
@@ -200,7 +200,7 @@ struct MixSetupView: View {
     private var sectionRow: some View {
         Text(l10n.t("mix.allDecks"))
             .font(AppFont.ui(10.5, weight: .bold))
-            .tracking(2.4)
+            .appTracking(2.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentGold)
             .frame(maxWidth: .infinity, alignment: .leading)

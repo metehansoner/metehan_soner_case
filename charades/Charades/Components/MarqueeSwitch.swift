@@ -8,6 +8,8 @@ struct MarqueeSwitch: View {
     @Bindable private var l10n = LocalizationManager.shared
     @Namespace private var indicator
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         HStack(spacing: 0) {
             segment(l10n.t("common.off"), isActive: !isOn)
@@ -26,10 +28,15 @@ struct MarqueeSwitch: View {
         .fixedSize()
         .contentShape(Capsule())
         .onTapGesture {
-            withAnimation(.snappy(duration: 0.18)) { isOn.toggle() }
+            // Reduce Motion'da amber kapsül kaymıyor, doğrudan diğer segmentte
+            // beliriyor; durum yine görünüyor.
+            withAnimation(reduceMotion ? nil : .snappy(duration: 0.18)) { isOn.toggle() }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityAddTraits(.isButton)
+        // Etiketi satırın başlığı veriyor (`SettingsRow` öğeleri birleştiriyor);
+        // anahtarın kendi işi durumu söylemek. `.isToggle` olmadan VoiceOver
+        // "düğme" deyip açık/kapalı ayrımını jest ipucuna bırakıyordu.
+        .accessibilityAddTraits(.isToggle)
         .accessibilityValue(isOn ? l10n.t("common.on") : l10n.t("common.off"))
     }
 

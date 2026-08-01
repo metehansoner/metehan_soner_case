@@ -11,6 +11,12 @@ struct PlanCard: View {
     let action: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// Kurdele normalde kartın sağ üst köşesine biniyor. Erişilebilirlik
+    /// puntolarında o köşe fiyatın yeri: kurdele büyüyünce üstünü kapatıyordu.
+    /// O boyutlarda şerit metnin altına, akışın içine giriyor.
+    private var bandIsInline: Bool { typeSize.isAccessibilitySize }
 
     var body: some View {
         Button {
@@ -21,7 +27,7 @@ struct PlanCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(l10n.t("paywall.plan.\(offer.plan.rawValue)"))
                         .font(AppFont.display(15.5, weight: .semibold))
-                        .tracking(2)
+                        .appTracking(2)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.textCream)
                         .lineLimit(1)
@@ -33,9 +39,11 @@ struct PlanCard: View {
                             .foregroundStyle(
                                 isSelected ? AppColors.textSecondary : AppColors.textMuted
                             )
-                            .lineLimit(1)
+                            .lineLimit(bandIsInline ? 3 : 1)
                             .minimumScaleFactor(0.75)
                     }
+
+                    if bandIsInline { band }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -60,7 +68,7 @@ struct PlanCard: View {
             .padding(.horizontal, isSelected ? 14 : 15)
             .frame(minHeight: 64)
             .background { surface }
-            .overlay(alignment: .topTrailing) { band }
+            .overlay(alignment: .topTrailing) { if !bandIsInline { band } }
             .overlay { notches }
         }
         .buttonStyle(.plain)
@@ -139,19 +147,26 @@ struct PlanCard: View {
             .frame(width: 13, height: 13)
     }
 
+    /// Kurdelenin metni; hem çizim hem erişilebilirlik etiketi bunu okuyor.
+    private var bandText: String? {
+        if let days = offer.trialDays { return l10n.t("paywall.band.trial", count: days) }
+        if let percent = offer.savingsPercent {
+            return l10n.t("paywall.band.save", ["percent": "\(percent)"])
+        }
+        return nil
+    }
+
     @ViewBuilder
     private var band: some View {
-        if let days = offer.trialDays {
-            bandLabel(l10n.t("paywall.band.trial", count: days), isSaving: false)
-        } else if let percent = offer.savingsPercent {
-            bandLabel(l10n.t("paywall.band.save", ["percent": "\(percent)"]), isSaving: true)
+        if let bandText {
+            bandLabel(bandText, isSaving: offer.trialDays == nil)
         }
     }
 
     private func bandLabel(_ text: String, isSaving: Bool) -> some View {
         Text(text)
             .font(AppFont.ui(8, weight: .bold))
-            .tracking(1.4)
+            .appTracking(1.4)
             .textCase(.uppercase)
             .foregroundStyle(isSaving ? Color(hex: 0xEAF5EA) : AppColors.textOnPoster)
             .padding(.horizontal, 8)
@@ -161,8 +176,8 @@ struct PlanCard: View {
                     .fill(isSaving ? AppColors.stateCorrect : AppColors.accentGold)
                     .shadow(color: .black.opacity(0.5), radius: 4, y: 2)
             }
-            .padding(.trailing, 13)
-            .offset(y: -8)
+            .padding(.trailing, bandIsInline ? 0 : 13)
+            .offset(y: bandIsInline ? 0 : -8)
     }
 
     private var accessibilityLabel: String {
@@ -171,6 +186,9 @@ struct PlanCard: View {
             offer.price,
             l10n.t("paywall.plan.\(offer.plan.rawValue).unit"),
             subtitle,
+            // Kurdele görsel bir katman ama tek bilgi kaynağı: `%85 tasarruf`
+            // başka hiçbir yerde yazmıyor.
+            bandText,
         ]
         .compactMap { $0 }
         .joined(separator: ", ")

@@ -59,14 +59,14 @@ struct SavedMixCard: View {
         VStack(spacing: 1) {
             Text(mix.name)
                 .font(AppFont.display(11, weight: .semibold))
-                .tracking(0.6)
+                .appTracking(0.6)
                 .foregroundStyle(AppColors.textCream)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
 
             Text(deckSummary)
                 .font(AppFont.ui(8))
-                .tracking(0.8)
+                .appTracking(0.8)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textMuted)
                 .lineLimit(1)
@@ -95,7 +95,7 @@ struct SavedMixCard: View {
 
             Text(l10n.t("deck.locked.stamp"))
                 .font(AppFont.ui(7, weight: .bold))
-                .tracking(1.1)
+                .appTracking(1.1)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
         }
@@ -107,7 +107,7 @@ struct SavedMixCard: View {
     private var tag: some View {
         Text(l10n.t("featured.mix"))
             .font(AppFont.display(8, weight: .bold))
-            .tracking(1.4)
+            .appTracking(1.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textOnAmber)
             .padding(.horizontal, 6)

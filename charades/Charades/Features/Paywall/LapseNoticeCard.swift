@@ -21,7 +21,7 @@ struct LapseNoticeCard: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(l10n.t("paywall.lapse.title"))
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(1.2)
+                    .appTracking(1.2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
@@ -50,6 +50,7 @@ struct LapseNoticeCard: View {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 26, height: 26)
+                    .tapTarget()
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.close"))

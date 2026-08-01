@@ -19,7 +19,7 @@ struct NowShowingStrip: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(l10n.t("nowShowing.badge"))
                         .font(AppFont.ui(8, weight: .bold))
-                        .tracking(1.6)
+                        .appTracking(1.6)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.accentAmber)
 
@@ -79,13 +79,13 @@ struct NowShowingStrip: View {
             VStack(alignment: .trailing, spacing: 0) {
                 Text(Self.remainingText(at: context.date))
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(0.6)
+                    .appTracking(0.6)
                     .monospacedDigit()
                     .foregroundStyle(AppColors.accentGold)
 
                 Text(l10n.t("nowShowing.remaining"))
                     .font(AppFont.ui(7, weight: .medium))
-                    .tracking(1.3)
+                    .appTracking(1.3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textMuted)
             }

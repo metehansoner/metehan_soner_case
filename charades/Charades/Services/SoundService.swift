@@ -48,6 +48,11 @@ enum SoundService {
     static func warningTick() { play(.tickWarning, volume: 0.85) }
     static func timeUp() { play(.timeUp) }
     static func cardSlide() { play(.cardSlide, volume: 0.7) }
+
+    /// §08 A2: klaket çubuğunun kapanışı. §04 §5'in 12 parçalık listesinde
+    /// klakete ayrı bir kayıt yok — ikisi de tahtanın tahtaya çarpması, ses
+    /// tasarımı geldiğinde de aynı dosya iki yerde kullanılacak.
+    static func clapper() { play(.skipClack) }
     static func buttonTap() { play(.buttonTap, volume: 0.55) }
     static func winFanfare() { play(.winFanfare) }
     static func ticketStamp() { play(.ticketStamp) }

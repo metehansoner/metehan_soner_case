@@ -90,7 +90,7 @@ struct RoundPresetSheet: View {
                         .foregroundStyle(AppColors.textCream)
                     Text(l10n.t(mode.titleKey))
                         .font(AppFont.ui(9, weight: .semibold))
-                        .tracking(1.8)
+                        .appTracking(1.8)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.accentBrass)
                 }
@@ -160,7 +160,7 @@ struct RoundPresetSheet: View {
                 } label: {
                     Text(l10n.t(option.titleKey))
                         .font(AppFont.ui(11, weight: .semibold))
-                        .tracking(1.6)
+                        .appTracking(1.6)
                         .textCase(.uppercase)
                         .foregroundStyle(isSelected ? AppColors.textOnAmber : AppColors.textSecondary)
                         .frame(maxWidth: .infinity)
@@ -192,7 +192,7 @@ struct RoundPresetSheet: View {
             }
             .buttonStyle(.plain)
             .font(AppFont.ui(11, weight: .bold))
-            .tracking(1.4)
+            .appTracking(1.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentAmber)
         }
@@ -213,7 +213,7 @@ struct RoundPresetSheet: View {
     private func groupLabel(_ key: String) -> some View {
         Text(l10n.t(key))
             .font(AppFont.ui(9.5, weight: .bold))
-            .tracking(2.4)
+            .appTracking(2.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentGold)
             .padding(.top, 16)

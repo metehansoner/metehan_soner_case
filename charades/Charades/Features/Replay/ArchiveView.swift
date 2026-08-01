@@ -75,7 +75,7 @@ struct ArchiveView: View {
 
             Text(l10n.t("archive.title"))
                 .font(AppFont.display(19, weight: .bold))
-                .tracking(2)
+                .appTracking(2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream)
                 .frame(maxWidth: .infinity)
@@ -86,7 +86,7 @@ struct ArchiveView: View {
             } label: {
                 Text(l10n.t(model.isSelecting ? "common.done" : "archive.edit"))
                     .font(AppFont.display(12, weight: .semibold))
-                    .tracking(1.6)
+                    .appTracking(1.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.accentAmber)
                     .frame(minWidth: 44, minHeight: 44)
@@ -198,6 +198,7 @@ struct ArchiveView: View {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 28, height: 28)
+                    .tapTarget()
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.close"))
@@ -221,7 +222,7 @@ struct ArchiveView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(film.title)
                     .font(AppFont.display(15, weight: .semibold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .lineLimit(1)
@@ -233,7 +234,7 @@ struct ArchiveView: View {
                         + " · " + l10n.t("archive.sceneCount", count: film.scenes.count)
                 )
                 .font(AppFont.ui(9.5, weight: .medium))
-                .tracking(1.2)
+                .appTracking(1.2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textMuted)
                 .lineLimit(1)
@@ -269,7 +270,7 @@ struct ArchiveView: View {
 
             Text(l10n.t("archive.empty.title"))
                 .font(AppFont.display(19, weight: .semibold))
-                .tracking(2.2)
+                .appTracking(2.2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textSecondary)
 
@@ -416,7 +417,7 @@ struct ArchiveView: View {
                 .font(.system(size: 11, weight: .semibold))
             Text(title)
                 .font(AppFont.display(11.5, weight: .semibold))
-                .tracking(1.5)
+                .appTracking(1.5)
                 .textCase(.uppercase)
         }
         .foregroundStyle(tint)

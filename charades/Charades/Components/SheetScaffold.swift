@@ -29,7 +29,7 @@ struct SheetScaffold<Content: View>: View {
 
                 Text(title)
                     .font(AppFont.display(21, weight: .bold))
-                    .tracking(2.6)
+                    .appTracking(2.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -86,6 +86,9 @@ struct SheetScaffold<Content: View>: View {
                             Circle().strokeBorder(AppColors.accentGold.opacity(0.45), lineWidth: 1)
                         }
                 }
+                // Görünen daire 30pt; dokunma alanı 44pt.
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

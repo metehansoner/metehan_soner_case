@@ -73,9 +73,9 @@ struct CustomDeckCard: View {
 
             Text(l10n.t("customDeck.wordCount", count: deck.wordCount))
                 .font(AppFont.ui(7.5, weight: .semibold))
-                .tracking(1.3)
+                .appTracking(1.3)
                 .textCase(.uppercase)
-                .foregroundStyle(Color(hex: 0x6B5C46))
+                .foregroundStyle(AppColors.textOnPosterMuted)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 7)
@@ -95,7 +95,7 @@ struct CustomDeckCard: View {
     private var languageTag: some View {
         Text(deck.languageCode.uppercased())
             .font(AppFont.ui(6.5, weight: .bold))
-            .tracking(1)
+            .appTracking(1)
             .foregroundStyle(AppColors.accentGold)
             .padding(.horizontal, 5)
             .padding(.vertical, 2.5)
@@ -114,7 +114,7 @@ struct CustomDeckCard: View {
     private var draftRibbon: some View {
         Text(l10n.t("customDeck.draft.badge"))
             .font(AppFont.ui(6.5, weight: .bold))
-            .tracking(1)
+            .appTracking(1)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textOnAmber)
             .padding(.horizontal, 6)
@@ -132,7 +132,7 @@ struct CustomDeckCard: View {
 
             Text(l10n.t("deck.locked.stamp"))
                 .font(AppFont.display(8, weight: .semibold))
-                .tracking(1.4)
+                .appTracking(1.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
                 .padding(.horizontal, 7)

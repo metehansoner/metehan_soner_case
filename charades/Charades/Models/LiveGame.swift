@@ -10,6 +10,9 @@ import SwiftUI
 enum LivePhase: Equatable {
     /// Portrait: "telefonu yatay çevir" istemi.
     case orientationPrompt
+    /// §08 A2 + B5: klaket ve başlık kartı. Landscape — geri sayımın devamı
+    /// gibi okunuyor, arada yön değişirse akış iki ekrana bölünüyor.
+    case slate
     /// Landscape: 3-2-1. Motion kalibrasyonu burada yapılıyor.
     case countdown
     case playing
@@ -118,6 +121,24 @@ final class LiveGame {
     /// Geri sayımda gösterilen rakam.
     private(set) var countdownValue = 3
 
+    /// §08 A2 künye satırı 1. Arşivdeki `replay.scene` ile **aynı sayı**:
+    /// klakette `SAHNE 02` görüp arşivde `SAHNE 02` bulmak, kaydın hangi tura
+    /// ait olduğunu aramadan söylüyor.
+    var sceneNumber: Int { (match?.results.count ?? soloRoundIndex) + 1 }
+
+    /// §08 A2 künye satırı 2: "Takım modunda `ÇEKİM 03` tur numarasını veriyor."
+    /// Diğer modlarda aynı sahnenin kaçıncı denemesi — Duraklat → `YENİDEN`.
+    /// Ani ölümde `currentRound` 0'a düşüyor; klakette 0'lı bir çekim yok, o
+    /// turun kendi açıklaması zaten perde arasında yapıldı.
+    var takeNumber: Int { max(match?.currentRound ?? takeIndex, 1) }
+
+    /// §08 A2: tam klaket yalnızca maçın ilk turunda; sonrakiler kısa sürüm.
+    var isSlateFull: Bool { !slateWasShown }
+
+    private var soloRoundIndex = 0
+    private var takeIndex = 1
+    private var slateWasShown = false
+
     /// Kalan süre, saniye (yukarı yuvarlanmış).
     private(set) var remaining: Int
 
@@ -162,7 +183,7 @@ final class LiveGame {
         guard !playsInPortrait else { return false }
         switch phase {
         case .orientationPrompt, .matchEnd: return false
-        case .countdown, .playing, .paused, .roundEnd, .teamHandoff: return true
+        case .slate, .countdown, .playing, .paused, .roundEnd, .teamHandoff: return true
         }
     }
 
@@ -221,7 +242,7 @@ final class LiveGame {
 
         remaining = duration
         remainingExact = TimeInterval(duration)
-        phase = playsInPortrait ? .countdown : .orientationPrompt
+        phase = playsInPortrait ? .slate : .orientationPrompt
     }
 
     // MARK: Faz geçişleri
@@ -229,7 +250,7 @@ final class LiveGame {
     /// Cihaz fiziksel olarak yatay geldi (ekran 13'ün tek ilerleme koşulu).
     func deviceBecameLandscape() {
         guard phase == .orientationPrompt else { return }
-        beginCountdown()
+        beginSlate()
     }
 
     /// §09 §1: "Yatay çeviremiyorum".
@@ -243,6 +264,20 @@ final class LiveGame {
         guard phase == .orientationPrompt else { return }
         playsInPortrait = true
         answerInput = .touch
+        beginSlate()
+    }
+
+    /// §08 A2: turun onay ekranı. Klaketin kendi süresi `SlateView` içinde;
+    /// model yalnızca hangi sürümün oynayacağını ve künyeyi veriyor.
+    func beginSlate() {
+        phase = .slate
+        flash = nil
+    }
+
+    /// Klaket (ve varsa başlık kartı) bitti ya da dokunuşla atlandı.
+    func finishSlate() {
+        guard phase == .slate else { return }
+        slateWasShown = true
         beginCountdown()
     }
 
@@ -462,7 +497,10 @@ final class LiveGame {
     }
 
     func pause(reason: PauseReason) {
-        guard phase == .playing || phase == .countdown else { return }
+        // Klaket de duraklatılabilir olmak zorunda: sürelerini `SlateView`
+        // `Task.sleep` ile sayıyor ve o uyku arka planda da işliyor. Faz burada
+        // durmazsa uygulama arka plandayken tur kendiliğinden başlıyor.
+        guard phase == .playing || phase == .countdown || phase == .slate else { return }
         pauseReason = reason
         phase = .paused
         flash = nil
@@ -490,9 +528,11 @@ final class LiveGame {
     }
 
     /// §09 §3: o turun skoru sıfırlanır, kelime havuzu tazelenir.
+    /// §09 §3 Duraklat → `YENİDEN`: aynı sahnenin yeni çekimi.
     func restartRound() {
+        takeIndex += 1
         resetRound()
-        beginCountdown()
+        beginSlate()
     }
 
     private func resetRound() {
@@ -609,7 +649,12 @@ final class LiveGame {
     /// §02 §3: uygulamanın en yüksek frekanslı aksiyonu.
     func playAgain() {
         commitRapidScore()
-        restartRound()
+        // Yeni tur yeni sahne: klaketin çekim sayacı başa dönüyor, sahne
+        // numarası ilerliyor. `YENİDEN` ile ayrımı olan tek yer burası.
+        soloRoundIndex += 1
+        takeIndex = 1
+        resetRound()
+        beginSlate()
     }
 
     /// Skor tur sonu ekranında düzeltmelerle değişebildiği için rekor, ekrandan
@@ -654,8 +699,9 @@ final class LiveGame {
     /// §08 B2: `HAZIRIM` ya da 5 saniyenin dolması.
     func beginTeamTurn() {
         guard case .teamHandoff = phase else { return }
+        takeIndex = 1
         resetRound()
-        beginCountdown()
+        beginSlate()
     }
 
     private func startHandoffCountdown(seconds: Int = 5) {

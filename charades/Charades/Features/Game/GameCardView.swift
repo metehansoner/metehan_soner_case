@@ -10,6 +10,7 @@ struct GameCardView: View {
     let game: LiveGame
 
     @Environment(LocalizationManager.self) private var l10n
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isPortrait: Bool { game.playsInPortrait }
 
@@ -17,9 +18,11 @@ struct GameCardView: View {
         ZStack {
             poster
 
-            if game.answerInput == .touch {
-                touchTargets
-            }
+            // §01 §7 + §04 §2: ekran yarıları **her modda** cevap veriyor.
+            // Eskiden yalnızca `.touch` seçiliyken çiziliyordu; tilt turunda
+            // motor kısıtlılığı olan ya da sensörü sorunlu cihazda oynayan
+            // kullanıcının tek çıkışı turu bırakıp ayarlara gitmekti.
+            touchTargets
 
             if let flash = game.flash {
                 answerFlash(flash)
@@ -34,6 +37,13 @@ struct GameCardView: View {
     private var poster: some View {
         VStack(spacing: 0) {
             sprocketBand
+                // §08 A5: kavis işareti karenin sağ üst köşesinde, şeridin
+                // üstünde. Skor bloğuyla çakışmayan tek yer burası ve gerçek
+                // kopyalarda da işaret görüntünün kenarında duruyor.
+                .overlay(alignment: .trailing) {
+                    CueMark(isActive: game.isInFinalTen, diameter: 18)
+                        .padding(.trailing, 16)
+                }
             stage
             sprocketBand
         }
@@ -53,15 +63,7 @@ struct GameCardView: View {
     }
 
     private var sprocketBand: some View {
-        SprocketStrip(
-            axis: .horizontal,
-            holeSize: 11,
-            spacing: 14,
-            holeColor: AppColors.surfacePoster.opacity(0.9)
-        )
-        .frame(height: 26)
-        .frame(maxWidth: .infinity)
-        .background(Color(hex: 0x0B0907))
+        AdvancingSprocketBand(advanceToken: game.currentCard?.k)
     }
 
     private var stage: some View {
@@ -112,10 +114,14 @@ struct GameCardView: View {
             .opacity(game.flash == nil ? 1 : 0.12)
             .id(game.currentCard?.k)
             // §08 A4: film karesi ilerlemesi — mevcut kelime yukarı kayıyor,
-            // yeni kelime alttan geliyor. Sprocket hızlanması P17'de.
+            // yeni kelime alttan geliyor. Reduce Motion'da kaymanın yerini
+            // kesme alıyor: ekranın en büyük hareketi bu ve tur boyunca her
+            // cevapta tekrarlıyor.
             .transition(
-                .asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top))
-                    .combined(with: .opacity)
+                reduceMotion
+                    ? .opacity
+                    : .asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top))
+                        .combined(with: .opacity)
             )
             .animation(.easeOut(duration: 0.28), value: game.currentCard?.k)
             .accessibilityLabel(game.currentCard.map { $0.text(for: l10n.localeCode) } ?? "")
@@ -149,17 +155,17 @@ struct GameCardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Self.clock(game.remaining))
                     .font(AppFont.display(38, weight: .bold))
-                    .tracking(1)
+                    .appTracking(1)
                     .monospacedDigit()
                     // §04 §3: son 10 saniyede sayaç `stateWarning`e dönüyor.
                     .foregroundStyle(
                         game.isInFinalTen ? AppColors.stateWarning : AppColors.textOnPoster
                     )
                 Text(l10n.t("game.hud.remaining"))
-                    .font(AppFont.ui(8.5, weight: .semibold))
-                    .tracking(2)
+                    .font(AppFont.ui(8.5, weight: .semibold, scales: nil))
+                    .appTracking(2)
                     .textCase(.uppercase)
-                    .foregroundStyle(Color(hex: 0x6B5C46))
+                    .foregroundStyle(AppColors.textOnPosterMuted)
             }
 
             Spacer()
@@ -175,10 +181,10 @@ struct GameCardView: View {
                     .font(AppFont.display(30, weight: .bold))
                     .foregroundStyle(AppColors.stateCorrect)
                 Text(l10n.t("game.hud.correct"))
-                    .font(AppFont.ui(8.5, weight: .semibold))
-                    .tracking(2)
+                    .font(AppFont.ui(8.5, weight: .semibold, scales: nil))
+                    .appTracking(2)
                     .textCase(.uppercase)
-                    .foregroundStyle(Color(hex: 0x6B5C46))
+                    .foregroundStyle(AppColors.textOnPosterMuted)
             }
         }
         .padding(.top, 16)
@@ -197,9 +203,9 @@ struct GameCardView: View {
                     .frame(width: 7, height: 7)
                     .opacity(isOn ? 1 : 0.3)
                 Text(l10n.t("replay.rec"))
-                    .font(AppFont.ui(8.5, weight: .bold))
-                    .tracking(1.6)
-                    .foregroundStyle(Color(hex: 0x8A7860))
+                    .font(AppFont.ui(8.5, weight: .bold, scales: nil))
+                    .appTracking(1.6)
+                    .foregroundStyle(AppColors.textOnPosterMuted)
             }
             .animation(.easeInOut(duration: 0.35), value: isOn)
         }
@@ -228,24 +234,24 @@ struct GameCardView: View {
             }
             .labelStyle(TrailingIconLabelStyle())
         }
-        .font(AppFont.ui(9.5, weight: .semibold))
-        .tracking(2.2)
+        .font(AppFont.ui(9.5, weight: .semibold, scales: nil))
+        .appTracking(2.2)
         .textCase(.uppercase)
-        .foregroundStyle(Color(hex: 0x8A7860))
+        .foregroundStyle(AppColors.textOnPosterMuted)
         .accessibilityHidden(true)
     }
 
     /// §09 §4: havuz bitip başa döndü.
     private var wrapNotice: some View {
         Text(l10n.t("game.deckWrapped"))
-            .font(AppFont.ui(8.5, weight: .bold))
-            .tracking(2)
+            .font(AppFont.ui(8.5, weight: .bold, scales: nil))
+            .appTracking(2)
             .textCase(.uppercase)
-            .foregroundStyle(Color(hex: 0x6B5C46))
+            .foregroundStyle(AppColors.textOnPosterMuted)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background {
-                Capsule().strokeBorder(Color(hex: 0x6B5C46).opacity(0.35), lineWidth: 1)
+                Capsule().strokeBorder(AppColors.textOnPosterMuted.opacity(0.35), lineWidth: 1)
             }
     }
 
@@ -253,12 +259,17 @@ struct GameCardView: View {
     /// banda düşer ve hiç tetik gelmez — oyun bozuk değil, duruş yanlış.
     private var reminder: some View {
         Text(l10n.t("game.holdLandscape"))
-            .font(AppFont.ui(10, weight: .semibold))
-            .foregroundStyle(AppColors.stateSkip)
+            .font(AppFont.ui(10, weight: .semibold, scales: nil))
+            // Kırmızı mürekkep krem kapsülde 4,45:1'de kalıyordu (§01 §7 AA).
+            // Uyarı rengi kenarlığa taşındı: metin okunur, işaret kırmızı.
+            .foregroundStyle(AppColors.textOnPoster)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background {
                 Capsule().fill(AppColors.surfacePoster.opacity(0.9))
+            }
+            .overlay {
+                Capsule().strokeBorder(AppColors.stateSkip, lineWidth: 1.5)
             }
     }
 
@@ -295,7 +306,7 @@ struct GameCardView: View {
             HStack(spacing: 18) {
                 Text(l10n.t(flash == .correct ? "game.stamp.correct" : "game.stamp.skip"))
                     .font(AppFont.display(60, weight: .bold))
-                    .tracking(5)
+                    .appTracking(5)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.surfacePoster)
 
@@ -316,6 +327,61 @@ struct GameCardView: View {
 
     private static func clock(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+}
+
+/// §08 A4 film şeridi geçişi: kelime değişince deliklerin bir an hızlanması.
+///
+/// Kelimenin kayması tek başına "kart değişti" diyor; şeridin de ilerlemesi
+/// bunu "makara bir kare ilerledi"ye çeviriyor. Kayma **tam bir delik aralığı**
+/// kadar: desen periyodik olduğu için başa dönüş görünmüyor, şerit sonsuz
+/// akıyormuş gibi duruyor.
+private struct AdvancingSprocketBand: View {
+    /// Her değişimi bir kare ilerleme sayılıyor.
+    var advanceToken: String?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var shift: CGFloat = 0
+
+    private let holeSize: CGFloat = 11
+    private let spacing: CGFloat = 14
+    private var period: CGFloat { holeSize + spacing }
+
+    var body: some View {
+        GeometryReader { geometry in
+            SprocketStrip(
+                axis: .horizontal,
+                holeSize: holeSize,
+                spacing: spacing,
+                holeColor: AppColors.surfacePoster.opacity(0.9)
+            )
+            // Kayma sırasında kenarda delik eksilmesin diye şerit iki periyot
+            // geniş çiziliyor, taşan kısmı bant kırpıyor.
+            .frame(width: geometry.size.width + period * 2, height: geometry.size.height)
+            .offset(x: -period + shift)
+        }
+        .frame(height: 26)
+        .frame(maxWidth: .infinity)
+        .background(Color(hex: 0x0B0907))
+        .clipped()
+        .accessibilityHidden(true)
+        .onChange(of: advanceToken) { _, _ in advance() }
+    }
+
+    private func advance() {
+        // Reduce Motion'da kelime zaten kesmeyle geliyor; şeridin kayması o
+        // ekranda tek başına hareket eden şey olurdu.
+        guard !reduceMotion else { return }
+        withAnimation(.easeOut(duration: 0.22)) { shift = -period }
+        // Sıfıra dönüş animasyonsuz: aynı deseni bir periyot ötelemek görsel
+        // olarak fark edilmiyor, animasyonla dönmek geri sarma gibi duruyor.
+        Task {
+            try? await Task.sleep(for: .milliseconds(230))
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { shift = 0 }
+        }
     }
 }
 

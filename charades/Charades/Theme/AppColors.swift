@@ -52,8 +52,16 @@ enum AppColors {
 
     static let textCream = Color(hex: 0xF6EBD6)
     static let textSecondary = Color(hex: 0xC6B394)
-    static let textMuted = Color(hex: 0x8B7A66)
+    /// §1 tablosunda `#8B7A66` yazıyor ama o değer `surfaceCard` üzerinde
+    /// 4,35:1 kalıyor ve §7'nin "hepsi WCAG AA üstü" taahhüdünü karşılamıyor —
+    /// dipnot metinleri 9,5–13 punto, yani "büyük metin" istisnası da geçmiyor.
+    /// İki maddeyi birden tutan en küçük düzeltme: ton aynı, parlaklık bir
+    /// basamak yukarı → 4,9:1.
+    static let textMuted = Color(hex: 0x948370)
     static let textOnPoster = Color(hex: 0x1C1512)
+    /// Afiş kağıdının üzerindeki ikincil mürekkep (HUD etiketleri, ipuçları).
+    /// `textMuted`ın açık zemin karşılığı: 5,3:1.
+    static let textOnPosterMuted = Color(hex: 0x6B5C46)
     static let textOnAmber = Color(hex: 0x201509)
 
     // MARK: Buton

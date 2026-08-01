@@ -148,7 +148,8 @@ nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
         let center = NotificationCenter.default
         for name in [AVCaptureSession.wasInterruptedNotification, AVCaptureSession.runtimeErrorNotification] {
             let token = center.addObserver(forName: name, object: session, queue: nil) { [weak self] _ in
-                self?.queue.async { self?.events?.wasInterrupted() }
+                guard let self else { return }
+                queue.async { self.events?.wasInterrupted() }
             }
             observers.append(token)
         }

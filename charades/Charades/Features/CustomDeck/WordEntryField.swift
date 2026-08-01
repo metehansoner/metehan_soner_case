@@ -50,7 +50,7 @@ struct WordListSection: View {
         HStack(spacing: 8) {
             TextField(l10n.t("words.placeholder"), text: $draft)
                 .font(AppFont.display(15, weight: .medium))
-                .tracking(1)
+                .appTracking(1)
                 .foregroundStyle(AppColors.textCream)
                 .textInputAutocapitalization(.sentences)
                 .autocorrectionDisabled()
@@ -67,6 +67,7 @@ struct WordListSection: View {
                     .foregroundStyle(AppColors.textOnAmber)
                     .frame(width: 28, height: 28)
                     .background(Circle().fill(AppColors.accentAmber))
+                    .tapTarget()
             }
             .buttonStyle(.plain)
             .disabled(draft.isEmpty || isFull)
@@ -94,7 +95,7 @@ struct WordListSection: View {
             if let hint {
                 Text(hint)
                     .font(AppFont.ui(10))
-                    .tracking(0.6)
+                    .appTracking(0.6)
                     .foregroundStyle(words.count < CustomDeckLimits.minWordsToPlay
                         ? AppColors.stateWarning
                         : AppColors.textMuted)
@@ -110,7 +111,7 @@ struct WordListSection: View {
             } label: {
                 Label(l10n.t("words.bulkAdd"), systemImage: "text.append")
                     .font(AppFont.ui(10, weight: .semibold))
-                    .tracking(1.2)
+                    .appTracking(1.2)
                     .textCase(.uppercase)
                     .foregroundStyle(isFull ? AppColors.stateLocked : AppColors.accentGold)
             }
@@ -152,7 +153,7 @@ struct WordListSection: View {
         return HStack(spacing: 6) {
             Text(word)
                 .font(AppFont.display(13, weight: .medium))
-                .tracking(0.9)
+                .appTracking(0.9)
                 .foregroundStyle(AppColors.textCream)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -166,6 +167,9 @@ struct WordListSection: View {
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 18, height: 18)
+                    // Chip'in içinde: 44pt satırı boyuna zorluyor, 34 hem
+                    // vurulabilir hem şeridi bozmuyor.
+                    .tapTarget(34)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("words.remove"))

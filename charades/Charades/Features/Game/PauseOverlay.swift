@@ -27,7 +27,7 @@ struct PauseOverlay: View {
                 VStack(spacing: 13) {
                     Text(l10n.t(reason == .system ? "pause.system.title" : "pause.title"))
                         .font(AppFont.display(26, weight: .bold))
-                        .tracking(6)
+                        .appTracking(6)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.textCream)
                         .padding(.bottom, 6)
@@ -110,7 +110,7 @@ private struct PauseButton: View {
                     .font(.system(size: 15, weight: .semibold))
                 Text(title)
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(2.4)
+                    .appTracking(2.4)
                     .textCase(.uppercase)
             }
             .foregroundStyle(foreground)

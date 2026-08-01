@@ -132,7 +132,7 @@ struct ReplayPlayerView: View {
                 if cue.showsStamp {
                     Text(l10n.t(cue.isCorrect ? "game.hint.correct" : "game.hint.skip"))
                         .font(AppFont.display(11, weight: .bold))
-                        .tracking(2.6)
+                        .appTracking(2.6)
                         .textCase(.uppercase)
                         .foregroundStyle(cue.isCorrect ? AppColors.stateCorrect : AppColors.stateSkip)
                         .padding(.horizontal, 13)
@@ -150,7 +150,7 @@ struct ReplayPlayerView: View {
 
                 Text(cue.word)
                     .font(AppFont.display(34, weight: .bold))
-                    .tracking(2.4)
+                    .appTracking(2.4)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.surfacePoster)
                     .shadow(color: .black.opacity(0.95), radius: 12)
@@ -167,7 +167,7 @@ struct ReplayPlayerView: View {
     private var slowBadge: some View {
         Text(l10n.t("replay.slowMotion"))
             .font(AppFont.display(10, weight: .bold))
-            .tracking(2.4)
+            .appTracking(2.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentAmber)
             .padding(.horizontal, 11)
@@ -187,13 +187,13 @@ struct ReplayPlayerView: View {
         VStack(alignment: .trailing, spacing: 1) {
             Text(headline)
                 .font(AppFont.display(13, weight: .semibold))
-                .tracking(1.8)
+                .appTracking(1.8)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.surfacePoster)
 
             Text(caption)
                 .font(AppFont.ui(9, weight: .medium))
-                .tracking(1.2)
+                .appTracking(1.2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.surfacePoster.opacity(0.6))
 
@@ -201,7 +201,7 @@ struct ReplayPlayerView: View {
                 // §09 §2: kesintiye uğrayan kayıt sessizce kısa görünmesin.
                 Text(l10n.t("replay.partial"))
                     .font(AppFont.ui(8.5, weight: .bold))
-                    .tracking(1.6)
+                    .appTracking(1.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.stateWarning)
                     .padding(.top, 3)
@@ -235,7 +235,7 @@ struct ReplayPlayerView: View {
                 .background {
                     Circle().fill(Color.black.opacity(0.45))
                 }
-                .padding(6)
+                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("common.close"))
@@ -333,7 +333,7 @@ struct ReplayPlayerView: View {
                 } label: {
                     Text(speed.label)
                         .font(AppFont.display(11, weight: .semibold))
-                        .tracking(1.3)
+                        .appTracking(1.3)
                         .foregroundStyle(isSelected ? AppColors.textOnAmber : AppColors.textMuted)
                         .padding(.horizontal, 13)
                         .padding(.vertical, 6)
@@ -458,7 +458,7 @@ struct ReplayPlayerView: View {
                 .font(.system(size: 11, weight: .semibold))
             Text(title)
                 .font(AppFont.display(11, weight: .semibold))
-                .tracking(1.8)
+                .appTracking(1.8)
                 .textCase(.uppercase)
                 .lineLimit(1)
         }

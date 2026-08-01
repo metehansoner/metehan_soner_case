@@ -58,6 +58,7 @@ final class ThermalMonitor {
 struct CueMark: View {
     /// Tur başına bir kez tetiklenmesi için dışarıdan geliyor.
     var isActive: Bool
+    var diameter: CGFloat = 26
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -68,8 +69,8 @@ struct CueMark: View {
 
     var body: some View {
         Circle()
-            .strokeBorder(AppColors.textOnPoster.opacity(0.55), lineWidth: 2)
-            .frame(width: 26, height: 26)
+            .strokeBorder(AppColors.surfacePoster.opacity(0.85), lineWidth: 2)
+            .frame(width: diameter, height: diameter)
             .opacity(isVisible ? 1 : 0)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
@@ -160,12 +161,63 @@ struct ScratchOverlay: View {
     }
 }
 
+/// §08 B3 afiş açılışı: kapağın üzerinden bir kez geçen spot ışığı.
+///
+/// "Vitrine yeni konmuş afiş" hissi. Tek seferlik ve 0,6 saniye — sürekli
+/// dönen bir parlama, arkasındaki kapak görselini okunmaz hâle getiriyor.
+/// Bezeme anahtarına bağlı değil: bu bir doku değil, ekranın giriş geçişi (§5).
+struct SpotlightSweepModifier: ViewModifier {
+    var cornerRadius: CGFloat
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// -1 = sol dışında, 1 = sağ dışında.
+    @State private var phase: CGFloat = -1
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                GeometryReader { geometry in
+                    LinearGradient(
+                        colors: [.clear, .white.opacity(0.42), .clear],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: geometry.size.width * 0.55)
+                    .rotationEffect(.degrees(16))
+                    .offset(x: phase * geometry.size.width * 1.3)
+                    .blendMode(.plusLighter)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .allowsHitTesting(false)
+            }
+            .task {
+                guard !reduceMotion else { return }
+                // Sheet yerine oturmadan başlarsa süpürme yarısı görünmüyor.
+                try? await Task.sleep(for: .milliseconds(120))
+                withAnimation(.easeInOut(duration: 0.6)) { phase = 1 }
+            }
+    }
+}
+
+extension View {
+    func spotlightSweep(cornerRadius: CGFloat) -> some View {
+        modifier(SpotlightSweepModifier(cornerRadius: cornerRadius))
+    }
+}
+
 /// §08 B4: sinemaskop bantları.
 ///
 /// Yalnızca **iki** yerde — tur sonu ve maç sonu. §B4'ün kendi uyarısı: her
-/// yerde kullanılırsa etkisini kaybediyor ve ekranı daraltıyor. Bantlar içeri
-/// kayarken içerik küçülmüyor, sadece kırpılıyor: yeniden yerleşim (layout)
-/// animasyonu 300 ms'de titriyor ve metin okunmaz hâle geliyor.
+/// yerde kullanılırsa etkisini kaybediyor ve ekranı daraltıyor.
+///
+/// "İçe kayar … sonra geri açılır": bantlar kalıcı değil. Kalsalardı tur sonu
+/// ekranının başlığı ve buton şeridi bant altında kalırdı — o ekranlar tam
+/// yükseklik için tasarlandı. Bantlar içeri girip bir an durup çekiliyor:
+/// sahnenin kapandığını söyleyen bir vurgu, yeni bir çerçeve değil.
+///
+/// İçerik de küçülmüyor, yalnızca üstü örtülüyor: 300 ms'lik yeniden yerleşim
+/// animasyonu metni titretiyor ve okunmaz hâle getiriyor.
 struct LetterboxBars: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -190,13 +242,16 @@ struct LetterboxBars: View {
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .onAppear {
-            guard !reduceMotion else {
-                isIn = true
-                return
-            }
-            withAnimation(.easeOut(duration: 0.3)) { isIn = true }
-        }
+        .task { await sweep() }
+    }
+
+    private func sweep() async {
+        // §5: Reduce Motion'da bant hiç girmiyor. Bilgi taşımayan tek katman
+        // bu ve giriş/çıkış hareketi ekranın en büyük hareketi olurdu.
+        guard !reduceMotion else { return }
+        withAnimation(.easeOut(duration: 0.3)) { isIn = true }
+        try? await Task.sleep(for: .milliseconds(750))
+        withAnimation(.easeIn(duration: 0.35)) { isIn = false }
     }
 
     private func bar(height: CGFloat) -> some View {

@@ -89,7 +89,7 @@ struct TeamSetupView: View {
             VStack(spacing: 2) {
                 Text(l10n.t("teams.setup.title"))
                     .font(AppFont.display(19, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
@@ -207,6 +207,9 @@ struct TeamSetupView: View {
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 16, height: 16)
+                    // Oyuncu chip'i satır yüksekliğini belirliyor; 44 kapsülü
+                    // şişiriyor, 34 dokunulabilir sınırın altında kalmıyor.
+                    .tapTarget(34)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("teams.player.remove"))
@@ -259,7 +262,7 @@ struct TeamSetupView: View {
                     .font(.system(size: 13, weight: .bold))
                 Text(l10n.t("teams.addTeam"))
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(1.6)
+                    .appTracking(1.6)
                     .textCase(.uppercase)
             }
             .foregroundStyle(AppColors.accentGold)

@@ -22,7 +22,7 @@ struct ModeCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(l10n.t(mode.titleKey))
                         .font(AppFont.display(14.5, weight: .semibold))
-                        .tracking(1.7)
+                        .appTracking(1.7)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.textCream)
                         .fixedSize(horizontal: false, vertical: true)
@@ -98,7 +98,7 @@ struct ModeCard: View {
                 .font(.system(size: 8, weight: .bold))
             Text(l10n.t("mode.locked.badge"))
                 .font(AppFont.ui(8, weight: .bold))
-                .tracking(1.2)
+                .appTracking(1.2)
                 .textCase(.uppercase)
         }
         .foregroundStyle(AppColors.accentGold)

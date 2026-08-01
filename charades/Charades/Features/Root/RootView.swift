@@ -22,6 +22,16 @@ struct RootView: View {
     @State private var wantsPaywallAfterSettings = false
     @State private var wantsArchiveAfterSettings = false
 
+    /// §08 A3: perde açılışı yalnızca **soğuk açılışta**. `RootView` arka
+    /// plandan dönüşte yeniden kurulmadığı için bayrak kendiliğinden bir kez
+    /// çalışıyor; ayrıca bir "ilk kez mi" kaydı tutmaya gerek yok.
+    #if DEBUG
+    // Ekran görüntüsü ve akış denemelerinde 1,2 saniye her seferinde bekleniyor.
+    @State private var isRevealing = !ProcessInfo.processInfo.arguments.contains("-SkipSplash")
+    #else
+    @State private var isRevealing = true
+    #endif
+
     var body: some View {
         @Bindable var router = router
 
@@ -50,6 +60,22 @@ struct RootView: View {
                 .localizedLayout()
         }
         .task(id: promptGateID) { await offerHomePrompt() }
+        .overlay {
+            if isRevealing {
+                CurtainRevealView { finishReveal() }
+                    .environment(LocalizationManager.shared)
+                    // Perde kalkarken altındaki ana ekran zaten yerinde;
+                    // ikinci bir geçiş animasyonu üst üste biniyor.
+                    .transition(.identity)
+            }
+        }
+    }
+
+    /// Onboarding perdeden **sonra** açılıyor: sheet'in perdenin arkasında
+    /// yükselmesi, perde kalkınca yarı yolda yakalanmış bir kart bırakıyordu.
+    private func finishReveal() {
+        isRevealing = false
+        startFirstRunIfNeeded()
     }
 
     // MARK: İlk açılış ve istemler — §03 §1, §09 §9
@@ -72,6 +98,7 @@ struct RootView: View {
     /// Ana ekranda oyun, sheet ve paywall yokken. İstem yalnızca burada çıkıyor.
     private var isHomeIdle: Bool {
         settings.onboardingDone
+            && !isRevealing
             && !isShowingOnboarding
             && liveGame == nil
             && router.paywall == nil
@@ -218,10 +245,12 @@ struct RootView: View {
                 .onAppear {
                     #if DEBUG
                     applyDebugArguments()
+                    // İlk açılış akışını normalde perde bitince `finishReveal`
+                    // başlatıyor; `-SkipSplash` perdeyi hiç çizmediği için o
+                    // çağrı gelmiyordu ve `-FirstRun` sessizce ana ekranda
+                    // kalıyordu.
+                    if !isRevealing { startFirstRunIfNeeded() }
                     #endif
-                    startFirstRunIfNeeded()
-                    // §04 §5: splash yok; soğuk açılışta perde + ampul bir kez.
-                    SoundService.curtainOpen()
                 }
         }
         .tint(AppColors.accentAmber)

@@ -80,7 +80,7 @@ struct TeamTurnHandoffView: View {
         VStack(spacing: 8) {
             Text(l10n.t(isSuddenDeath ? "teams.suddenDeath.title" : "teams.intermission.title"))
                 .font(AppFont.display(30, weight: .bold))
-                .tracking(5)
+                .appTracking(5)
                 .textCase(.uppercase)
                 .foregroundStyle(isSuddenDeath ? AppColors.stateSkip : AppColors.accentAmber)
                 .shadow(
@@ -110,7 +110,7 @@ struct TeamTurnHandoffView: View {
                     )
                 )
                 .font(AppFont.ui(9, weight: .semibold))
-                .tracking(2.5)
+                .appTracking(2.5)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textMuted)
             }
@@ -123,7 +123,7 @@ struct TeamTurnHandoffView: View {
 
                 Text(match.teams[teamIndex].name)
                     .font(AppFont.display(21, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .lineLimit(1)
@@ -147,7 +147,7 @@ struct TeamTurnHandoffView: View {
                     .foregroundStyle(AppColors.accentGold)
                 Text(l10n.t("teams.seconds"))
                     .font(AppFont.ui(8.5, weight: .semibold))
-                    .tracking(3)
+                    .appTracking(3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textMuted)
             }

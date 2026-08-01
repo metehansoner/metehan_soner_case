@@ -14,8 +14,16 @@ struct OnboardingSheet: View {
 
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppSettingsStore.self) private var settings
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var index = 0
+
+    /// §03 §1 sheet'i ekranın %55'i. Erişilebilirlik puntolarında o yükseklikte
+    /// başlık + iki satır özet + CTA aynı anda durmuyor; kart yükseliyor,
+    /// arkadaki ızgara hâlâ görünür kalıyor (bölümün asıl istediği o).
+    private var detent: PresentationDetent {
+        typeSize.isAccessibilitySize ? .fraction(0.9) : .fraction(0.55)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,7 +52,7 @@ struct OnboardingSheet: View {
         .animation(.easeOut(duration: 0.2), value: index)
         // §03 §1: kapatılamaz. Tek çıkış `ATLA` ya da son adımın CTA'sı.
         .interactiveDismissDisabled()
-        .presentationDetents([.fraction(0.55)])
+        .presentationDetents([detent])
         .presentationCornerRadius(28)
         .presentationBackground(.clear)
         .onAppear { index = min(settings.onboardingStep, steps.count - 1) }
@@ -72,7 +80,7 @@ struct OnboardingSheet: View {
                 finish()
             }
             .font(AppFont.display(11.5, weight: .semibold))
-            .tracking(2)
+            .appTracking(2)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textMuted)
             .buttonStyle(.plain)
@@ -162,24 +170,40 @@ private struct OnboardingStepView: View {
     let step: OnboardingStep
 
     @Environment(LocalizationManager.self) private var l10n
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(spacing: 0) {
-            artwork
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, 6)
+            // Erişilebilirlik puntolarında görsel tamamen çekiliyor: yükselen
+            // sheet'te bile afiş yelpazesi metnin yerini alıyor ve cümle yarıda
+            // kalıyordu. Görsel bezeme (`accessibilityHidden`), cümle bilgi.
+            if !typeSize.isAccessibilitySize {
+                artwork
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, 6)
+            }
 
-            Text(l10n.t(step.titleKey))
-                .font(AppFont.display(21, weight: .bold))
-                .tracking(2.4)
-                .textCase(.uppercase)
-                .foregroundStyle(AppColors.textCream)
-                .padding(.top, 12)
+            // Sheet yüksekliği §03 §1'de sabit (%55). Büyük puntolarda metin
+            // önce görseli sıkıştırıyor, yine sığmazsa kayıyor — kırpılmış
+            // yarım cümle yerine tam metin.
+            ScrollView {
+                VStack(spacing: 9) {
+                    Text(l10n.t(step.titleKey))
+                        .font(AppFont.display(21, weight: .bold, scales: .title3))
+                        .appTracking(2.4)
+                        .textCase(.uppercase)
+                        .foregroundStyle(AppColors.textCream)
 
-            Text(l10n.t(step.bodyKey, step.bodyArguments))
-                .font(AppFont.ui(13))
-                .foregroundStyle(AppColors.textSecondary)
-                .padding(.top, 9)
+                    Text(l10n.t(step.bodyKey, step.bodyArguments))
+                        .font(AppFont.ui(13))
+                        .foregroundStyle(AppColors.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            // Yer paylaşımında metin önce gelir: görsel bezeme, cümle bilgi.
+            .layoutPriority(1)
+            .padding(.top, 12)
         }
         .multilineTextAlignment(.center)
         .minimumScaleFactor(0.8)
@@ -266,13 +290,13 @@ private struct AnswerZonesArt: View {
 
             Text(label)
                 .font(AppFont.display(12, weight: .bold))
-                .tracking(1.6)
+                .appTracking(1.6)
                 .textCase(.uppercase)
                 .foregroundStyle(color)
 
             Text(hint)
                 .font(AppFont.ui(8.5))
-                .tracking(1.4)
+                .appTracking(1.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textMuted)
         }

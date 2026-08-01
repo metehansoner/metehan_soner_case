@@ -47,7 +47,7 @@ struct HowToPlaySlider: View {
 
                 Text(l10n.t("howToPlay.pageCount", ["current": "\(index + 1)", "total": "\(pages.count)"]))
                     .font(AppFont.display(11, weight: .semibold))
-                    .tracking(2.6)
+                    .appTracking(2.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.accentBrass)
                     .padding(.bottom, 12)
@@ -155,7 +155,7 @@ private struct HowToPlayPage: View {
 
             Text(l10n.t(page.titleKey))
                 .font(AppFont.display(20, weight: .bold))
-                .tracking(2.4)
+                .appTracking(2.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream)
                 .padding(.top, 10)
@@ -243,7 +243,7 @@ private struct TiltDiagramArt: View {
 
             Text(label)
                 .font(AppFont.display(13, weight: .semibold))
-                .tracking(2)
+                .appTracking(2)
                 .textCase(.uppercase)
                 .foregroundStyle(color)
         }

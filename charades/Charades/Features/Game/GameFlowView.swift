@@ -17,6 +17,7 @@ struct GameFlowView: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppSettingsStore.self) private var settings
     @Environment(SubscriptionStore.self) private var subscriptions
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// §03 §2 varyant C. Tam ekran paywall oyun akışının içinden açılıyor:
     /// tur sonu `NavigationStack`in yerine render edildiği için (§02 §5)
@@ -38,6 +39,20 @@ struct GameFlowView: View {
                     onLandscape: game.deviceBecameLandscape,
                     onPlayInPortrait: game.switchToPortraitPlay
                 )
+                .transition(.opacity)
+
+            case .slate:
+                SlateView(
+                    scene: game.sceneNumber,
+                    take: game.takeNumber,
+                    deckTitle: deckTitle,
+                    modeTitle: l10n.t(game.mode.titleKey),
+                    isFull: game.isSlateFull,
+                    onFinish: game.finishSlate
+                )
+                // §07 §5: aynı fazda ikinci kez girilen view kimliksiz kalırsa
+                // (`YENİDEN`) `task` yeniden çalışmıyor ve klaket donuyor.
+                .id("\(game.sceneNumber)-\(game.takeNumber)")
                 .transition(.opacity)
 
             case .countdown:
@@ -115,7 +130,12 @@ struct GameFlowView: View {
                 )
             }
         }
-        .animation(.spring(response: 0.34, dampingFraction: 0.85), value: showsSoftPaywall)
+        // Reduce Motion'da yaylı giriş sönümleniyor: panel kayarak değil
+        // belirerek geliyor.
+        .animation(
+            reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.34, dampingFraction: 0.85),
+            value: showsSoftPaywall
+        )
         .overlay(alignment: .top) { replayNotice }
         .fullScreenCover(isPresented: $showsReplay) {
             if let reel = game.reel {
@@ -200,12 +220,25 @@ struct GameFlowView: View {
         }
     }
 
+    /// Klaketin `DESTE` satırı ve başlık kartının büyük yazısı. Arşiv film
+    /// başlığıyla aynı kural (§04 §4.3): tek deste adıyla, çoklu seçim `MIX`,
+    /// deste olmayan modlar (Kelime Sepeti) mod adıyla anılıyor.
+    private var deckTitle: String {
+        if game.deckIDs.count == 1, let deck = DeckCatalog.deck(game.deckIDs[0]) {
+            return l10n.t(deck.titleKey)
+        }
+        if game.deckIDs.count > 1 { return l10n.t("mode.mix.title") }
+        return l10n.t(game.mode.titleKey)
+    }
+
     private var playing: some View {
         GameCardView(game: game)
             .pauseGesture(
-                // §09 §3: dokunmatik modda iki parmakla dokunma aynı zamanda bir
-                // ekran yarısına dokunma demek; o modda yalnızca sürükleme.
-                allowsTwoFingerTap: game.answerInput == .tilt,
+                // §09 §3 çakışma 1: iki parmakla dokunma aynı zamanda bir ekran
+                // yarısına dokunma demek. §01 §7 gereği ekran yarıları artık tilt
+                // turunda da cevap verdiği için bu çakışma her moda yayıldı;
+                // duraklatma tek jeste indi: üstten aşağı sürükleme.
+                allowsTwoFingerTap: false,
                 onGestureBegan: game.lockTriggersForPauseGesture,
                 onPause: { game.pause(reason: .user) }
             )

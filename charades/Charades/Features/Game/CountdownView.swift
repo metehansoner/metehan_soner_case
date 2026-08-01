@@ -4,10 +4,10 @@ import SwiftUI
 ///
 /// Eski film makaralarının başındaki Akademi geri sayımı: iki eşmerkezli daire,
 /// artı işareti, 1 saniyede tam tur atan süpürge kolu, ortada büyük rakam.
-/// A1'in "çizik/toz katmanı" ve projektör titremesi bezemeleri P17'de.
+/// Üstünde eskimiş kopyanın çizik/toz katmanı, sonunda projektör titremesi.
 ///
 /// §08 §0: **atlanamayan tek animasyon.** Bu 3 saniyede motion baseline'ı
-/// alınıyor, kelime havuzu hazırlanıyor ve (P15'te) replay kaydı başlıyor.
+/// alınıyor, kelime havuzu hazırlanıyor ve replay kaydı başlıyor.
 /// Dokunmak kalan süreyi 1 saniyeye indiriyor, sıfırlamıyor.
 struct CountdownView: View {
     let value: Int
@@ -15,6 +15,9 @@ struct CountdownView: View {
 
     @Environment(LocalizationManager.self) private var l10n
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Son rakamda lambanın tutukluk yapması: 0 = normal, 1 = sönük.
+    @State private var flicker: Double = 0
 
     var body: some View {
         ZStack {
@@ -33,15 +36,45 @@ struct CountdownView: View {
                 leader
                 Text(l10n.t("game.countdown.caption"))
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(5)
+                    .appTracking(5)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.accentGold)
             }
+
+            // A1: eskimiş kopyanın çizikleri. Rakamın üstünde ama huzmenin
+            // içinde — makaranın kendisi çizik, projeksiyon değil.
+            ScratchOverlay()
+
+            // Projektör titremesi: ampul bir an düşüyor. Kararma değil sönme,
+            // o yüzden siyah değil kırık beyaz.
+            Color(hex: 0x120E0A)
+                .opacity(flicker * 0.55)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(value)")
+        .task(id: value) { await flickerIfLast() }
+    }
+
+    /// §08 A1 "sonunda projektör titremesi". Son rakamda, tam oyun kartına
+    /// geçmeden: iki hızlı düşüş, toplam ~180 ms. Süre eklemiyor — geri sayımın
+    /// son saniyesinin içinde geçiyor.
+    private func flickerIfLast() async {
+        guard value == 1, !reduceMotion, FilmEffects.decorationsEnabled else {
+            flicker = 0
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(620))
+        for depth in [1.0, 0.7] {
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeIn(duration: 0.04)) { flicker = depth }
+            try? await Task.sleep(for: .milliseconds(45))
+            withAnimation(.easeOut(duration: 0.05)) { flicker = 0 }
+            try? await Task.sleep(for: .milliseconds(45))
+        }
     }
 
     private var leader: some View {

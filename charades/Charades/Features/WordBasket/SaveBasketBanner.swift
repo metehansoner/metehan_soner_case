@@ -33,7 +33,7 @@ struct SaveBasketBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(AppFont.display(13, weight: .bold))
-                    .tracking(1.6)
+                    .appTracking(1.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textOnPoster)
 
@@ -54,7 +54,7 @@ struct SaveBasketBanner: View {
                 } label: {
                     Text(l10n.t("basket.save.action"))
                         .font(AppFont.display(12, weight: .bold))
-                        .tracking(1.6)
+                        .appTracking(1.6)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.surfacePoster)
                         .padding(.horizontal, 16)

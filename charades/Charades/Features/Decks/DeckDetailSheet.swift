@@ -90,6 +90,10 @@ struct DeckDetailSheet: View {
             isOffMode: !deck.isRecommended(inActOutMode: setup.mode == .actOut)
         )
         .frame(width: 168)
+        // §08 B3: afiş vitrine yeni konmuş gibi, üzerinden bir spot geçiyor.
+        // Yarıçap `DeckCard`ın kendi köşesiyle aynı; ayrışırsa ışık kartın
+        // dışına taşıyor.
+        .spotlightSweep(cornerRadius: 14)
     }
 
     private var header: some View {
@@ -249,7 +253,7 @@ private struct MetaPill: View {
     var body: some View {
         Text(text)
             .font(AppFont.ui(10, weight: .bold))
-            .tracking(1.4)
+            .appTracking(1.4)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textSecondary)
             .padding(.horizontal, 10)

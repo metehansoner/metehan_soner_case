@@ -24,6 +24,8 @@ struct SettingsRow<Control: View>: View {
     var placement: ControlPlacement = .trailing
     @ViewBuilder var control: Control
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
         if let action {
             Button {
@@ -35,8 +37,18 @@ struct SettingsRow<Control: View>: View {
             .buttonStyle(.plain)
             .disabled(!isEnabled)
         } else {
-            content
+            // Kendi kontrolü olan satırlar üç ayrı öğe olarak okunuyordu:
+            // başlık, alt metin ve etiketsiz anahtar. Birleşince anahtarın
+            // durumu başlığın değeri hâline geliyor.
+            content.accessibilityElement(children: .combine)
         }
+    }
+
+    /// Erişilebilirlik puntolarında başlık ile kontrol yan yana sığmıyor:
+    /// başlığa kalan genişlik iki-üç karaktere iniyor ve kelimeler ortadan
+    /// bölünüyor ("Roun d lengt h"). O boyutlarda kontrol alt satıra geçiyor.
+    private var stacksControl: Bool {
+        placement == .below || typeSize.isAccessibilitySize
     }
 
     private var content: some View {
@@ -60,14 +72,14 @@ struct SettingsRow<Control: View>: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                if placement == .trailing {
+                if !stacksControl {
                     control
                 }
             }
 
-            if placement == .below {
+            if stacksControl {
                 control
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, alignment: typeSize.isAccessibilitySize ? .leading : .center)
             }
         }
         .padding(.horizontal, 14)
@@ -91,6 +103,9 @@ struct SettingsDisclosure: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(AppColors.textMuted)
                 .flipsForRightToLeftLayoutDirection(true)
+                // Satırın kendisi zaten "düğme" diye okunuyor; ok işareti
+                // eklenince VoiceOver her satırın sonuna bir de "chevron" diyor.
+                .accessibilityHidden(true)
         }
     }
 }
@@ -149,7 +164,7 @@ struct SettingsSegment<Option: Hashable>: View {
                 } label: {
                     Text(title(option))
                         .font(AppFont.ui(10.5, weight: .semibold))
-                        .tracking(1.4)
+                        .appTracking(1.4)
                         .textCase(.uppercase)
                         .foregroundStyle(isSelected ? AppColors.textOnAmber : AppColors.textSecondary)
                         .lineLimit(1)
@@ -159,6 +174,8 @@ struct SettingsSegment<Option: Hashable>: View {
                         .background {
                             Capsule().fill(isSelected ? AppColors.accentAmber : .clear)
                         }
+                        // Kapsül 31pt yüksekliğinde kalıyor; dokunma alanı 44pt.
+                        .frame(minHeight: 38)
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -189,12 +206,25 @@ struct SettingsStepper: View {
             button(systemImage: "minus", delta: -step)
 
             Text(format(value))
-                .font(AppFont.display(16, weight: .bold))
+                .font(AppFont.display(16, weight: .bold, scales: .body))
                 .monospacedDigit()
                 .foregroundStyle(AppColors.textCream)
                 .frame(minWidth: 52)
 
             button(systemImage: "plus", delta: step)
+        }
+        // Üç ayrı öğe yerine tek ayarlanabilir değer: VoiceOver'da yukarı/aşağı
+        // kaydırmayla değişiyor, satırın başlığı da etiket olarak kalıyor.
+        .accessibilityElement(children: .ignore)
+        .accessibilityValue(format(value))
+        .accessibilityAdjustableAction { direction in
+            let delta = direction == .increment ? step : -step
+            guard range.contains(value + delta) else {
+                Haptics.stepperLimit()
+                return
+            }
+            Haptics.selection()
+            value += delta
         }
     }
 
@@ -222,6 +252,11 @@ struct SettingsStepper: View {
                             )
                         }
                 }
+                // Daire 32pt kalıyor — satırın dikey ritmi onunla kuruldu — ama
+                // dokunma alanı 44pt'ye açılıyor (§01: "dokunma hedefleri
+                // tamamen modern").
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

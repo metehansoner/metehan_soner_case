@@ -79,8 +79,11 @@ nonisolated final class SyntheticReplayCaptureEngine: ReplayCaptureEngine, @unch
             input.markAsFinished()
             let events = self.events
             self.events = nil
+            // `AVAssetWriter` Sendable değil ama durumu yalnızca kapanış
+            // closure'ında okunabiliyor ve bu kayıt zaten tek kuyrukta yürüyor.
+            nonisolated(unsafe) let finished = writer
             writer.finishWriting {
-                events?.didFinish(writer.status == .completed)
+                events?.didFinish(finished.status == .completed)
             }
             self.writer = nil
             self.input = nil

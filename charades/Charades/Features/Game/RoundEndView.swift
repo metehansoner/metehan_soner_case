@@ -46,6 +46,9 @@ struct RoundEndView: View {
             }
             .ignoresSafeArea()
         }
+        // §08 B4: sinemaskop bantları yalnızca iki yerde — burada ve maç
+        // sonunda. Süre bitti, sahne kapandı: bantlar o kapanışın kendisi.
+        .overlay { LetterboxBars() }
         // §04 §3: kazara çıkış maçın tamamını siliyor, onay zorunlu.
         .confirmationDialog(
             l10n.t("pause.exit.confirm.title.match"),
@@ -68,7 +71,7 @@ struct RoundEndView: View {
             } else {
                 Text(l10n.t(game.mode.titleKey))
                     .font(AppFont.display(13, weight: .semibold))
-                    .tracking(4)
+                    .appTracking(4)
                     .textCase(.uppercase)
                     .foregroundStyle(Color(hex: 0x7A6A52))
             }
@@ -79,7 +82,7 @@ struct RoundEndView: View {
                     .foregroundStyle(AppColors.textOnPoster)
                 Text(l10n.t("round.points"))
                     .font(AppFont.ui(11, weight: .semibold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(Color(hex: 0x7A6A52))
             }
@@ -89,7 +92,7 @@ struct RoundEndView: View {
             if game.isNewRapidRecord {
                 Text(l10n.t("round.newRecord"))
                     .font(AppFont.display(11, weight: .bold))
-                    .tracking(3)
+                    .appTracking(3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.surfacePoster)
                     .padding(.horizontal, 12)
@@ -103,9 +106,9 @@ struct RoundEndView: View {
             // §02 ekran 17: ipucu satırı olmazsa düzeltme özelliği hiç keşfedilmiyor.
             Text(l10n.t("round.fixHint"))
                 .font(AppFont.ui(9))
-                .tracking(1.2)
+                .appTracking(1.2)
                 .textCase(.uppercase)
-                .foregroundStyle(Color(hex: 0x8A7860))
+                .foregroundStyle(AppColors.textOnPosterMuted)
                 .padding(.top, 5)
         }
         .multilineTextAlignment(.center)
@@ -129,7 +132,7 @@ struct RoundEndView: View {
 
                 Text(match.currentTeam.name)
                     .font(AppFont.display(15, weight: .bold))
-                    .tracking(3)
+                    .appTracking(3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textOnPoster)
             }
@@ -143,7 +146,7 @@ struct RoundEndView: View {
                     )
             )
             .font(AppFont.ui(9, weight: .semibold))
-            .tracking(2)
+            .appTracking(2)
             .textCase(.uppercase)
             .foregroundStyle(match.isSuddenDeath ? Color(hex: 0xA8382C) : Color(hex: 0x7A6A52))
         }
@@ -200,7 +203,7 @@ struct RoundEndView: View {
                     .font(.system(size: 10, weight: .bold))
                 Text(title)
                     .font(AppFont.ui(9.5, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
             }
             .foregroundStyle(tint)
@@ -218,7 +221,7 @@ struct RoundEndView: View {
                                     .frame(width: 5, height: 5)
                                 Text(answer.card.text(for: l10n.localeCode))
                                     .font(AppFont.display(15, weight: .medium))
-                                    .tracking(0.7)
+                                    .appTracking(0.7)
                                     .foregroundStyle(
                                         answer.isCorrect
                                             ? AppColors.textOnPoster
@@ -317,7 +320,7 @@ private struct TicketButton: View {
                     .font(.system(size: 13, weight: .semibold))
                 Text(title)
                     .font(AppFont.display(13, weight: .semibold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
             }
             .foregroundStyle(isPrimary ? AppColors.surfacePoster : AppColors.textOnPoster)

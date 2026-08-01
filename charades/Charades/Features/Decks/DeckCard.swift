@@ -142,9 +142,9 @@ struct DeckCard: View {
             if let cardCount {
                 Text(l10n.t("deck.cardCount", count: cardCount))
                     .font(AppFont.ui(7.5, weight: .semibold))
-                    .tracking(1.3)
+                    .appTracking(1.3)
                     .textCase(.uppercase)
-                    .foregroundStyle(Color(hex: 0x6B5C46))
+                    .foregroundStyle(AppColors.textOnPosterMuted)
             }
         }
         .frame(maxWidth: .infinity)
@@ -165,10 +165,15 @@ struct DeckCard: View {
     }
 
     /// §04: sol üst köşede `REEL No. 07`.
+    ///
+    /// Köşe rozetleri (makara no, kurdele, `describe` etiketi) afişin üzerine
+    /// basılmış mürekkep; Dynamic Type ile büyüyünce kapağın dörtte birini
+    /// kaplayıp birbirinin üstüne biniyorlar. Taşıdıkları bilgi kartın
+    /// erişilebilirlik etiketinde zaten var (§7).
     private var reelTag: some View {
         Text(l10n.t("deck.reel", ["no": deck.reelLabel]))
-            .font(AppFont.ui(6.5, weight: .bold))
-            .tracking(1)
+            .font(AppFont.ui(6.5, weight: .bold, scales: nil))
+            .appTracking(1)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentGold)
             .padding(.horizontal, 5)
@@ -189,8 +194,8 @@ struct DeckCard: View {
     private var ribbon: some View {
         if let ribbonKey {
             Text(l10n.t(ribbonKey))
-                .font(AppFont.ui(6.5, weight: .bold))
-                .tracking(1)
+                .font(AppFont.ui(6.5, weight: .bold, scales: nil))
+                .appTracking(1)
                 .textCase(.uppercase)
                 .foregroundStyle(isDailyFree ? AppColors.textOnAmber : Color(hex: 0xEAF5EA))
                 .padding(.horizontal, 6)
@@ -215,8 +220,8 @@ struct DeckCard: View {
 
     private var offModeTag: some View {
         Text(l10n.t("deck.describeOnly.badge"))
-            .font(AppFont.ui(6.5, weight: .bold))
-            .tracking(1)
+            .font(AppFont.ui(6.5, weight: .bold, scales: nil))
+            .appTracking(1)
             .textCase(.uppercase)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
@@ -241,7 +246,7 @@ struct DeckCard: View {
 
             Text(l10n.t("deck.locked.stamp"))
                 .font(AppFont.display(8, weight: .semibold))
-                .tracking(1.4)
+                .appTracking(1.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
                 .padding(.horizontal, 7)

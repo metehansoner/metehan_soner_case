@@ -40,6 +40,16 @@ struct ArchiveReelCard: View {
             .shadow(color: .black.opacity(0.7), radius: 7, y: 5)
         }
         .buttonStyle(.plain)
+        // Kart altı ayrı parça olarak okunuyordu (sahne no, süre, puan, alt yazı,
+        // rozet). Tek cümlede toplanıyor; bağlam menüsündeki eylemler de
+        // VoiceOver eylem listesine kopyalanıyor — uzun basma jesti sistem
+        // menüsünü açsa da rotorda görünmüyordu.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenSummary)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction(named: Text(l10n.t(reel.isPinned ? "archive.unpin" : "archive.pin")), onPin)
+        .accessibilityAction(named: Text(l10n.t("archive.save")), onSave)
+        .accessibilityAction(named: Text(l10n.t("common.delete")), onDelete)
         .contextMenu {
             Button {
                 onPin()
@@ -95,7 +105,7 @@ struct ArchiveReelCard: View {
 
             Text(l10n.t("replay.scene", ["no": String(format: "%02d", reel.sceneIndex)]))
                 .font(AppFont.display(9, weight: .semibold))
-                .tracking(1.4)
+                .appTracking(1.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.surfacePoster)
                 .padding(.horizontal, 6)
@@ -173,7 +183,7 @@ struct ArchiveReelCard: View {
 
                 Text(l10n.t("round.points"))
                     .font(AppFont.ui(7.5, weight: .semibold))
-                    .tracking(1.3)
+                    .appTracking(1.3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textMuted)
             }
@@ -182,7 +192,7 @@ struct ArchiveReelCard: View {
 
             Text(caption)
                 .font(AppFont.ui(8.5, weight: .semibold))
-                .tracking(0.8)
+                .appTracking(0.8)
                 .textCase(.uppercase)
                 .multilineTextAlignment(.trailing)
                 .lineLimit(2)
@@ -192,6 +202,19 @@ struct ArchiveReelCard: View {
         .padding(.horizontal, 10)
         .padding(.top, 8)
         .padding(.bottom, 9)
+    }
+
+    /// Sahne, süre, skor ve durum tek cümlede. Sabitlenmiş kayıtta iğne rozeti
+    /// de sesli söyleniyor; görsel olarak tek işaret o.
+    private var spokenSummary: String {
+        var parts = [
+            l10n.t("replay.scene", ["no": String(format: "%02d", reel.sceneIndex)]),
+            ArchiveModel.durationText(reel.duration),
+            "\(reel.correctCount) \(l10n.t("round.points"))",
+            caption,
+        ]
+        if reel.isPinned { parts.append(l10n.t("archive.pinned")) }
+        return parts.joined(separator: ", ")
     }
 
     /// Takım maçında sahnenin sahibi, tek kişilik turda kaydın durumu.

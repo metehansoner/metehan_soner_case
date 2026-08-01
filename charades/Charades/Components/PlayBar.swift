@@ -22,13 +22,13 @@ struct PlayBar: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(AppFont.display(13.5, weight: .semibold))
-                    .tracking(0.9)
+                    .appTracking(0.9)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
                 Text(subtitle)
                     .font(AppFont.ui(9.5))
-                    .tracking(1.4)
+                    .appTracking(1.4)
                     .textCase(.uppercase)
                     .foregroundStyle(subtitleColor)
             }

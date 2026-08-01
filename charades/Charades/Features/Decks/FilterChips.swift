@@ -13,6 +13,12 @@ struct FilterChipRow: View {
     var date: Date = .now
 
     @Environment(LocalizationManager.self) private var l10n
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Reduce Motion'da şerit kaymıyor, seçilen chip doğrudan ortada beliriyor.
+    private var scrollAnimation: Animation? {
+        reduceMotion ? nil : .easeOut(duration: 0.22)
+    }
 
     private var filters: [DeckFilter] {
         var result = DeckFilter.standardOrder
@@ -37,7 +43,7 @@ struct FilterChipRow: View {
                             guard filter != selection else { return }
                             Haptics.selection()
                             selection = filter
-                            withAnimation(.easeOut(duration: 0.22)) {
+                            withAnimation(scrollAnimation) {
                                 proxy.scrollTo(filter.id, anchor: .center)
                             }
                         }
@@ -61,7 +67,7 @@ struct FilterChipRow: View {
                 )
             }
             .onChange(of: selection) { _, new in
-                withAnimation(.easeOut(duration: 0.22)) { proxy.scrollTo(new.id, anchor: .center) }
+                withAnimation(scrollAnimation) { proxy.scrollTo(new.id, anchor: .center) }
             }
         }
     }
@@ -97,6 +103,8 @@ private struct FilterChip: View {
                             .padding(.vertical, 2.5)
                     }
                 }
+                // Kapsül 30pt görünüyor; şeridin dokunma alanı 44pt.
+                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? [.isButton, .isSelected] : .isButton)

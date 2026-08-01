@@ -246,7 +246,7 @@ struct DecksHomeView: View {
         HStack {
             Text(l10n.t(filter == .all ? "decks.mine" : filter.titleKey))
                 .font(AppFont.ui(10.5, weight: .bold))
-                .tracking(2.4)
+                .appTracking(2.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
 
@@ -277,7 +277,7 @@ struct DecksHomeView: View {
                 }
             }
             .frame(width: 34, height: 34)
-            .contentShape(Rectangle())
+            .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("decks.gridToggle"))

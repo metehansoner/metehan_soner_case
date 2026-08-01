@@ -394,21 +394,35 @@ struct CoverPicker: View {
     @ViewBuilder
     private var photoButton: some View {
         if subscription.isPremium {
+            // `PhotosPicker`ın etiket closure'ı izolasyon dışında çalışıyor;
+            // içeride `self`e dokunmamak için değerler önceden alınıyor.
+            let data = imageData
+            let cover = selection
             PhotosPicker(selection: $photoItem, matching: .images) {
-                CoverSwatch(isSelected: imageData != nil) {
-                    if let imageData {
-                        CustomCoverArt(cover: selection, imageData: imageData)
-                    } else {
-                        ZStack {
-                            AppColors.surfaceCardRaised
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.system(size: 17))
-                                .foregroundStyle(AppColors.accentGold)
-                        }
-                    }
-                }
+                PhotoCoverLabel(imageData: data, cover: cover)
             }
             .accessibilityLabel(l10n.t("customDeck.cover.photo"))
+        }
+    }
+}
+
+/// Photos düğmesinin yüzü: seçilmiş fotoğraf ya da boş kare.
+private struct PhotoCoverLabel: View {
+    let imageData: Data?
+    let cover: CustomDeckCover
+
+    var body: some View {
+        CoverSwatch(isSelected: imageData != nil) {
+            if let imageData {
+                CustomCoverArt(cover: cover, imageData: imageData)
+            } else {
+                ZStack {
+                    AppColors.surfaceCardRaised
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 17))
+                        .foregroundStyle(AppColors.accentGold)
+                }
+            }
         }
     }
 }

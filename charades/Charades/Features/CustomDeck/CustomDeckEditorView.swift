@@ -107,7 +107,7 @@ struct CustomDeckEditorView: View {
             VStack(spacing: 2) {
                 Text(deck.name.isEmpty ? l10n.t("customDeck.defaultName") : deck.name)
                     .font(AppFont.display(19, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .lineLimit(1)
@@ -131,7 +131,7 @@ struct CustomDeckEditorView: View {
         VStack(alignment: .leading, spacing: 9) {
             Text("◆ \(label)")
                 .font(AppFont.ui(10, weight: .semibold))
-                .tracking(1.6)
+                .appTracking(1.6)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
 

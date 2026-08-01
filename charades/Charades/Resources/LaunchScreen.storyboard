@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  08-sinematik-detaylar.md A3: statik launch screen, kapalı perdenin donmuş bir
+  karesi + aynı çerçeveli ikon. Sistem açılış ekranından `CurtainRevealView`a
+  geçerken hiçbir şey yerinden zıplamasın diye iki ekran da **aynı iki PNG**
+  dosyasını aynı ölçekleme kuralıyla gösteriyor: perde aspect fill, levha 168 pt
+  sabit ve ortalı.
+
+  Storyboard yerine `UILaunchScreen` sözlüğü kullanılamıyor: o sözlük görseli
+  ekranı dolduracak şekilde ölçekliyor ve levhayı ortada sabit boyutta tutmanın
+  yolu yok.
+-->
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="CRV-la-unc">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="CRV-sc-ene">
+            <objects>
+                <viewController id="CRV-la-unc" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="CRV-ro-otv">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launch_curtain" translatesAutoresizingMaskIntoConstraints="NO" id="CRV-cu-rtn">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launch_plaque" translatesAutoresizingMaskIntoConstraints="NO" id="CRV-pl-aqu">
+                                <rect key="frame" x="112.5" y="342" width="168" height="168"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="168" id="CRV-pw-idt"/>
+                                    <constraint firstAttribute="height" constant="168" id="CRV-ph-eig"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="CRV-sa-fea"/>
+                        <color key="backgroundColor" name="LaunchBackground"/>
+                        <constraints>
+                            <constraint firstItem="CRV-cu-rtn" firstAttribute="top" secondItem="CRV-ro-otv" secondAttribute="top" id="CRV-ct-top"/>
+                            <constraint firstItem="CRV-cu-rtn" firstAttribute="leading" secondItem="CRV-ro-otv" secondAttribute="leading" id="CRV-ct-lea"/>
+                            <constraint firstAttribute="trailing" secondItem="CRV-cu-rtn" secondAttribute="trailing" id="CRV-ct-tra"/>
+                            <constraint firstAttribute="bottom" secondItem="CRV-cu-rtn" secondAttribute="bottom" id="CRV-ct-bot"/>
+                            <constraint firstItem="CRV-pl-aqu" firstAttribute="centerX" secondItem="CRV-ro-otv" secondAttribute="centerX" id="CRV-pl-cnx"/>
+                            <constraint firstItem="CRV-pl-aqu" firstAttribute="centerY" secondItem="CRV-ro-otv" secondAttribute="centerY" id="CRV-pl-cny"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CRV-fi-rst" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="launch_curtain" width="1290" height="2796"/>
+        <image name="launch_plaque" width="168" height="168"/>
+        <namedColor name="LaunchBackground">
+            <color red="0.06274509803921569" green="0.047058823529411764" blue="0.0392156862745098" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

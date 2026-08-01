@@ -46,6 +46,10 @@ struct MatchEndView: View {
                 rotateHint
                     .transition(.opacity)
             }
+
+            // §08 B4: jeneriğin açılış vurgusu. Bantlar kalıcı değil, girip
+            // çekiliyor — jenerik akışının okunacağı alanı daraltmıyorlar.
+            LetterboxBars()
         }
         .statusBarHidden()
         .task {
@@ -86,7 +90,7 @@ struct MatchEndView: View {
         VStack(spacing: 0) {
             Text(l10n.t("teams.credits.presents"))
                 .font(AppFont.ui(11, weight: .bold))
-                .tracking(8)
+                .appTracking(8)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentBrass)
                 .padding(.bottom, 52)
@@ -157,7 +161,7 @@ struct MatchEndView: View {
 
             Text(detail)
                 .font(AppFont.display(14, weight: .medium))
-                .tracking(2.4)
+                .appTracking(2.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textSecondary)
         }
@@ -238,6 +242,7 @@ struct MatchEndView: View {
                 .background {
                     Circle().fill(AppColors.bgFilmBlack.opacity(0.55))
                 }
+                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("round.backToStage"))
@@ -258,7 +263,7 @@ struct MatchEndView: View {
                             .font(.system(size: 12, weight: .semibold))
                         Text(l10n.t("teams.goToArchive"))
                             .font(AppFont.display(12, weight: .semibold))
-                            .tracking(1.6)
+                            .appTracking(1.6)
                             .textCase(.uppercase)
                     }
                     .foregroundStyle(AppColors.accentGold)
@@ -287,7 +292,7 @@ struct MatchEndView: View {
             ShareLink(item: shareText) {
                 Text(l10n.t("teams.share"))
                     .font(AppFont.display(13, weight: .semibold))
-                    .tracking(1.7)
+                    .appTracking(1.7)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .frame(maxWidth: .infinity)
@@ -303,7 +308,7 @@ struct MatchEndView: View {
             } label: {
                 Text(l10n.t("round.playAgain"))
                     .font(AppFont.display(13, weight: .semibold))
-                    .tracking(1.7)
+                    .appTracking(1.7)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textOnAmber)
                     .frame(maxWidth: .infinity)
@@ -354,7 +359,7 @@ struct MatchEndView: View {
 
             Text(l10n.t("teams.rotatePortrait"))
                 .font(AppFont.ui(12, weight: .semibold))
-                .tracking(1.4)
+                .appTracking(1.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textSecondary)
         }

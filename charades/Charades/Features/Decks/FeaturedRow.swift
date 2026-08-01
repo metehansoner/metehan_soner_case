@@ -70,7 +70,7 @@ private struct FeaturedCard: View {
 
                 Text(title)
                     .font(AppFont.display(11, weight: .semibold))
-                    .tracking(1.7)
+                    .appTracking(1.7)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
                     .lineLimit(1)

@@ -17,7 +17,7 @@ struct SavedMixesRow: View {
             HStack {
                 Text(l10n.t("mix.saved.title"))
                     .font(AppFont.ui(10.5, weight: .bold))
-                    .tracking(2.4)
+                    .appTracking(2.4)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.accentGold)
 

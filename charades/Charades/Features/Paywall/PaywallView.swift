@@ -105,7 +105,7 @@ struct PaywallView: View {
             Image(systemName: "lock.fill").font(.system(size: 8, weight: .bold))
             Text(l10n.t("deck.locked.stamp"))
                 .font(AppFont.ui(8, weight: .bold))
-                .tracking(1.3)
+                .appTracking(1.3)
                 .textCase(.uppercase)
         }
         .foregroundStyle(AppColors.accentGold)
@@ -148,7 +148,7 @@ struct PaywallView: View {
     private var plaque: some View {
         Text(l10n.t("paywall.plaque"))
             .font(AppFont.display(22, weight: .bold))
-            .tracking(3.6)
+            .appTracking(3.6)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.surfacePoster)
             .shadow(color: AppColors.accentAmber.opacity(0.5), radius: 8)
@@ -325,7 +325,7 @@ struct PaywallView: View {
             Button(action: dismiss) {
                 Text(l10n.t("paywall.skip"))
                     .font(AppFont.display(12, weight: .semibold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textSecondary)
                     .padding(.horizontal, 12)
@@ -360,6 +360,7 @@ struct PaywallView: View {
                                 )
                             }
                     }
+                    .tapTarget()
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.close"))

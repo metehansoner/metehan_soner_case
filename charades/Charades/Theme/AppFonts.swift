@@ -45,23 +45,56 @@ enum AppFont {
         UIFont(name: postScriptName, size: 12) != nil
     }
 
+    /// §2'nin geniş harf aralığı ayrık yazılan alfabeler için. Arapça bitişik
+    /// yazılıyor: harflerin arasına boşluk girince bağlar kopuyor ve
+    /// `مجموعاتي` ekranda `مجمو عا تي` gibi üç parçaya bölünmüş görünüyor.
+    static var appliesTracking: Bool { currentLanguageCode() != "ar" }
+
     // MARK: Roller
 
-    static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        resolve(role: .display, size: size, weight: weight, italic: false)
+    /// §7 "gövde metinleri ölçeklenir": `scales` dolu olan her çağrı Dynamic
+    /// Type ile büyüyor, `nil` olan sabit puntoda kalıyor.
+    ///
+    /// Varsayılanlar rollerin işine göre: `ui` gövde metni yazıyor, ölçeklenmesi
+    /// beklenen varsayılan davranış. `display` ve `accent` ise sayaç, oyun
+    /// kelimesi, jenerik gibi **sabit geometrili** yüzeylerde kullanılıyor;
+    /// oralarda punto düzenin bir parçası, ölçeklenirse kutuyu taşırıyor. O iki
+    /// rolde ölçekleme, gerçekten gövde olan token'larda tek tek açılıyor
+    /// (`screenTitle`, `posterTitle`, `buttonLabel`).
+    static func display(
+        _ size: CGFloat,
+        weight: Font.Weight = .bold,
+        scales: Font.TextStyle? = nil
+    ) -> Font {
+        resolve(role: .display, size: size, weight: weight, italic: false, scales: scales)
     }
 
-    static func accent(_ size: CGFloat, weight: Font.Weight = .black, italic: Bool = false) -> Font {
-        resolve(role: .accent, size: size, weight: weight, italic: italic)
+    static func accent(
+        _ size: CGFloat,
+        weight: Font.Weight = .black,
+        italic: Bool = false,
+        scales: Font.TextStyle? = nil
+    ) -> Font {
+        resolve(role: .accent, size: size, weight: weight, italic: italic, scales: scales)
     }
 
-    static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        resolve(role: .ui, size: size, weight: weight, italic: false)
+    static func ui(
+        _ size: CGFloat,
+        weight: Font.Weight = .regular,
+        scales: Font.TextStyle? = .body
+    ) -> Font {
+        resolve(role: .ui, size: size, weight: weight, italic: false, scales: scales)
     }
 
     private enum Role { case display, accent, ui }
 
-    private static func resolve(role: Role, size: CGFloat, weight: Font.Weight, italic: Bool) -> Font {
+    private static func resolve(
+        role: Role,
+        size: CGFloat,
+        weight: Font.Weight,
+        italic: Bool,
+        scales: Font.TextStyle?
+    ) -> Font {
         let family: String
         switch role {
         case .display: family = families.display
@@ -71,7 +104,11 @@ enum AppFont {
 
         for name in postScriptCandidates(family: family, weight: weight, italic: italic) {
             if UIFont(name: name, size: size) != nil {
-                return .custom(name, size: size)
+                // `Font.custom(_:size:)` sessizce gövdeye göre ölçekleniyor;
+                // sabit punto istemenin tek yolu `fixedSize:`. Bu ayrım
+                // gözden kaçınca oyun kartı ve logo da büyüyordu.
+                guard let scales else { return .custom(name, fixedSize: size) }
+                return .custom(name, size: size, relativeTo: scales)
             }
         }
 
@@ -79,13 +116,23 @@ enum AppFont {
             var traits: UIFontDescriptor.SymbolicTraits = []
             if weight.rank >= Font.Weight.semibold.rank { traits.insert(.traitBold) }
             if italic { traits.insert(.traitItalic) }
-            if !traits.isEmpty, let descriptor = base.fontDescriptor.withSymbolicTraits(traits) {
-                return Font(UIFont(descriptor: descriptor, size: size))
-            }
-            return Font(base)
+            let resolved = traits.isEmpty
+                ? base
+                : base.fontDescriptor.withSymbolicTraits(traits).map { UIFont(descriptor: $0, size: size) } ?? base
+            return Font(scaled(resolved, to: scales))
         }
 
-        return .system(size: size, weight: weight, design: role == .accent ? .serif : .default)
+        guard let scales else {
+            return .system(size: size, weight: weight, design: role == .accent ? .serif : .default)
+        }
+        return .system(scales, design: role == .accent ? .serif : .default, weight: weight)
+    }
+
+    /// `Font.custom(_:size:relativeTo:)`ın `UIFont` karşılığı; ikame yolunda da
+    /// aynı ölçekleme geçerli olsun diye.
+    private static func scaled(_ font: UIFont, to scales: Font.TextStyle?) -> UIFont {
+        guard let scales else { return font }
+        return UIFontMetrics(forTextStyle: scales.uiTextStyle).scaledFont(for: font)
     }
 
     private static func postScriptCandidates(
@@ -158,6 +205,24 @@ enum AppFont {
     }
 }
 
+private extension Font.TextStyle {
+    var uiTextStyle: UIFont.TextStyle {
+        switch self {
+        case .largeTitle: return .largeTitle
+        case .title: return .title1
+        case .title2: return .title2
+        case .title3: return .title3
+        case .headline: return .headline
+        case .subheadline: return .subheadline
+        case .callout: return .callout
+        case .footnote: return .footnote
+        case .caption: return .caption1
+        case .caption2: return .caption2
+        default: return .body
+        }
+    }
+}
+
 /// `Font.Weight` Comparable değil; ikame zincirinde "bu ağırlıktan kalın mı"
 /// sorusunu sorabilmek için sıralanabilir bir karşılık.
 private extension Font.Weight {
@@ -193,15 +258,21 @@ struct AppTextStyle {
 
 @MainActor
 extension AppTextStyle {
+    /// Ölçeklenmiyor: bu bir metin değil **kelime markası**. Büyüdüğünde header
+    /// bandını kırıyor ve zaten bir bilgi taşımıyor — altındaki ekran başlıkları
+    /// ve gövde metinleri ölçekleniyor (§7).
     static var marquee: AppTextStyle {
         .init(font: AppFont.display(44, weight: .bold), tracking: 2, textCase: .uppercase)
     }
     static var screenTitle: AppTextStyle {
-        .init(font: AppFont.display(28, weight: .bold), tracking: 1.5, textCase: .uppercase)
+        .init(font: AppFont.display(28, weight: .bold, scales: .title), tracking: 1.5, textCase: .uppercase)
     }
     static var posterTitle: AppTextStyle {
-        .init(font: AppFont.accent(22, weight: .black))
+        .init(font: AppFont.accent(22, weight: .black, scales: .title3))
     }
+    /// §7: `gameWord` kendi dinamik küçültme mantığını kullanıyor — punto zaten
+    /// moda ve yöne göre hesaplanıyor, üstüne Dynamic Type binince kelime
+    /// kartın dışına taşıyor.
     static func gameWord(_ size: CGFloat = 64) -> AppTextStyle {
         .init(font: AppFont.display(size, weight: .bold), tracking: 1, textCase: .uppercase)
     }
@@ -218,10 +289,12 @@ extension AppTextStyle {
         .init(font: AppFont.ui(13))
     }
     static var buttonLabel: AppTextStyle {
-        .init(font: AppFont.display(18, weight: .semibold), tracking: 1, textCase: .uppercase)
+        .init(font: AppFont.display(18, weight: .semibold, scales: .headline), tracking: 1, textCase: .uppercase)
     }
 
-    // Sinematik katman ve Film Arşivi stilleri (§08, §04 §4.4)
+    // Sinematik katman ve Film Arşivi stilleri (§08, §04 §4.4).
+    // Hiçbiri ölçeklenmiyor: hepsi sabit geometrili yüzeylerde (klaket künyesi,
+    // jenerik akışı, geri sayım rakamı, replay altyazısı) duruyor.
 
     static var leaderNumber: AppTextStyle {
         .init(font: AppFont.display(150, weight: .bold))
@@ -230,10 +303,10 @@ extension AppTextStyle {
         .init(font: AppFont.display(16, weight: .semibold), textCase: .uppercase)
     }
     static var clapperLabel: AppTextStyle {
-        .init(font: AppFont.ui(8.5, weight: .bold), tracking: 1, textCase: .uppercase)
+        .init(font: AppFont.ui(8.5, weight: .bold, scales: nil), tracking: 1, textCase: .uppercase)
     }
     static var creditsRole: AppTextStyle {
-        .init(font: AppFont.ui(9.5, weight: .bold), tracking: 4, textCase: .uppercase)
+        .init(font: AppFont.ui(9.5, weight: .bold, scales: nil), tracking: 4, textCase: .uppercase)
     }
     static var creditsName: AppTextStyle {
         .init(font: AppFont.accent(25, weight: .black))
@@ -249,7 +322,13 @@ extension AppTextStyle {
 extension View {
     func textStyle(_ style: AppTextStyle) -> some View {
         self.font(style.font)
-            .tracking(style.tracking)
+            .appTracking(style.tracking)
             .textCase(style.textCase)
+    }
+
+    /// Harf aralığını locale'e göre uygular. Çağrı yerlerinde `.tracking(_:)`
+    /// yerine bu kullanılıyor; koşul tek yerde duruyor (§2).
+    func appTracking(_ value: CGFloat) -> some View {
+        tracking(AppFont.appliesTracking ? value : 0)
     }
 }

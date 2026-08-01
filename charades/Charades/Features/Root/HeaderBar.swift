@@ -70,7 +70,7 @@ struct HeaderBar: View {
     private var logoPlaque: some View {
         Text(l10n.t("app.name"))
             .font(AppFont.display(logoSize, weight: .bold))
-            .tracking(2 + 3 * (1 - collapseProgress))
+            .appTracking(2 + 3 * (1 - collapseProgress))
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textCream)
             .padding(.horizontal, 22)
@@ -147,6 +147,10 @@ struct HeaderCircleIconButton: View {
                             .offset(x: 4, y: -2)
                     }
                 }
+                // Daire 40pt: header bandının yüksekliği buna göre kuruldu.
+                // Dokunma alanı 44pt'ye açılıyor, görünen boyut değişmiyor.
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)

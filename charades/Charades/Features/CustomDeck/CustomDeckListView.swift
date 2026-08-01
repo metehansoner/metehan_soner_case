@@ -78,7 +78,7 @@ struct CustomDeckListView: View {
             VStack(spacing: 2) {
                 Text(l10n.t("customDeck.list.title"))
                     .font(AppFont.display(19, weight: .bold))
-                    .tracking(2)
+                    .appTracking(2)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textCream)
 
@@ -187,7 +187,7 @@ struct CustomDeckListView: View {
 
                 Text(l10n.t(hasFreeSlot ? "customDeck.new" : "customDeck.slotsFull"))
                     .font(AppFont.display(14, weight: .semibold))
-                    .tracking(1.4)
+                    .appTracking(1.4)
                     .textCase(.uppercase)
                     .foregroundStyle(hasFreeSlot ? AppColors.accentGold : AppColors.stateLocked)
 

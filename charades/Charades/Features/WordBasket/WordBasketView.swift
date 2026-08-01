@@ -80,7 +80,7 @@ struct WordBasketView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(l10n.t("basket.title"))
                 .font(AppFont.display(28, weight: .bold))
-                .tracking(4)
+                .appTracking(4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream)
                 .minimumScaleFactor(0.7)
