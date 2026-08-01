@@ -333,6 +333,20 @@ final class AppSettingsStore {
         debugResetOneTimePrompts()
     }
 
+    /// Mağaza karesi ilk açılış akışını göstermemeli: onboarding, paywall ve
+    /// istem zinciri kapalı başlasın.
+    func debugSkipFirstRun() {
+        onboardingDone = true
+        onboardingStep = 0
+        paywallSeen = true
+        notificationPrompted = true
+        rateUsPrompted = true
+        replayPrivacyShown = true
+        archiveNoticeDismissed = true
+        softPaywallSeen = true
+        lapseNoticeShown = true
+    }
+
     /// İlk açılış deneyimini yeniden oynatmak için: onboarding + onun ardından
     /// gelen paywall + bildirim istemi.
     func debugResetFirstRun() {

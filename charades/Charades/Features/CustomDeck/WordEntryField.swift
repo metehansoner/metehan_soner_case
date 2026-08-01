@@ -40,6 +40,10 @@ struct WordListSection: View {
             .environment(l10n)
         }
         .onAppear {
+            #if DEBUG
+            // Mağaza karesinde klavye ekranın yarısını yiyor.
+            if ProcessInfo.processInfo.arguments.contains("-NoKeyboard") { return }
+            #endif
             if autoFocusesEntry { isEntryFocused = true }
         }
     }

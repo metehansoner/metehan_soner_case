@@ -22,10 +22,16 @@ struct HeaderBar: View {
     private var logoSize: CGFloat { 44 - 20 * collapseProgress }
     private var taglineOpacity: Double { max(0, 1 - collapseProgress * 2.2) }
 
+    /// Logo ortada duruyor, butonlar onun üstünde: makara ikonu belirince sağ
+    /// küme genişliyor ve uzun dillerde plaka butonların altına giriyor. Geniş
+    /// tarafın payı iki yana birden veriliyor ki logo ortada kalsın.
+    private var sideInset: CGFloat { archiveCount > 0 ? 98 : 44 }
+
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
                 logoPlaque
+                    .padding(.horizontal, sideInset)
 
                 HStack(spacing: 10) {
                     HeaderCircleIconButton(
@@ -73,6 +79,8 @@ struct HeaderBar: View {
             .appTracking(2 + 3 * (1 - collapseProgress))
             .textCase(.uppercase)
             .foregroundStyle(AppColors.textCream)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
             .padding(.horizontal, 22)
             .padding(.vertical, 5)
             .overlay {

@@ -215,22 +215,26 @@ enum ReplayStore {
     }
 
     #if DEBUG
+    /// Tohum oyuncu adları. Kısa ve çoğu dilde okunur; sabit Türkçe adlar
+    /// yabancı dil denemelerinde ve mağaza karesinde yamalı duruyordu.
+    static let debugPlayerNames = ["Alex", "Sam", "Mia", "Leo", "Ana", "Noah"]
+
     /// Simülatörde arşivi dolu görebilmek için. Kaynak makara yoksa sentetik
     /// bir video üretiliyor — aksi hâlde arşiv boşken tohumlama sessizce
     /// hiçbir şey yapmıyordu.
-    static func debugSeed(copies: Int) {
+    /// `words` oynatıcının altyazı şeridini besliyor; çağıran onları seçili
+    /// dilin destesinden veriyor ki tohum her dilde okunur olsun.
+    static func debugSeed(copies: Int, words: [String] = []) {
         prepareDirectory()
         let source = allReels().first
         let sourceURL = source?.videoURL ?? makeSeedVideo()
         guard let sourceURL, FileManager.default.fileExists(atPath: sourceURL.path) else { return }
 
-        let names = ["Ayşe", "Mehmet", "Zeynep", "Can", "Elif", "Deniz"]
+        let names = debugPlayerNames
         let decks = ["party", "movieClassics", "cities"]
-        let marks = source?.marks ?? [
-            .init(time: 3, isCorrect: true, word: "Zürafa", key: "giraffe"),
-            .init(time: 7, isCorrect: false, word: "Pangolin", key: "pangolin"),
-            .init(time: 11, isCorrect: true, word: "Timsah", key: "crocodile"),
-        ]
+        let marks = source?.marks ?? zip([3.0, 7.0, 11.0], words.prefix(3)).enumerated().map {
+            ReplayReel.Mark(time: $1.0, isCorrect: $0 != 1, word: $1.1, key: "seed-\($0)")
+        }
 
         for index in 0..<copies {
             let id = UUID().uuidString

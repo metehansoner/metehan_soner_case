@@ -16,6 +16,10 @@ Kullanım:
   python3 Scripts/build_store_screenshots.py --size 6.9 --scene home
   python3 Scripts/build_store_screenshots.py --compose-only  # yeniden çekmeden diz
 
+Bağımlılık: Pillow. Arapça başlık için `arabic-reshaper` + `python-bidi`
+(sistem SF Arabic ile sunum biçimleri çiziliyor; Rubik OpenType birleştirmesi
+PIL'de yok).
+
 Çıktı: `Store/screenshots/<dil>/<boyut>/NN-<sahne>.png`
 """
 
@@ -30,6 +34,13 @@ import sys
 import time
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+except ImportError:  # pragma: no cover
+    arabic_reshaper = None
+    get_display = None
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FONTS = ROOT / "Charades" / "Resources" / "Fonts"
@@ -76,10 +87,15 @@ SCENES = [
     {
         "id": "game",
         "headline": ["onboarding.forehead.title"],
-        "arguments": [
-            "-Premium", "-ShortRound", "-StartGame", "filmClassics", "-SkipRotate",
-        ],
-        "settle": 9.0,
+        "arguments": ["-Premium", "-StartGame", "movieClassics", "-SkipRotate"],
+        # Klaket + geri sayım 5 sn sürüyor; kare ilk kelimede alınmalı.
+        "settle": 8.0,
+        # Simülatör cihazı portre kalıyor, uygulama içeriği kendi çeviriyor:
+        # ham kare yan yatmış geliyor, afişte doğrultuluyor.
+        "rotate": 90,
+        # Yatay kare afişin yarısını boş bırakıyor; kuralın kendi cümlesi
+        # (onboarding adım 2) o boşluğu dolduruyor.
+        "sub": "onboarding.forehead.body",
     },
     {
         "id": "modes",
@@ -102,7 +118,7 @@ SCENES = [
     {
         "id": "words",
         "headline": ["mode.ownWords.title"],
-        "arguments": ["-Premium", "-Basket", "7", "-WordBasket"],
+        "arguments": ["-Premium", "-NoKeyboard", "-Basket", "9", "-WordBasket"],
         "settle": 4.0,
     },
 ]
@@ -178,7 +194,8 @@ def boot(udid: str) -> None:
 
 
 def capture(udid: str, scene: dict, language: str, target: pathlib.Path) -> None:
-    arguments = ["-SkipSplash", "-Lang", language, *scene["arguments"]]
+    # `-NoFirstRun` olmadan onboarding sheet'i her karenin üstünü kapatıyor.
+    arguments = ["-SkipSplash", "-NoFirstRun", "-Lang", language, *scene["arguments"]]
     run("xcrun", "simctl", "launch", "--terminate-running-process", udid, BUNDLE_ID, *arguments)
     time.sleep(scene["settle"])
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -233,6 +250,10 @@ def tracked_text(
     tracking: float,
 ) -> None:
     """PIL'de harf aralığı yok; §2'nin geniş aralığı harf harf çiziliyor."""
+    if tracking == 0:
+        # Arapça bitişik; harf harf çizmek bağlantıyı bozar.
+        draw.text(position, text, font=font, fill=fill)
+        return
     x, y = position
     for character in text:
         draw.text((x, y), character, font=font, fill=fill)
@@ -272,17 +293,47 @@ def rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
     return mask
 
 
-def compose(shot: Image.Image, text: str, canvas: tuple[int, int], rtl: bool) -> Image.Image:
+def title_font(size: int, rtl: bool) -> ImageFont.FreeTypeFont:
+    # § `01` §2: Oswald'da Arap glifi yok. Rubik'te Arap var ama OpenType
+    # birleştirmesiyle; PIL raqm olmadan FE70 sunum biçimlerini çizemiyor.
+    # Mağaza başlığı için sistemin sunum biçimli SF Arabic'i kullanılıyor.
+    if rtl:
+        return ImageFont.truetype("/System/Library/Fonts/SFArabic.ttf", size)
+    return ImageFont.truetype(str(FONTS / "Oswald-Bold.ttf"), size)
+
+
+def body_font(size: int, rtl: bool) -> ImageFont.FreeTypeFont:
+    if rtl:
+        return ImageFont.truetype("/System/Library/Fonts/SFArabic.ttf", size)
+    return ImageFont.truetype(str(FONTS / "FiraSans-Regular.ttf"), size)
+
+
+def shape(text: str, rtl: bool) -> str:
+    if not rtl:
+        # Türkçe `i` → `İ`; Python'un `upper()`ı onu `I` yapıyor.
+        return text.replace("i", "İ").replace("ı", "I").upper()
+    if arabic_reshaper is None or get_display is None:
+        return text
+    return get_display(arabic_reshaper.reshape(text))
+
+
+def compose(
+    shot: Image.Image,
+    text: str,
+    canvas: tuple[int, int],
+    rtl: bool,
+    subtitle: str | None = None,
+) -> Image.Image:
     width, height = canvas
     image = background(canvas)
     draw = ImageDraw.Draw(image)
 
     title_size = round(width * 0.062)
-    font = ImageFont.truetype(str(FONTS / "Oswald-Bold.ttf"), title_size)
+    font = title_font(title_size, rtl)
     # § `01` §2: ALL CAPS + geniş aralık. Arapça bitişik yazıldığı için aralık
     # yalnızca ayrık alfabelerde (uygulamadaki `appTracking` kuralının aynısı).
     tracking = 0 if rtl else title_size * 0.055
-    caption = text if rtl else text.upper()
+    caption = shape(text, rtl)
 
     top = round(height * 0.055)
     lines = wrap(draw, caption, font, tracking, width * 0.84)
@@ -299,15 +350,25 @@ def compose(shot: Image.Image, text: str, canvas: tuple[int, int], rtl: bool) ->
         fill=ACCENT_GOLD, width=max(2, width // 620),
     )
 
-    # Cihaz çerçevesi: kalan alana sığan en büyük ölçek.
-    frame_top = rule_y + round(height * 0.035)
+    # Cihaz çerçevesi: kalan alana sığan en büyük ölçek. Yatay kare dar kalıyor,
+    # onu biraz daha genişletip boşluğun ortasına oturtuyoruz.
+    landscape = shot.width > shot.height
+    top_limit = rule_y + round(height * 0.035)
     bottom_margin = round(height * 0.045)
-    available = (round(width * 0.84), height - frame_top - bottom_margin)
+    available = (
+        round(width * (0.94 if landscape else 0.84)),
+        height - top_limit - bottom_margin,
+    )
     scale = min(available[0] / shot.width, available[1] / shot.height)
     inner = (round(shot.width * scale), round(shot.height * scale))
     bezel = max(6, round(width * 0.009))
     frame = (inner[0] + bezel * 2, inner[1] + bezel * 2)
     frame_x = (width - frame[0]) // 2
+    # Yatayda ortalanan şey yalnız cihaz değil, altındaki alt metinle birlikte
+    # oluşan blok; o yüzden merkez bir tık yukarı çekiliyor.
+    frame_top = top_limit
+    if landscape:
+        frame_top += max((available[1] - frame[1]) // 2 - round(height * 0.075), 0)
     frame_radius = round(min(frame) * 0.075)
 
     shadow = Image.new("RGBA", canvas, (0, 0, 0, 0))
@@ -341,6 +402,16 @@ def compose(shot: Image.Image, text: str, canvas: tuple[int, int], rtl: bool) ->
             [cx - bulb_r, bulb_y - bulb_r, cx + bulb_r, bulb_y + bulb_r], fill=ACCENT_AMBER
         )
 
+    if subtitle:
+        sub_size = round(width * 0.032)
+        sub_font = body_font(sub_size, rtl)
+        caption = shape(subtitle, rtl) if rtl else subtitle
+        sub_y = bulb_y + round(height * 0.028)
+        for line in wrap(draw, caption, sub_font, 0, width * 0.74):
+            line_width = draw.textlength(line, font=sub_font)
+            draw.text(((width - line_width) / 2, sub_y), line, font=sub_font, fill=TEXT_CREAM)
+            sub_y += round(sub_size * 1.42)
+
     return image
 
 
@@ -371,6 +442,9 @@ def main() -> int:
         if not arguments.compose_only:
             udid = device_udid(size)
             boot(udid)
+            # Temiz kurulum: önceki setin tohumladığı arşiv/sepet bir sonraki
+            # setin ana ekran karesine rozet olarak sızıyor.
+            run("xcrun", "simctl", "uninstall", udid, BUNDLE_ID, check=False)
             run("xcrun", "simctl", "install", udid, str(app))
 
         for index, scene in enumerate(scenes, start=1):
@@ -381,7 +455,11 @@ def main() -> int:
                 print(f"  ✗ {scene['id']}: ham kare yok ({raw})")
                 return 1
 
-            image = compose(Image.open(raw), headline(scene, table), size["canvas"], rtl)
+            shot = Image.open(raw)
+            if scene.get("rotate"):
+                shot = shot.rotate(scene["rotate"], expand=True)
+            subtitle = table.get(scene["sub"]) if scene.get("sub") else None
+            image = compose(shot, headline(scene, table), size["canvas"], rtl, subtitle)
             target = OUT / arguments.lang / key / f"{index:02d}-{scene['id']}.png"
             target.parent.mkdir(parents=True, exist_ok=True)
             image.save(target)

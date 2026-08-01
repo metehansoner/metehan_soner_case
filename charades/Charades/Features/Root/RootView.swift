@@ -411,6 +411,18 @@ struct RootView: View {
         "Toplantı", "Ayşe'nin köpeği", "Müdürün arabası", "Mola",
     ]
 
+    /// Sepet ve custom deste tohumu: sabit Türkçe liste mağaza karesinde ve
+    /// yabancı dil denemelerinde yamalı duruyor. Ücretsiz destenin kendi
+    /// kartları o dilde hazır — tohum onları ödünç alıyor.
+    private static func debugSeedWords(_ count: Int) -> [String] {
+        let language = LocalizationManager.shared.localeCode
+        let words = CardBank.shared
+            .cards(in: DeckCatalog.freeDeckID)
+            .prefix(count)
+            .map { $0.text(for: language) }
+        return words.isEmpty ? Array(debugWords.prefix(count)) : Array(words)
+    }
+
     /// Simülatör doğrulaması. Tilt sensörü ve ekran döndürme simülatörde
     /// olmadığı için oyun fazlarına başka türlü girilemiyor.
     ///
@@ -442,6 +454,8 @@ struct RootView: View {
     ///   -SoftPaywall           tur sonu yumuşak önerisini yeniden tetikler
     ///   -Lapse                 abonelik düşmüş gibi davranır (bilgi kartı)
     ///   -FirstRun [adım]       onboarding'i baştan açar (1–3, varsayılan 1)
+    ///   -NoFirstRun            onboarding/paywall/istem zincirini kapalı açar
+    ///   -NoKeyboard            kelime girişini odaksız açar (klavye kapalı)
     ///   -TouchOnboarding       adım 3'ün dokunmatik hâli
     ///   -TiltOnboarding        adım 3'ün eğme hâli (simülatörde sensör yok)
     ///   -HomePrompts           ana ekrandaki 8 sn'lik istem zincirini tetikler
@@ -514,7 +528,7 @@ struct RootView: View {
         // makarayı çoğaltıyor (§ `04` §4.3 gruplama ve kota denetimi için).
         if arguments.contains("-SeedArchive") {
             let count = value(after: "-SeedArchive").flatMap(Int.init) ?? 5
-            ReplayStore.debugSeed(copies: count)
+            ReplayStore.debugSeed(copies: count, words: Self.debugSeedWords(3))
         }
         if arguments.contains("-NotificationsOff") {
             AppSettingsStore.shared.notificationsEnabled = false
@@ -524,6 +538,10 @@ struct RootView: View {
         if arguments.contains("-HomePrompts") {
             AppSettingsStore.shared.debugReplayHomePrompts()
             PromptCoordinator.shared.debugReset()
+        }
+        // Mağaza karelerinde ilk açılış sheet'i her ekranın üstünü kapatıyor.
+        if arguments.contains("-NoFirstRun") {
+            AppSettingsStore.shared.debugSkipFirstRun()
         }
         if arguments.contains("-FirstRun") {
             AppSettingsStore.shared.debugResetFirstRun()
@@ -553,9 +571,16 @@ struct RootView: View {
         if arguments.contains("-TeamRoster") {
             SubscriptionStore.shared.debugPremiumOverride = true
             setup.mode = .teams
+            let l10n = LocalizationManager.shared
             setup.teams = [
-                Team(name: "Perdeciler", players: ["Metehan", "Ayşe"]),
-                Team(name: "Makaracılar", players: ["Elif", "Burak"])
+                Team(
+                    name: l10n.t("teams.defaultName", ["index": "1"]),
+                    players: Array(ReplayStore.debugPlayerNames.prefix(2))
+                ),
+                Team(
+                    name: l10n.t("teams.defaultName", ["index": "2"]),
+                    players: Array(ReplayStore.debugPlayerNames.dropFirst(2).prefix(2))
+                )
             ]
             setup.roundsPerTeam = 1
         }
@@ -576,13 +601,13 @@ struct RootView: View {
                 CustomDeck(
                     name: "Ofis Muhabbeti",
                     languageCode: LocalizationManager.shared.localeCode,
-                    words: Array(Self.debugWords.prefix(count))
+                    words: Self.debugSeedWords(count)
                 )
             )
         }
         if arguments.contains("-Basket") {
             let count = value(after: "-Basket").flatMap(Int.init) ?? 7
-            setup.basketWords = Array(Self.debugWords.prefix(count))
+            setup.basketWords = Self.debugSeedWords(count)
         }
 
         if arguments.contains("-Settings") {
