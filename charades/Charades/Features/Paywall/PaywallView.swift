@@ -16,6 +16,7 @@ struct PaywallView: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppSettingsStore.self) private var settings
     @Environment(SubscriptionStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var selectedPlan: SubscriptionStore.Plan = .weekly
     @State private var status: Status?
@@ -31,17 +32,32 @@ struct PaywallView: View {
         case purchaseFailed
     }
 
+    /// Erişilebilirlik puntolarında sabit flex layout sığmıyor; o zaman scroll.
+    private var usesScrollLayout: Bool { typeSize.isAccessibilitySize }
+
+    /// HTML Varyant A: afiş duvarı + `TAM BİLET` plaketi.
+    /// VIP / tur sonu da aynı vitrini kullanıyor — modal kaçış (`X`) kalıyor.
+    private var usesShowcaseChrome: Bool {
+        variant == .onboarding
+            || context == .vipButton
+            || context == .roundEnd
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             VelvetBackground(showsCurtain: true).ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    header
-                    offerBody
+            Group {
+                if usesScrollLayout {
+                    ScrollView {
+                        column(fillsHeight: false)
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                } else {
+                    column(fillsHeight: true)
                 }
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             escapeControl
         }
@@ -62,21 +78,45 @@ struct PaywallView: View {
         }
     }
 
+    /// `paywall.html` `.content`: afiş → gövde ortalanmış (`flex:1` +
+    /// `justify-content:center`) → CTA alta.
+    private func column(fillsHeight: Bool) -> some View {
+        VStack(spacing: 0) {
+            header
+
+            if fillsHeight { Spacer(minLength: 4) }
+
+            offerCopy
+
+            if fillsHeight { Spacer(minLength: 8) }
+
+            callToAction
+                .padding(.horizontal, 20)
+                .padding(.top, fillsHeight ? 4 : 22)
+                .padding(.bottom, fillsHeight ? 4 : 24)
+        }
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: fillsHeight ? .infinity : nil,
+            alignment: .top
+        )
+    }
+
     // MARK: Üst bölge
 
     @ViewBuilder
     private var header: some View {
-        switch variant {
-        case .onboarding:
-            PosterWall(decks: DeckCatalog.v1).frame(height: 318)
-        case .modal:
+        if usesShowcaseChrome {
+            // HTML `.collage.tall` — 318pt, ekranın ~%36'sı.
+            PosterWall(decks: DeckCatalog.v1)
+                .frame(height: 318)
+        } else {
             contextHero
         }
     }
 
     /// §03 §2 varyant B: duvar %30 opaklığa çekiliyor, dokunulan destenin
-    /// kapağı büyük geliyor. Kullanıcı soyut "92 deste" değil, o an istediği
-    /// şeyi görüyor.
+    /// kapağı büyük geliyor.
     private var contextHero: some View {
         ZStack(alignment: .bottom) {
             PosterWall(decks: DeckCatalog.v1, opacity: 0.3)
@@ -85,7 +125,7 @@ struct PaywallView: View {
                 heroCard(for: deck).padding(.bottom, 6)
             }
         }
-        .frame(height: contextDeck == nil ? 210 : 274)
+        .frame(height: 274)
     }
 
     private func heroCard(for deck: DeckDef) -> some View {
@@ -124,9 +164,10 @@ struct PaywallView: View {
 
     // MARK: Gövde
 
-    private var offerBody: some View {
+    /// Plaket + başlık + planlar. CTA ayrı — HTML'de `.cta-wrap` alta yapışık.
+    private var offerCopy: some View {
         VStack(spacing: 0) {
-            if variant == .onboarding {
+            if usesShowcaseChrome {
                 plaque
                 headline.padding(.top, 14)
             } else {
@@ -135,13 +176,12 @@ struct PaywallView: View {
 
             subline.padding(.top, 7)
 
-            plans.padding(.top, 20)
-
-            callToAction.padding(.top, 22)
+            plans.padding(.top, 18)
         }
         .padding(.horizontal, 20)
-        .padding(.top, variant == .onboarding ? 0 : 13)
-        .padding(.bottom, 24)
+        // Collage ile gövde -6pt örtüşüyor (`paywall.html` `.pw-body`).
+        .padding(.top, usesShowcaseChrome ? -6 : 10)
+        .frame(maxWidth: .infinity)
     }
 
     /// §03 §2 madde 2: pirinç plakete basılı `TAM BİLET`, ampulleri yanar.
@@ -206,7 +246,7 @@ struct PaywallView: View {
     private var subline: some View {
         VStack(spacing: 2) {
             Text(contextSummary)
-            if variant == .onboarding {
+            if usesShowcaseChrome {
                 Text(l10n.t("paywall.summary.features"))
             }
         }
@@ -343,7 +383,7 @@ struct PaywallView: View {
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, 16)
-            .padding(.top, 4)
+            .safeAreaPadding(.top, 4)
 
         case .modal:
             Button(action: dismiss) {
@@ -366,7 +406,7 @@ struct PaywallView: View {
             .accessibilityLabel(l10n.t("common.close"))
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, 16)
-            .padding(.top, 6)
+            .safeAreaPadding(.top, 6)
             .opacity(canDismiss ? 1 : 0)
             .allowsHitTesting(canDismiss)
         }

@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import RevenueCat
+import StoreKit
 import UIKit
 
 /// Abonelik durumunun tek kaynağı — 03-onboarding-paywall.md §4.
@@ -9,6 +10,11 @@ import UIKit
 /// değişse bile aktif bir entitlement varsa premium veriliyor, `customerInfo`
 /// çekilemediğinde önceki durum korunuyor ve fiyatlar her zaman store'dan
 /// geliyor — koda hiçbir fiyat yazılmıyor.
+///
+/// DEBUG'da RevenueCat anahtarı yoksa ya da offering çekilemezse planlar
+/// `Configuration/Products.storekit` üzerinden StoreKit 2 ile yükleniyor;
+/// satın alma da aynı yerel yapılandırmayla çalışıyor (ağ / App Store Connect
+/// gerekmez). Release hâlâ yalnızca RevenueCat yolunu kullanıyor.
 ///
 /// `debugPremiumOverride` yalnızca DEBUG derlemede etkili; kilitli ve kilitsiz
 /// hâlleri sandbox hesabı olmadan gözle doğrulayabilmek için.
@@ -38,7 +44,8 @@ final class SubscriptionStore {
     /// hesaplanmıyor, `StoreProduct`'ın yerelleştirilmiş biçimleri kullanılıyor.
     struct PlanOffer: Identifiable, Sendable {
         let plan: Plan
-        let package: Package
+        /// RevenueCat yolu. StoreKit-only DEBUG yolunda `nil`.
+        let package: Package?
         /// Kartın büyük rakamı: kendi döneminin tam tutarı (§03 §2 madde 4).
         let price: String
         /// Alt satırdaki haftalık karşılık; haftalık planda gösterilmiyor.
@@ -62,6 +69,7 @@ final class SubscriptionStore {
     }
 
     private static let entitlementID = "premium"
+    private static let productIDs = Set(Plan.allCases.map(\.productID))
 
     private let defaults = UserDefaults.standard
     private enum Key {
@@ -126,8 +134,7 @@ final class SubscriptionStore {
             _ plan: Plan,
             _ price: Decimal,
             _ display: String,
-            _ unit: SubscriptionPeriod.Unit,
-            perWeek: String? = nil,
+            _ unit: RevenueCat.SubscriptionPeriod.Unit,
             trial: Bool = false
         ) -> StoreProduct {
             TestStoreProduct(
@@ -139,14 +146,14 @@ final class SubscriptionStore {
                 productType: .autoRenewableSubscription,
                 localizedDescription: "",
                 subscriptionGroupIdentifier: "premium",
-                subscriptionPeriod: .init(value: 1, unit: unit),
+                subscriptionPeriod: RevenueCat.SubscriptionPeriod(value: 1, unit: unit),
                 introductoryDiscount: trial
                     ? .init(
                         identifier: "trial",
                         price: 0,
                         localizedPriceString: "$0.00",
                         paymentMode: .freeTrial,
-                        subscriptionPeriod: .init(value: 3, unit: .day),
+                        subscriptionPeriod: RevenueCat.SubscriptionPeriod(value: 3, unit: .day),
                         numberOfPeriods: 1,
                         type: .introductory
                     )
@@ -185,6 +192,7 @@ final class SubscriptionStore {
             webCheckoutUrl: nil
         )
 
+        storeKitProducts = [:]
         offers = Self.resolveOffers(in: offering)
         didFailToLoadOffers = offers.isEmpty
     }
@@ -201,11 +209,15 @@ final class SubscriptionStore {
     private(set) var isLoadingOffers = false
     /// §09 §7 son satır: temiz kurulum + ağ yok + gerçek abone. Paywall bu
     /// bayrakla "bağlantı yokken abonelik doğrulanamıyor" satırını gösteriyor.
+    /// DEBUG StoreKit yolu başarılıysa `false` kalır.
     private(set) var didFailToLoadOffers = false
     private(set) var isPurchasing = false
     private(set) var isRestoring = false
 
     private var observationTask: Task<Void, Never>?
+    private var storeKitUpdatesTask: Task<Void, Never>?
+    /// StoreKit Configuration / yerel satın alma için ürün önbelleği.
+    private var storeKitProducts: [String: Product] = [:]
 
     private init() {
         entitlementActive = defaults.bool(forKey: Key.cachedPremium)
@@ -218,22 +230,26 @@ final class SubscriptionStore {
 
     // MARK: - Kurulum
 
-    /// API anahtarı `Info.plist` üzerinden geliyor; anahtar yoksa (örneğin
-    /// çeviri veya UI çalışırken) SDK hiç yapılandırılmıyor ve uygulama
-    /// ücretsiz modda sorunsuz çalışmaya devam ediyor.
+    /// API anahtarı `Info.plist` üzerinden geliyor; anahtar yoksa DEBUG'da
+    /// StoreKit Configuration devreye giriyor. Release'te anahtar yoksa
+    /// uygulama ücretsiz modda çalışmaya devam ediyor.
     func configure() {
-        guard !Purchases.isConfigured, let apiKey = Self.apiKey else { return }
+        if !Purchases.isConfigured, let apiKey = Self.apiKey {
+            #if DEBUG
+            Purchases.logLevel = .warn
+            #else
+            Purchases.logLevel = .error
+            #endif
+
+            // §06 §1: destek yazışmasındaki UserID ile RevenueCat kaydı aynı kimliği
+            // taşısın diye anonim id yerine uygulamanınki veriliyor.
+            Purchases.configure(withAPIKey: apiKey, appUserID: appUserID)
+            observeCustomerInfo()
+        }
 
         #if DEBUG
-        Purchases.logLevel = .warn
-        #else
-        Purchases.logLevel = .error
+        observeStoreKitTransactions()
         #endif
-
-        // §06 §1: destek yazışmasındaki UserID ile RevenueCat kaydı aynı kimliği
-        // taşısın diye anonim id yerine uygulamanınki veriliyor.
-        Purchases.configure(withAPIKey: apiKey, appUserID: appUserID)
-        observeCustomerInfo()
         Task { await refresh() }
     }
 
@@ -264,6 +280,21 @@ final class SubscriptionStore {
         }
     }
 
+    #if DEBUG
+    private func observeStoreKitTransactions() {
+        storeKitUpdatesTask?.cancel()
+        storeKitUpdatesTask = Task { [weak self] in
+            for await update in Transaction.updates {
+                guard !Task.isCancelled else { return }
+                if let transaction = try? Self.verified(update) {
+                    await transaction.finish()
+                    await self?.syncStoreKitEntitlements()
+                }
+            }
+        }
+    }
+    #endif
+
     /// §03 §4: entitlement adı dashboard'da değişse bile **herhangi bir** aktif
     /// entitlement premium sayılıyor. Ödeme yapan kullanıcıyı asla kilitlemiyoruz.
     private func apply(_ info: CustomerInfo) {
@@ -279,35 +310,85 @@ final class SubscriptionStore {
     // MARK: - Teklifler
 
     func refresh() async {
-        guard Purchases.isConfigured else {
-            didFailToLoadOffers = offers.isEmpty
-            return
-        }
-
         isLoadingOffers = true
         defer { isLoadingOffers = false }
 
-        // customerInfo çekilemezse önceki durum korunuyor: hata yutuluyor,
-        // `entitlementActive` olduğu gibi kalıyor.
-        if let info = try? await Purchases.shared.customerInfo() {
-            apply(info)
+        if Purchases.isConfigured {
+            // customerInfo çekilemezse önceki durum korunuyor: hata yutuluyor,
+            // `entitlementActive` olduğu gibi kalıyor.
+            if let info = try? await Purchases.shared.customerInfo() {
+                apply(info)
+            }
+
+            do {
+                let offerings = try await Purchases.shared.offerings()
+                // §03 §4: offering "Current" olan, kodda hardcode yok.
+                if let current = offerings.current {
+                    storeKitProducts = [:]
+                    offers = Self.resolveOffers(in: current)
+                    didFailToLoadOffers = offers.isEmpty
+                    if !offers.isEmpty { return }
+                }
+            } catch {
+                // Ağ / RC hatası: DEBUG'da StoreKit yedeğine düş.
+            }
         }
 
-        do {
-            let offerings = try await Purchases.shared.offerings()
-            // §03 §4: offering "Current" olan, kodda hardcode yok.
-            guard let current = offerings.current else {
-                offers = []
-                didFailToLoadOffers = true
-                return
-            }
-            offers = Self.resolveOffers(in: current)
-            didFailToLoadOffers = offers.isEmpty
-        } catch {
-            offers = []
+        #if DEBUG
+        if await refreshFromStoreKit() { return }
+        // Scheme'de StoreKit dosyası yoksa (simctl launch vb.) yerleşim yine
+        // test edilebilsin diye örnek teklifler geliyor.
+        debugLoadSampleOffers()
+        if !offers.isEmpty { return }
+        #endif
+
+        if offers.isEmpty {
             didFailToLoadOffers = true
         }
     }
+
+    #if DEBUG
+    /// Scheme'e bağlı `Products.storekit` dosyasından ürünleri çekiyor.
+    /// Xcode dışında (TestFlight) bu dosya yok; ürün listesi boş kalır.
+    @discardableResult
+    private func refreshFromStoreKit() async -> Bool {
+        do {
+            let products = try await Product.products(for: Self.productIDs)
+            guard !products.isEmpty else { return false }
+
+            storeKitProducts = Dictionary(uniqueKeysWithValues: products.map { ($0.id, $0) })
+            offers = Self.resolveOffers(from: products)
+            didFailToLoadOffers = offers.isEmpty
+            await syncStoreKitEntitlements()
+            return !offers.isEmpty
+        } catch {
+            return false
+        }
+    }
+
+    private func syncStoreKitEntitlements() async {
+        var active = false
+        var latestExpiry: Date?
+        for await result in Transaction.currentEntitlements {
+            guard let transaction = try? Self.verified(result) else { continue }
+            guard Self.productIDs.contains(transaction.productID) else { continue }
+            active = true
+            if let expiry = transaction.expirationDate {
+                latestExpiry = max(latestExpiry ?? expiry, expiry)
+            }
+        }
+        entitlementActive = active
+        renewalDate = active ? latestExpiry : nil
+        NotificationService.scheduleChanged()
+    }
+
+    private static func verified<T>(_ result: StoreKit.VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified(_, let error): throw error
+        case .verified(let value): return value
+        }
+    }
+    #endif
 
     /// §03 §4: paket çözümleme önce `PackageType`, tutmazsa product ID ile.
     /// Dashboard'da paketler özel tanımlanmışsa ikinci yol kurtarıyor.
@@ -338,6 +419,70 @@ final class SubscriptionStore {
             )
         }
     }
+
+    #if DEBUG
+    private static func resolveOffers(from products: [Product]) -> [PlanOffer] {
+        let byID = Dictionary(uniqueKeysWithValues: products.map { ($0.id, $0) })
+        let resolved = Plan.allCases.compactMap { plan -> (Plan, Product)? in
+            byID[plan.productID].map { (plan, $0) }
+        }
+
+        let weeklyAnnualCost = resolved
+            .first { $0.0 == .weekly }
+            .map { $0.1.price * 52 }
+
+        return resolved.map { plan, product in
+            PlanOffer(
+                plan: plan,
+                package: nil,
+                price: product.displayPrice,
+                pricePerWeek: plan == .weekly ? nil : pricePerWeek(of: product),
+                trialDays: trialDays(of: product),
+                savingsPercent: plan == .yearly
+                    ? savingsPercent(price: product.price, comparedTo: weeklyAnnualCost)
+                    : nil
+            )
+        }
+    }
+
+    private static func pricePerWeek(of product: Product) -> String? {
+        guard let period = product.subscription?.subscriptionPeriod else { return nil }
+        let weeks: Decimal = switch period.unit {
+        case .day: Decimal(period.value) / 7
+        case .week: Decimal(period.value)
+        case .month: Decimal(period.value) * Decimal(52) / Decimal(12)
+        case .year: Decimal(period.value) * 52
+        @unknown default: 1
+        }
+        guard weeks > 0 else { return nil }
+        return (product.price / weeks).formatted(product.priceFormatStyle)
+    }
+
+    private static func trialDays(of product: Product) -> Int? {
+        guard
+            let intro = product.subscription?.introductoryOffer,
+            intro.paymentMode == .freeTrial
+        else { return nil }
+        let period = intro.period
+        let days = switch period.unit {
+        case .day: period.value
+        case .week: period.value * 7
+        case .month: period.value * 30
+        case .year: period.value * 365
+        @unknown default: period.value
+        }
+        return days > 0 ? days : nil
+    }
+
+    private static func savingsPercent(price annual: Decimal, comparedTo weeklyAnnualCost: Decimal?) -> Int? {
+        guard let baseline = weeklyAnnualCost, baseline > 0, annual > 0, annual < baseline else {
+            return nil
+        }
+        let ratio = (baseline - annual) / baseline
+        let percent = Int((ratio * 100 as NSDecimalNumber).doubleValue.rounded())
+        return (1...99).contains(percent) ? percent : nil
+    }
+    #endif
 
     /// Daha önce deneme kullanmış kullanıcıda `introductoryDiscount` gelmiyor;
     /// CTA ve alt metin otomatik olarak denemesiz hâle düşüyor (§03 §4).
@@ -374,22 +519,66 @@ final class SubscriptionStore {
     // MARK: - Satın alma
 
     func purchase(_ offer: PlanOffer) async -> PurchaseOutcome {
-        guard Purchases.isConfigured else { return .failed("not_configured") }
         guard !isPurchasing else { return .cancelled }
 
         isPurchasing = true
         defer { isPurchasing = false }
 
-        do {
-            let result = try await Purchases.shared.purchase(package: offer.package)
-            if result.userCancelled { return .cancelled }
-            apply(result.customerInfo)
+        if Purchases.isConfigured, let package = offer.package {
+            do {
+                let result = try await Purchases.shared.purchase(package: package)
+                if result.userCancelled { return .cancelled }
+                apply(result.customerInfo)
+                return .purchased
+            } catch {
+                if (error as? ErrorCode) == .purchaseCancelledError { return .cancelled }
+                return .failed(Self.errorCode(error))
+            }
+        }
+
+        #if DEBUG
+        return await purchaseWithStoreKit(offer.plan)
+        #else
+        return .failed("not_configured")
+        #endif
+    }
+
+    #if DEBUG
+    private func purchaseWithStoreKit(_ plan: Plan) async -> PurchaseOutcome {
+        // Ürün henüz yüklenmediyse bir kez daha dene (scheme StoreKit dosyası).
+        if storeKitProducts[plan.productID] == nil {
+            _ = await refreshFromStoreKit()
+        }
+
+        // StoreKit Configuration bağlı değilse (ör. simctl) örnek tekliflerle
+        // satın alma akışı yine tamamlanabilsin — gerçek sheet olmadan premium.
+        guard let product = storeKitProducts[plan.productID] else {
+            entitlementActive = true
+            renewalDate = Calendar.current.date(byAdding: .day, value: 7, to: .now)
+            NotificationService.scheduleChanged()
             return .purchased
+        }
+
+        do {
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                let transaction = try Self.verified(verification)
+                await transaction.finish()
+                await syncStoreKitEntitlements()
+                return .purchased
+            case .userCancelled:
+                return .cancelled
+            case .pending:
+                return .cancelled
+            @unknown default:
+                return .failed("unknown")
+            }
         } catch {
-            if (error as? ErrorCode) == .purchaseCancelledError { return .cancelled }
             return .failed(Self.errorCode(error))
         }
     }
+    #endif
 
     private static func errorCode(_ error: Error) -> String {
         if let code = error as? ErrorCode { return "rc_\(code.rawValue)" }
@@ -400,14 +589,27 @@ final class SubscriptionStore {
     /// paywall'da kalıcı bir buton — gerçek abonenin tek çıkış yolu.
     @discardableResult
     func restore() async -> Bool {
-        guard Purchases.isConfigured else { return false }
         guard !isRestoring else { return false }
 
         isRestoring = true
         defer { isRestoring = false }
 
-        guard let info = try? await Purchases.shared.restorePurchases() else { return false }
-        apply(info)
-        return isPremium
+        if Purchases.isConfigured {
+            guard let info = try? await Purchases.shared.restorePurchases() else { return false }
+            apply(info)
+            return isPremium
+        }
+
+        #if DEBUG
+        do {
+            try await AppStore.sync()
+            await syncStoreKitEntitlements()
+            return isPremium
+        } catch {
+            return false
+        }
+        #else
+        return false
+        #endif
     }
 }

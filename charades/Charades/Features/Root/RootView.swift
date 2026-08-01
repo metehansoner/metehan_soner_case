@@ -4,11 +4,11 @@ import SwiftUI
 
 /// Navigasyon kabuğu — 02-ekran-akisi.md §5.
 ///
-/// Tek `NavigationStack`, `TabView` yok. Deste Detayı, Ayarlar ve paywall
-/// sheet olarak sunuluyor ve path'e girmiyor. Oyun akışı da path'e **push
-/// edilmiyor**: `LiveGame` oluştuğunda `NavigationStack`in tamamının yerine
-/// `GameFlowView` render ediliyor (P4), böylece oyun sırasında geri butonu ve
-/// swipe-back olmuyor.
+/// Tek `NavigationStack`, `TabView` yok. Deste Detayı ve Ayarlar sheet olarak
+/// sunuluyor; paywall §03 §2'ye göre tam ekran (`fullScreenCover`). Oyun
+/// akışı path'e **push edilmiyor**: `LiveGame` oluştuğunda `NavigationStack`in
+/// tamamının yerine `GameFlowView` render ediliyor (P4), böylece oyun sırasında
+/// geri butonu ve swipe-back olmuyor.
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
@@ -51,8 +51,8 @@ struct RootView: View {
         // edilmiyor.
         .sheet(isPresented: isShowingSetup) { setupSheet }
         // §03 §1: onboarding ana ekranın **üstünde**, arkası bulanık değil.
-        // Paywall `onDismiss`te açılıyor: iki sheet aynı anda sunulamıyor ve
-        // aynı tick'te kapatıp açmak paywall'ı sessizce yutuyor.
+        // Paywall `onDismiss`te açılıyor: sheet kapanmadan fullScreenCover
+        // aynı tick'te açılırsa sessizce yutuluyor.
         .sheet(isPresented: $isShowingOnboarding, onDismiss: offerOnboardingPaywall) {
             OnboardingSheet { isShowingOnboarding = false }
                 .environment(LocalizationManager.shared)
@@ -281,7 +281,7 @@ struct RootView: View {
             .environment(settings)
             .environment(subscriptions)
         }
-        .sheet(item: $router.paywall) { context in
+        .fullScreenCover(item: $router.paywall) { context in
             paywall(for: context)
         }
         // §09 §9: modal paywall oturum kotası dolduğunda kilitli içerik dokunuşu
@@ -292,7 +292,7 @@ struct RootView: View {
     }
 
     /// §06 §1 satır 12: premium ise sistem abonelik sayfası, değilse paywall.
-    /// Paywall bir sheet ve ayarlar da öyle; ikisi aynı anda sunulamadığı için
+    /// Paywall tam ekran, ayarlar sheet; ikisi aynı anda sunulamadığı için
     /// istek işaretlenip ayarlar kapandıktan sonra açılıyor.
     private func manageSubscription() {
         guard subscriptions.isPremium else {
@@ -328,10 +328,8 @@ struct RootView: View {
     }
 
     private func paywall(for context: PaywallContext) -> some View {
+        // §03 §2 varyant A: "tam ekran". Sheet detent'i afiş duvarını kesiyordu.
         PaywallView(context: context, variant: router.paywallVariant) { router.paywall = nil }
-            .presentationDetents([.large])
-            .presentationCornerRadius(28)
-            .presentationBackground(.clear)
             .environment(LocalizationManager.shared)
             .environment(AppSettingsStore.shared)
             .environment(SubscriptionStore.shared)

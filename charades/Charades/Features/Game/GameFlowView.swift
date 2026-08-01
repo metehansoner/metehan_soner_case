@@ -151,14 +151,12 @@ struct GameFlowView: View {
                 .localizedLayout()
             }
         }
-        .sheet(isPresented: $showsFullPaywall) {
+        .fullScreenCover(isPresented: $showsFullPaywall) {
             PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
-                .presentationDetents([.large])
-                .presentationCornerRadius(28)
-                .presentationBackground(.clear)
                 .environment(LocalizationManager.shared)
                 .environment(AppSettingsStore.shared)
                 .environment(SubscriptionStore.shared)
+                .localizedLayout()
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
