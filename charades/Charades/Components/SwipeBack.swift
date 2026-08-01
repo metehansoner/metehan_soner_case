@@ -13,14 +13,37 @@ extension View {
 private struct SwipeBackModifier: ViewModifier {
     let action: () -> Void
 
+    /// §06 §2: Arapça'da geri hareketi ekranın sağ kenarından sola doğru.
+    @Environment(\.layoutDirection) private var layoutDirection
+
+    /// Sağ kenarın nerede olduğu ekran genişliğinden okunuyor; `GeometryReader`
+    /// içeriği sarmalayamaz (açgözlü yerleşimi ekranları bozar), o yüzden
+    /// arka planda ölçülüyor.
+    @State private var trailingEdge: CGFloat = 0
+
     func body(content: Content) -> some View {
-        content.simultaneousGesture(
-            DragGesture(minimumDistance: 24, coordinateSpace: .global)
-                .onEnded { value in
-                    guard value.startLocation.x <= 44 else { return }
-                    guard value.translation.width > 70, abs(value.translation.height) < 80 else { return }
-                    action()
+        content
+            .background {
+                GeometryReader { geometry in
+                    let maxX = geometry.frame(in: .global).maxX
+                    Color.clear
+                        .onAppear { trailingEdge = maxX }
+                        .onChange(of: maxX) { _, new in trailingEdge = new }
                 }
-        )
+            }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 24, coordinateSpace: .global)
+                    .onEnded { value in
+                        guard abs(value.translation.height) < 80 else { return }
+                        if layoutDirection == .rightToLeft {
+                            guard value.startLocation.x >= trailingEdge - 44,
+                                  value.translation.width < -70 else { return }
+                        } else {
+                            guard value.startLocation.x <= 44,
+                                  value.translation.width > 70 else { return }
+                        }
+                        action()
+                    }
+            )
     }
 }

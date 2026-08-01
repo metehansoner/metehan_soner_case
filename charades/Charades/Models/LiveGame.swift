@@ -41,9 +41,10 @@ final class LiveGame {
     struct Answer: Identifiable, Equatable {
         let card: Card
         var isCorrect: Bool
-        /// Tur başından itibaren saniye. §04 §4.1'de replay zaman çizelgesi
-        /// işaretleri bu damgadan üretiliyor; kayıt P15'te gelse de damga
-        /// şimdiden tutuluyor, sonradan eklenemez.
+        /// Tur başından itibaren saniye. Replay zaman çizelgesi bu damgayı
+        /// **kullanmıyor**: §09 §9 gereği oradaki referans video saati ve
+        /// duraklatmada ikisi ayrışıyor. Damganın oyun tarafındaki karşılığı
+        /// burada duruyor, kaydın karşılığı `ReplayRecorder` içinde.
         let offset: TimeInterval
 
         var id: String { card.k }
@@ -68,6 +69,9 @@ final class LiveGame {
     enum Exit: Equatable {
         case home
         case teamRematch
+        /// §04 §4.3 giriş noktası 3: jenerikteki `ARŞİVE GİT`. Kaydın var
+        /// olduğunu tam ilgili olduğu anda öğreniyor.
+        case archive
     }
 
     // MARK: Kurulum (tur boyunca sabit)
@@ -99,6 +103,17 @@ final class LiveGame {
     private(set) var answers: [Answer] = []
     private(set) var flash: Flash?
     private(set) var pauseReason: PauseReason = .user
+
+    /// §02 ekran 17: `REPLAY'İ İZLE` yalnızca o turda kayıt alındıysa görünüyor.
+    /// Tur sonunda dosya kapandıktan sonra doluyor, yeni tur başlarken boşalıyor.
+    private(set) var reel: ReplayReel?
+
+    /// §04 §4.3: jenerikteki `ARŞİVE GİT` yalnızca bu maçtan en az bir makara
+    /// kaldıysa görünüyor — boş bir arşive gönderen bağlantı kırık bir bağlantı.
+    private(set) var matchHasReels = false
+
+    /// §04 §4.1: landscape oyun ekranında önizleme yok, sadece kırmızı nokta.
+    var isRecording: Bool { ReplayRecorder.shared.isRecording }
 
     /// Geri sayımda gösterilen rakam.
     private(set) var countdownValue = 3
@@ -162,6 +177,10 @@ final class LiveGame {
     private var flashTask: Task<Void, Never>?
     private var roundStartedAt: Date?
     private var lastWarningSecond: Int?
+
+    /// §04 §4.3: her maç bir film, her tur bir sahne. Tekil turlarda film tek
+    /// sahnelik oluyor; kimlik yine de veriliyor ki arşiv tek kural işletsin.
+    private let matchID = UUID().uuidString
 
     private let onExit: (Exit) -> Void
 
@@ -228,11 +247,21 @@ final class LiveGame {
     }
 
     /// §04 §3: geri sayım teknik hazırlığı gizleyen ekran — motion baseline'ı,
-    /// kelime havuzu ve (P15'te) replay kaydı burada hazırlanıyor.
-    func beginCountdown() {
+    /// kelime havuzu ve replay kaydı burada hazırlanıyor.
+    ///
+    /// Duraklat sonrası `DEVAM ET` de buraya düşüyor (§09 §2) ama o yol yeni bir
+    /// kayıt açmıyor: bir tur bir dosya. `resuming` ayrımı olmadan her duraklat
+    /// arşive ikinci bir sahne bırakıyordu.
+    func beginCountdown(resuming: Bool = false) {
         phase = .countdown
         countdownValue = 3
         flash = nil
+
+        if resuming {
+            ReplayRecorder.shared.resumeAfterPause()
+        } else {
+            ReplayRecorder.shared.start(replayContext)
+        }
 
         if answerInput == .tilt {
             MotionService.shared.beginCalibration()
@@ -247,9 +276,11 @@ final class LiveGame {
                 startPlaying()
             } else {
                 Haptics.countdownTick()
+                SoundService.countdownTick()
             }
         }
         Haptics.countdownTick()
+        SoundService.countdownTick()
     }
 
     /// §08 §0: geri sayım atlanamayan tek animasyon. Dokunmak kalan süreyi
@@ -277,12 +308,28 @@ final class LiveGame {
 
         advanceCard()
         startRoundClock()
+        // §04 §5: oyun ekranı boyunca çok kısık döngü.
+        SoundService.startProjector()
+        logRoundStart()
 
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-AutoScore") {
             startDebugAutoScore()
         }
         #endif
+    }
+
+    private func logRoundStart() {
+        Analytics.roundStart(mode: mode.id, deckIDs: deckIDs, duration: duration)
+
+        // §03 §2: günlük bedava destenin ölçümü `daily_free_deck_play` ile o
+        // günden gelen `paywall_view` oranı. Premium kullanıcıda deste zaten
+        // açık, oynaması rotasyonun işe yaradığını göstermiyor.
+        if !SubscriptionStore.shared.isPremium,
+           let daily = DeckCatalog.dailyFreeDeckID(),
+           deckIDs.contains(daily) {
+            Analytics.dailyFreeDeckPlay(deckID: daily)
+        }
     }
 
     #if DEBUG
@@ -314,11 +361,19 @@ final class LiveGame {
 
         let offset = roundStartedAt.map { Date().timeIntervalSince($0) } ?? 0
         answers.append(Answer(card: card, isCorrect: isCorrect, offset: offset))
+        // §04 §4.1: zaman çizelgesi işaretleri ve altyazı bu damgadan üretiliyor.
+        ReplayRecorder.shared.mark(
+            word: card.text(for: LocalizationManager.shared.localeCode),
+            key: card.k,
+            isCorrect: isCorrect
+        )
 
         if isCorrect {
             Haptics.answerCorrect()
+            SoundService.correct()
         } else {
             Haptics.answerSkip()
+            SoundService.skip()
         }
 
         flash = isCorrect ? .correct : .skip
@@ -348,7 +403,12 @@ final class LiveGame {
         // §09 §4'ün kapsamadığı tek durum: havuz baştan boş. İçeriği üretilmemiş
         // deste seçildiyse tur başlamadan biter; PlayBar bunu zaten engelliyor
         // (§10 §4) ama tek savunma hattı bırakmıyoruz.
-        if currentCard == nil { endRound() }
+        if currentCard == nil {
+            endRound()
+            return
+        }
+        // §01 §4.1: kelime geçişi haptik almıyor; ses alıyor (§04 §5).
+        SoundService.cardSlide()
     }
 
     // MARK: Süre
@@ -375,6 +435,7 @@ final class LiveGame {
             if seconds <= 10, seconds > 0, lastWarningSecond != seconds {
                 lastWarningSecond = seconds
                 Haptics.warningTick()
+                SoundService.warningTick()
             }
         }
 
@@ -386,6 +447,7 @@ final class LiveGame {
 
         if remainingExact <= 0 {
             Haptics.timeUp()
+            SoundService.timeUp()
             endRound()
         }
     }
@@ -407,6 +469,16 @@ final class LiveGame {
         flashTask?.cancel()
         stopTicker()
         MotionService.shared.suspend()
+        SoundService.stopProjector()
+
+        // §09 §2: sistem kesintisinde dosya o ana kadarki içerikle kapanıyor ve
+        // kayıt "kısmi" işaretleniyor. Kullanıcı duraklatmasında ise kayıt
+        // duruyor ama dosya açık kalıyor — tur bir bütün.
+        if reason == .system {
+            ReplayRecorder.shared.interrupt()
+        } else {
+            ReplayRecorder.shared.pauseForUser()
+        }
     }
 
     /// §09 §2: otomatik devam **yok** — kullanıcının telefonu alnına geri koyacak
@@ -414,7 +486,7 @@ final class LiveGame {
     /// kalibrasyon** başlatıyor.
     func resume() {
         guard phase == .paused else { return }
-        beginCountdown()
+        beginCountdown(resuming: true)
     }
 
     /// §09 §3: o turun skoru sıfırlanır, kelime havuzu tazelenir.
@@ -427,6 +499,9 @@ final class LiveGame {
         stopTicker()
         flashTask?.cancel()
         flash = nil
+        // §09 §3: yarım tur videosu arşivi kirletiyor.
+        ReplayRecorder.shared.discard()
+        reel = nil
         answers.removeAll()
         pool.reset()
         didWrapPool = false
@@ -449,6 +524,10 @@ final class LiveGame {
         leave(.teamRematch)
     }
 
+    func openArchive() {
+        leave(.archive)
+    }
+
     private func leave(_ route: Exit) {
         commitRapidScore()
         teardown()
@@ -465,9 +544,28 @@ final class LiveGame {
         rapidRecordToBeat = AppSettingsStore.shared.rapidHighScore
         // Tur bitti: sensör kapanıyor, skor ekranı dokunmatik.
         MotionService.shared.stop()
+        SoundService.stopProjector()
+        // §04 §4.1: kayıt tur bitiminde duruyor. Dosyanın kapanması bir anlık
+        // iş; `REPLAY'İ İZLE` butonu kapandıktan sonra beliriyor.
+        Task { [weak self] in
+            let reel = await ReplayRecorder.shared.finish()
+            self?.reel = reel
+            if reel != nil { self?.matchHasReels = true }
+        }
         // §02 ekran 15 / §08 §0: tilt hatırlatıcısı ve öğretici bezemeler
         // 3. turdan sonra kısalıyor — sayaç burada ilerliyor.
         AppSettingsStore.shared.recordRoundPlayed()
+
+        // §03 §5: skor tur sonu ekranındaki düzeltmelerle hâlâ değişebiliyor
+        // ama event burada kalıyor — düzeltmeyi beklemek `round_complete`i
+        // ekrandan çıkışa bağlar ve uygulama kapatılan turlar hiç sayılmaz.
+        Analytics.roundComplete(
+            mode: mode.id,
+            deckIDs: deckIDs,
+            duration: duration,
+            correct: correctAnswers.count,
+            skipped: skippedAnswers.count
+        )
 
         #if DEBUG
         // Simülatörde dokunuş yok; maçın tamamını (perde arası, ani ölüm,
@@ -487,6 +585,25 @@ final class LiveGame {
         guard let index = answers.firstIndex(where: { $0.id == id }) else { return }
         answers[index].isCorrect.toggle()
         Haptics.selection()
+
+        // §09 §9: düzeltme replay damgasını da çevirmek zorunda; yoksa kullanıcı
+        // "doğru" diye düzelttiği kelimeyi replay'de kırmızı `PAS` damgasıyla
+        // görüyor.
+        guard var reel else { return }
+        if let markIndex = reel.marks.firstIndex(where: { $0.key == id }) {
+            reel.marks[markIndex].isCorrect = answers[index].isCorrect
+            self.reel = reel
+            ReplayStore.save(reel)
+        }
+    }
+
+    /// §04 §4.4: oynatıcıdaki `Sil`. Dosya da metadata da gidiyor, tur sonu
+    /// ekranındaki buton kayboluyor.
+    func deleteReel() {
+        guard let reel else { return }
+        Analytics.replayDelete()
+        ReplayStore.delete(id: reel.id)
+        self.reel = nil
     }
 
     /// §02 §3: uygulamanın en yüksek frekanslı aksiyonu.
@@ -530,6 +647,7 @@ final class LiveGame {
             teardown()
             phase = .matchEnd
             Haptics.matchWon()
+            SoundService.winFanfare()
         }
     }
 
@@ -574,6 +692,24 @@ final class LiveGame {
         stopTicker()
         flashTask?.cancel()
         MotionService.shared.stop()
+        SoundService.stopProjector()
+        // §09 §3: tur ortasında çıkıldıysa kayıt siliniyor. Tur sonundan
+        // çıkışta ortada kayıt kalmıyor, çağrı boşa gidiyor.
+        ReplayRecorder.shared.discard()
+    }
+
+    /// Kaydın künyesi. Deste adı çözülmemiş kimliklerle gidiyor: arşiv başka bir
+    /// dilde açılabiliyor (§06 §2).
+    private var replayContext: ReplayRecorder.Context {
+        ReplayRecorder.Context(
+            matchID: matchID,
+            sceneIndex: (match?.results.count ?? 0) + 1,
+            deckIDs: customCards.isEmpty ? deckIDs : [],
+            modeID: mode.id,
+            // Sırayı `TeamMatch` tutuyor ve ilk tur da dahil hep dolu; perde
+            // arasından okunduğunda ilk sahne adsız kalıyordu.
+            playerName: match?.currentPlayer
+        )
     }
 
     // MARK: Ticker

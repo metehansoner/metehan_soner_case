@@ -195,6 +195,17 @@ enum DeckCatalog {
     /// İlk sürümde yer alan 92 deste, reel sırasında.
     static let v1: [DeckDef] = all.filter(\.isInV1).sorted { $0.reelNumber < $1.reelNumber }
 
+    /// §05 §2: her deste ~130 kart.
+    static let advertisedCardsPerDeck = 130
+
+    /// Paywall ve onboarding'deki "12.000 kart" iddiası (§03 §2 madde 3).
+    /// Katalogdan hesaplanıyor: katalog büyüdüğünde metin kendiliğinden
+    /// güncelleniyor, sabit bir sayı geride kalmıyor.
+    static var advertisedCardCount: Int {
+        let total = v1.count * advertisedCardsPerDeck
+        return (total + 500) / 1000 * 1000
+    }
+
     static func decks(in section: DeckSection, v1Only: Bool = true) -> [DeckDef] {
         (v1Only ? v1 : all).filter { $0.section == section }
     }
@@ -216,8 +227,36 @@ enum DeckCatalog {
     /// **sonuna** eklenir, araya girmez.
     static let dailyFreePoolOrder: [String] = v1.filter { !$0.isFree }.map(\.id)
 
+    /// §09 §11 madde 3: editoryal incelemesi bitmemiş desteler rotasyondan muaf.
+    /// "Bugün Bekarlığa Veda bedava" bildirimi çocuğuyla oynayan kullanıcıya
+    /// gitmemeli. Havuzdan çıkıyorlar ama **bölen sabit kalıyor**.
+    nonisolated(unsafe) static var dailyFreeExcludedIDs: Set<String> = []
+
+    /// §09 §8: gün ortada dönerse açılan deste, o desteyle oynanan oturum
+    /// bitene kadar açık kalıyor. `LiveGame` başlarken sabitliyor, tur bitince
+    /// bırakıyor — masada 6 kişi varken destenin kilitlenmesi yapılabilecek en
+    /// kötü şey.
+    nonisolated(unsafe) private(set) static var pinnedDailyFreeDeckID: String?
+
+    static func pinDailyFreeDeck(on date: Date = .now) {
+        pinnedDailyFreeDeckID = dailyFreeDeckID(on: date)
+    }
+
+    static func unpinDailyFreeDeck() {
+        pinnedDailyFreeDeckID = nil
+    }
+
     /// §09 §8: gün dönümü cihazın yerel gece yarısı.
-    static func dailyFreeDeckID(on date: Date = .now, calendar: Calendar = .current) -> String? {
+    ///
+    /// `ignoringPin`, ileri tarihleri soranlar için: § `06` §3 bildirimleri
+    /// önümüzdeki iki hafta için önceden planlıyor ve o hesap, bugünün turu
+    /// için sabitlenmiş desteden etkilenmemeli.
+    static func dailyFreeDeckID(
+        on date: Date = .now,
+        calendar: Calendar = .current,
+        ignoringPin: Bool = false
+    ) -> String? {
+        if !ignoringPin, let pinnedDailyFreeDeckID { return pinnedDailyFreeDeckID }
         let pool = dailyFreePoolOrder
         guard !pool.isEmpty,
               let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date)
@@ -228,6 +267,7 @@ enum DeckCatalog {
         let start = dayOfYear % pool.count
         for step in 0..<pool.count {
             let candidate = pool[(start + step) % pool.count]
+            guard !dailyFreeExcludedIDs.contains(candidate) else { continue }
             if byID[candidate]?.isInSeason(on: date) == true { return candidate }
         }
         return nil

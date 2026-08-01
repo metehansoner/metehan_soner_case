@@ -71,6 +71,10 @@ enum Haptics {
     // MARK: Satın alma ve maç sonu
 
     static func purchaseSucceeded() { notify(.success) }
+
+    /// §04 §4.3: kayıt Photos'a kopyalandı. Kopyalama saniyeler sürebiliyor,
+    /// bitişin görsel bildirimi tek başına gözden kaçıyor.
+    static func exportSucceeded() { notify(.success) }
     static func purchaseFailed() { notify(.error) }
     static func matchWon() { notify(.success) }
 

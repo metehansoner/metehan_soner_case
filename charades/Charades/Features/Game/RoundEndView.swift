@@ -12,6 +12,8 @@ struct RoundEndView: View {
     /// Takım Savaşı'nda birincil buton turu değil **sırayı** ilerletiyor.
     var onNextTeam: () -> Void = {}
     var onExit: () -> Void
+    /// §02 ekran 18: oynatıcı tur sonundan da arşivden de aynı ekrana açılıyor.
+    var onWatchReplay: () -> Void = {}
 
     @Environment(LocalizationManager.self) private var l10n
     @State private var isConfirmingQuit = false
@@ -242,8 +244,8 @@ struct RoundEndView: View {
 
     /// §02 ekran 17: alt butonlar moda göre değişiyor. Klasik'te sıradaki takım
     /// diye bir şey yok. `REPLAY'İ İZLE` yalnızca o turda kayıt alındıysa
-    /// görünüyor — kayıt P15'te geliyor, o yüzden şimdilik hiç yok ve boş kalan
-    /// yeri diğer ikisi paylaşıyor.
+    /// görünüyor (ayarlarda replay kapalıysa buton hiç yok, boş kalan yeri
+    /// diğerleri paylaşıyor).
     private var footer: some View {
         HStack(spacing: 11) {
             if match == nil {
@@ -253,6 +255,7 @@ struct RoundEndView: View {
                     isPrimary: false,
                     action: onExit
                 )
+                replayButton
                 TicketButton(
                     title: l10n.t("round.playAgain"),
                     systemImage: "play.fill",
@@ -267,6 +270,7 @@ struct RoundEndView: View {
                 ) {
                     isConfirmingQuit = true
                 }
+                replayButton
                 TicketButton(
                     title: l10n.t(game.isFinalTeamTurn ? "teams.finishMatch" : "teams.nextTeam"),
                     systemImage: "play.fill",
@@ -278,6 +282,22 @@ struct RoundEndView: View {
         .padding(.horizontal, 26)
         .padding(.top, 10)
         .padding(.bottom, 16)
+        .animation(.easeOut(duration: 0.2), value: game.reel != nil)
+    }
+
+    /// Dosya tur bitiminde kapanıyor; buton kayıt gerçekten oynatılabilir
+    /// olduğunda beliriyor. Kesintiye uğrayıp kullanılamayan kayıt buton da
+    /// göstermiyor — açılmayan bir buton, olmayan butondan kötü.
+    @ViewBuilder
+    private var replayButton: some View {
+        if game.reel != nil {
+            TicketButton(
+                title: l10n.t("round.watchReplay"),
+                systemImage: "film",
+                isPrimary: false,
+                action: onWatchReplay
+            )
+        }
     }
 }
 

@@ -3,9 +3,14 @@ import SwiftUI
 /// Film şeridi ilerleme göstergesi — 01-tasarim-sistemi.md §6.2:
 /// sayfa sayısına göre uzuyor, o yüzden statik görsel değil komponent.
 /// Onboarding ve Nasıl Oynanır slider'ının sayfa göstergesi bu.
+///
+/// Üç durum var (§02 §4): geçilen kareler altın, o anki amber, gelecekler soluk.
+/// `onSelect` verilirse geçilmiş kareler tıklanabiliyor (§03 §1) — ileri atlamak
+/// yok, yalnızca okunmuş bir adıma dönüş.
 struct FilmStripProgress: View {
     var total: Int
     var current: Int
+    var onSelect: ((Int) -> Void)?
 
     var body: some View {
         VStack(spacing: 3) {
@@ -13,22 +18,48 @@ struct FilmStripProgress: View {
 
             HStack(spacing: 4) {
                 ForEach(0..<max(total, 1), id: \.self) { index in
-                    let isCurrent = index == current
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(isCurrent ? AppColors.accentAmber : AppColors.surfaceCardRaised)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 2).strokeBorder(
-                                AppColors.accentGold.opacity(isCurrent ? 0.9 : 0.3),
-                                lineWidth: 1
-                            )
-                        }
-                        .frame(height: 7)
+                    frame(at: index)
                 }
             }
 
             SprocketStrip(holeSize: 3.5, spacing: 5, holeColor: AppColors.accentGold.opacity(0.45))
         }
         .animation(.easeOut(duration: 0.2), value: current)
+    }
+
+    @ViewBuilder
+    private func frame(at index: Int) -> some View {
+        let isCurrent = index == current
+        let isDone = index < current
+        let cell = RoundedRectangle(cornerRadius: 2)
+            .fill(fill(isCurrent: isCurrent, isDone: isDone))
+            .overlay {
+                RoundedRectangle(cornerRadius: 2).strokeBorder(
+                    AppColors.accentGold.opacity(isCurrent ? 0.9 : 0.3),
+                    lineWidth: 1
+                )
+            }
+            .frame(height: 7)
+
+        if let onSelect, isDone {
+            Button { onSelect(index) } label: {
+                cell
+                    // 7pt'lik kareye dokunmak imkânsız. Padding hedefi büyütüyor,
+                    // negatifi yerleşimi geri alıyor — şerit görsel olarak aynı.
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
+                    .padding(.vertical, -14)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(verbatim: "\(index + 1)"))
+        } else {
+            cell
+        }
+    }
+
+    private func fill(isCurrent: Bool, isDone: Bool) -> Color {
+        if isCurrent { return AppColors.accentAmber }
+        return isDone ? AppColors.accentGold : AppColors.surfaceCardRaised
     }
 }
 

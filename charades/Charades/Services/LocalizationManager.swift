@@ -163,9 +163,14 @@ final class LocalizationManager {
 
     func setLanguage(_ code: String) {
         guard Self.supportedLocales.contains(code), code != localeCode else { return }
+        Analytics.languageChange(from: localeCode, to: code)
         localeCode = code
         AppSettingsStore.shared.languageOverride = code
         load(locale: code)
+        // §06 §3 ikinci tuzak: planlanmış bildirimin metni planlama anında
+        // sabitleniyor. Yeniden planlanmazsa Türkçe uygulamada İngilizce
+        // bildirim düşüyor.
+        NotificationService.scheduleChanged()
     }
 
     /// Yeni eklenmiş bir anahtar bir dilde henüz çevrilmemişse ham anahtar adı

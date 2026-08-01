@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftData
 import SwiftUI
 
@@ -10,10 +11,16 @@ import SwiftUI
 /// swipe-back olmuyor.
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
+    @Environment(AppSettingsStore.self) private var settings
+    @Environment(SubscriptionStore.self) private var subscriptions
 
     @State private var router = AppRouter()
     @State private var setup = GameSetup()
     @State private var liveGame: LiveGame?
+    @State private var isShowingOnboarding = false
+    @State private var wantsPaywallAfterSettings = false
+    @State private var wantsArchiveAfterSettings = false
 
     var body: some View {
         @Bindable var router = router
@@ -33,6 +40,78 @@ struct RootView: View {
         // menüsünden de açılıyor ve oyun sırasında `NavigationStack` render
         // edilmiyor.
         .sheet(isPresented: isShowingSetup) { setupSheet }
+        // §03 §1: onboarding ana ekranın **üstünde**, arkası bulanık değil.
+        // Paywall `onDismiss`te açılıyor: iki sheet aynı anda sunulamıyor ve
+        // aynı tick'te kapatıp açmak paywall'ı sessizce yutuyor.
+        .sheet(isPresented: $isShowingOnboarding, onDismiss: offerOnboardingPaywall) {
+            OnboardingSheet { isShowingOnboarding = false }
+                .environment(LocalizationManager.shared)
+                .environment(settings)
+                .localizedLayout()
+        }
+        .task(id: promptGateID) { await offerHomePrompt() }
+    }
+
+    // MARK: İlk açılış ve istemler — §03 §1, §09 §9
+
+    /// §02 §3 akış diyagramı: Onboarding tamamlandı mı? Hayır → 3 adım sheet →
+    /// paywall → ana ekran.
+    private func startFirstRunIfNeeded() {
+        guard !settings.onboardingDone, !isShowingOnboarding else { return }
+        isShowingOnboarding = true
+    }
+
+    /// §03 §1: onboarding'i paywall izliyor. `ATLA` görünür olduğu için bu
+    /// "hard" bir duvar değil; premium kullanıcıda (geri yükleme sonrası) ve
+    /// paywall bir kez görülmüşse hiç açılmıyor.
+    private func offerOnboardingPaywall() {
+        guard settings.onboardingDone, !settings.paywallSeen, !subscriptions.isPremium else { return }
+        router.openPaywall(.vipButton, variant: .onboarding)
+    }
+
+    /// Ana ekranda oyun, sheet ve paywall yokken. İstem yalnızca burada çıkıyor.
+    private var isHomeIdle: Bool {
+        settings.onboardingDone
+            && !isShowingOnboarding
+            && liveGame == nil
+            && router.paywall == nil
+            && router.setupStep == nil
+    }
+
+    private var canOfferRateUs: Bool {
+        !settings.rateUsPrompted && settings.roundsPlayed >= 1
+    }
+
+    /// Durum değişince sayaç sıfırdan başlasın diye `task(id:)` anahtarı: oyuna
+    /// girip çıkan kullanıcıda 8 saniye yeniden işliyor.
+    private var promptGateID: String {
+        "\(isHomeIdle)-\(settings.notificationPrompted)-\(canOfferRateUs)"
+    }
+
+    /// §09 §9: oturum başına tek istem, öncelik sırası bildirim izni > puanla
+    /// bizi. Sekiz saniye § `03` §1'den — izin, kullanıcı yerleştikten sonra
+    /// soruluyor; açılışta sorulan izin reddediliyor.
+    private func offerHomePrompt() async {
+        let prompts = PromptCoordinator.shared
+        guard isHomeIdle, prompts.shown == nil else { return }
+        guard !settings.notificationPrompted || canOfferRateUs else { return }
+
+        try? await Task.sleep(for: .seconds(8))
+        guard !Task.isCancelled, isHomeIdle, prompts.shown == nil else { return }
+
+        if !settings.notificationPrompted {
+            let status = await NotificationService.authorizationStatus()
+            settings.markNotificationPrompted()
+            if status == .notDetermined, prompts.claim(.notifications) {
+                await NotificationService.requestAuthorization()
+                return
+            }
+            // İzin zaten karara bağlanmış: kota harcanmadı, sıradaki isteme geçiliyor.
+        }
+
+        guard canOfferRateUs, prompts.claim(.rateUs) else { return }
+        settings.markRateUsPrompted()
+        requestReview()
     }
 
     // MARK: Kurulum zinciri — §02 §3
@@ -140,6 +219,9 @@ struct RootView: View {
                     #if DEBUG
                     applyDebugArguments()
                     #endif
+                    startFirstRunIfNeeded()
+                    // §04 §5: splash yok; soğuk açılışta perde + ampul bir kez.
+                    SoundService.curtainOpen()
                 }
         }
         .tint(AppColors.accentAmber)
@@ -159,14 +241,72 @@ struct RootView: View {
                 .environment(router)
                 .environment(setup)
         }
-        .sheet(isPresented: $router.isShowingSettings) {
-            PlaceholderSheet(titleKey: "settings.title", packageNote: "P12")
-                .environment(LocalizationManager.shared)
+        .sheet(isPresented: $router.isShowingSettings, onDismiss: resumeAfterSettings) {
+            SettingsSheet(
+                onClose: { router.isShowingSettings = false },
+                onManageSubscription: manageSubscription,
+                onUpgrade: requestPaywallAfterSettings,
+                onOpenArchive: requestArchiveAfterSettings
+            )
+            .environment(LocalizationManager.shared)
+            .environment(settings)
+            .environment(subscriptions)
         }
         .sheet(item: $router.paywall) { context in
-            PlaceholderSheet(titleKey: "paywall.title", packageNote: "P10", detail: context.id)
-                .environment(LocalizationManager.shared)
+            paywall(for: context)
         }
+        // §09 §9: modal paywall oturum kotası dolduğunda kilitli içerik dokunuşu
+        // yalnızca bu kısa uyarıyı gösteriyor.
+        .overlay(alignment: .bottom) {
+            LockedNotice(text: router.lockedNotice) { router.lockedNotice = nil }
+        }
+    }
+
+    /// §06 §1 satır 12: premium ise sistem abonelik sayfası, değilse paywall.
+    /// Paywall bir sheet ve ayarlar da öyle; ikisi aynı anda sunulamadığı için
+    /// istek işaretlenip ayarlar kapandıktan sonra açılıyor.
+    private func manageSubscription() {
+        guard subscriptions.isPremium else {
+            requestPaywallAfterSettings()
+            return
+        }
+        subscriptions.openManageSubscriptions()
+    }
+
+    private func requestPaywallAfterSettings() {
+        wantsPaywallAfterSettings = true
+        router.isShowingSettings = false
+    }
+
+    /// Arşiv bir sheet değil, path'e giren tam ekran (§02 §5). Sheet açıkken
+    /// push edilirse ekran arkada açılıyor ve kullanıcı ayarları kapatana kadar
+    /// görmüyor.
+    private func requestArchiveAfterSettings() {
+        wantsArchiveAfterSettings = true
+        router.isShowingSettings = false
+    }
+
+    private func resumeAfterSettings() {
+        if wantsPaywallAfterSettings {
+            wantsPaywallAfterSettings = false
+            router.openPaywall(.vipButton)
+        }
+        if wantsArchiveAfterSettings {
+            wantsArchiveAfterSettings = false
+            Analytics.replayArchiveOpen(entry: .settings, reelCount: ReplayStore.reelCount())
+            router.push(.archive)
+        }
+    }
+
+    private func paywall(for context: PaywallContext) -> some View {
+        PaywallView(context: context, variant: router.paywallVariant) { router.paywall = nil }
+            .presentationDetents([.large])
+            .presentationCornerRadius(28)
+            .presentationBackground(.clear)
+            .environment(LocalizationManager.shared)
+            .environment(AppSettingsStore.shared)
+            .environment(SubscriptionStore.shared)
+            .localizedLayout()
     }
 
     /// §02 §5: oyun path'e push edilmiyor, `NavigationStack`in yerine geçiyor.
@@ -174,6 +314,8 @@ struct RootView: View {
         let settings = AppSettingsStore.shared
         // §02 §6: motion sensörü yoksa / çalışmıyorsa otomatik dokunmatik.
         let canTilt = MotionService.shared.isAvailable && !settings.prefersTouchAnswers
+        // §09 §8: tur boyunca gün dönse bile bugünün bedava destesi kilitlenmiyor.
+        DeckCatalog.pinDailyFreeDeck()
         liveGame = LiveGame(
             mode: setup.mode,
             deckIDs: setup.selectedDeckIDs,
@@ -215,10 +357,20 @@ struct RootView: View {
 
     private func endGame(_ exit: LiveGame.Exit) {
         liveGame = nil
+        DeckCatalog.unpinDailyFreeDeck()
         OrientationLock.shared.lockPortrait()
         // §02 §3: maç sonundaki `TEKRAR OYNA` Takım Kurulumu'na dönüyor —
         // o ekran path'te duruyor, dokunmak yeni maça yetiyor.
-        if exit == .home { router.popToRoot() }
+        switch exit {
+        case .home:
+            router.popToRoot()
+        case .teamRematch:
+            break
+        case .archive:
+            Analytics.replayArchiveOpen(entry: .matchEnd, reelCount: ReplayStore.reelCount())
+            router.popToRoot()
+            router.push(.archive)
+        }
     }
 
     #if DEBUG
@@ -254,6 +406,34 @@ struct RootView: View {
     ///   -CustomEditor          örnek destenin editörü
     ///   -Basket [n]            sepete n örnek kelime koyar (varsayılan 7)
     ///   -WordBasket            Kelime Sepeti ekranı
+    ///   -Paywall [bağlam]      modal paywall (`deck:party`, `mode:mix`, `mix`,
+    ///                          `customDeck`; varsayılan `vip`)
+    ///   -PaywallOnboarding     varyant A (afiş duvarı + ATLA)
+    ///   -MockOffers            RevenueCat anahtarı olmadan örnek plan kartları
+    ///   -SoftPaywall           tur sonu yumuşak önerisini yeniden tetikler
+    ///   -Lapse                 abonelik düşmüş gibi davranır (bilgi kartı)
+    ///   -FirstRun [adım]       onboarding'i baştan açar (1–3, varsayılan 1)
+    ///   -TouchOnboarding       adım 3'ün dokunmatik hâli
+    ///   -TiltOnboarding        adım 3'ün eğme hâli (simülatörde sensör yok)
+    ///   -HomePrompts           ana ekrandaki 8 sn'lik istem zincirini tetikler
+    ///   -Settings              Ayarlar sheet'i
+    ///   -SeedArchive [n]       kaydedilmiş bir makarayı n kez çoğaltır
+    ///   -Archive               Film Arşivi ekranı
+    ///   -ArchivePlayer         arşivden en yeni makaranın oynatıcısı
+    ///   -MuteSound             ses paketini kapatır (ayar anahtarı)
+    ///   -Lang <kod>            dili değiştirir (taşma ve RTL denetimi)
+    private func debugPaywallContext(_ raw: String?) -> PaywallContext {
+        guard let raw, !raw.hasPrefix("-") else { return .vipButton }
+        let parts = raw.split(separator: ":", maxSplits: 1)
+        switch (parts.first, parts.count) {
+        case ("deck", 2): return .lockedDeck(String(parts[1]))
+        case ("mode", 2): return .lockedMode(String(parts[1]))
+        case ("mix", 1): return .mix
+        case ("customDeck", 1): return .customDeck
+        default: return .vipButton
+        }
+    }
+
     private func applyDebugArguments() {
         let arguments = ProcessInfo.processInfo.arguments
 
@@ -278,8 +458,57 @@ struct RootView: View {
         // kapatma bayrağı gerekiyor, yoksa sonraki açılışlar premium kalıyor.
         if arguments.contains("-Premium") {
             SubscriptionStore.shared.debugPremiumOverride = true
+            SubscriptionStore.shared.debugSetRenewalDate()
         } else if arguments.contains("-Free") {
             SubscriptionStore.shared.debugPremiumOverride = false
+        }
+        if arguments.contains("-MockOffers") {
+            SubscriptionStore.shared.debugLoadSampleOffers()
+        }
+        if arguments.contains("-TouchOnboarding") {
+            AppSettingsStore.shared.prefersTouchAnswers = true
+        }
+        // Taşma ve RTL denetimi için: Almanca/Fince en uzun, Arapça sağdan sola.
+        if let code = value(after: "-Lang") {
+            LocalizationManager.shared.setLanguage(code)
+        }
+        if arguments.contains("-MuteSound") {
+            AppSettingsStore.shared.soundEnabled = false
+        }
+        // Simülatörde kamera yok; `-FakeReplay` sentetik motoru açıyor ve bu
+        // bayrak da ayarı + izin akışının sonucunu hazır getiriyor (§ `04` §4.1).
+        if arguments.contains("-FakeReplay") {
+            SubscriptionStore.shared.debugPremiumOverride = true
+            AppSettingsStore.shared.replayEnabled = true
+        }
+        // Arşiv ancak kayıt varken bir şey gösteriyor; tohumlama gerçek bir
+        // makarayı çoğaltıyor (§ `04` §4.3 gruplama ve kota denetimi için).
+        if arguments.contains("-SeedArchive") {
+            let count = value(after: "-SeedArchive").flatMap(Int.init) ?? 5
+            ReplayStore.debugSeed(copies: count)
+        }
+        if arguments.contains("-NotificationsOff") {
+            AppSettingsStore.shared.notificationsEnabled = false
+        } else if arguments.contains("-NotificationsOn") {
+            AppSettingsStore.shared.notificationsEnabled = true
+        }
+        if arguments.contains("-HomePrompts") {
+            AppSettingsStore.shared.debugReplayHomePrompts()
+            PromptCoordinator.shared.debugReset()
+        }
+        if arguments.contains("-FirstRun") {
+            AppSettingsStore.shared.debugResetFirstRun()
+            PromptCoordinator.shared.debugReset()
+            let step = value(after: "-FirstRun").flatMap(Int.init) ?? 1
+            AppSettingsStore.shared.storeOnboardingStep(max(step, 1) - 1)
+        }
+        if arguments.contains("-Lapse") {
+            SubscriptionStore.shared.debugSimulateLapse()
+            AppSettingsStore.shared.debugResetOneTimePrompts()
+        }
+        if arguments.contains("-SoftPaywall") {
+            SubscriptionStore.shared.debugPremiumOverride = false
+            AppSettingsStore.shared.debugResetOneTimePrompts()
         }
         if let raw = value(after: "-Mode"), let mode = GameMode(rawValue: raw) {
             setup.mode = mode
@@ -327,7 +556,19 @@ struct RootView: View {
             setup.basketWords = Array(Self.debugWords.prefix(count))
         }
 
-        if arguments.contains("-CustomList") {
+        if arguments.contains("-Settings") {
+            router.isShowingSettings = true
+        } else if arguments.contains("-Archive") {
+            router.push(.archive)
+        } else if arguments.contains("-ArchivePlayer") {
+            guard let id = ReplayStore.allReels().first?.id else { return }
+            router.push(.archive)
+            router.push(.archivePlayer(id))
+        } else if arguments.contains("-PaywallOnboarding") {
+            router.openPaywall(.vipButton, variant: .onboarding)
+        } else if arguments.contains("-Paywall") {
+            router.openPaywall(debugPaywallContext(value(after: "-Paywall")))
+        } else if arguments.contains("-CustomList") {
             router.push(.customList)
         } else if arguments.contains("-CustomEditor") {
             let deck = (try? modelContext.fetch(FetchDescriptor<CustomDeck>()))?.first
@@ -374,9 +615,9 @@ struct RootView: View {
         case .teamSetup:
             TeamSetupView { router.setupStep = .preset }
         case .archive:
-            PlaceholderScreen(titleKey: "archive.title", packageNote: "P15")
+            ArchiveView()
         case .archivePlayer(let id):
-            PlaceholderScreen(titleKey: "archive.player.title", packageNote: "P15", detail: id)
+            ArchivePlayerScreen(reelID: id)
         }
     }
 }

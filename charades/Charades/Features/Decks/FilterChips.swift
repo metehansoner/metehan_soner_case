@@ -34,6 +34,8 @@ struct FilterChipRow: View {
                             title: l10n.t(filter.titleKey),
                             isActive: filter == selection
                         ) {
+                            guard filter != selection else { return }
+                            Haptics.selection()
                             selection = filter
                             withAnimation(.easeOut(duration: 0.22)) {
                                 proxy.scrollTo(filter.id, anchor: .center)

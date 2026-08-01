@@ -26,8 +26,9 @@ struct GrainOverlay: View {
     }
 
     /// §7: Reduce Transparency ve "Film efektleri" kapalıyken devre dışı.
+    /// Isınmada da kapanıyor — §08 §5, kapının tamamı `FilmEffects` içinde.
     private var isEnabled: Bool {
-        !reduceTransparency && AppSettingsStore.shared.filmEffectsEnabled
+        !reduceTransparency && FilmEffects.decorationsEnabled
     }
 }
 
@@ -53,8 +54,8 @@ struct ScanlineOverlay: View {
     }
 
     private var isEnabled: Bool {
-        let settings = AppSettingsStore.shared
-        return !reduceTransparency && settings.filmEffectsEnabled && settings.scanlinesEnabled
+        !reduceTransparency && FilmEffects.decorationsEnabled
+            && AppSettingsStore.shared.scanlinesEnabled
     }
 }
 

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  07-teknik-mimari.md §7: Privacy Manifest zorunlu.
+
+  Beyan edilen veri, App Store beslenme etiketiyle birebir aynı olmak zorunda:
+  "Uygulamaya Bağlı Veri: Satın Alma, Kullanım Verisi, Tanımlayıcılar". Manifest
+  ile etiketin ayrışması App Review'da en sık geri dönen kalemlerden biri.
+
+  Reklam yok, ATT yok, IDFA yok (§07 §4: GoogleMobileAds linklenmiyor) — bu
+  yüzden NSPrivacyTracking false ve izlenen alan adı listesi boş.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<!-- §03 §5 funnel event'leri. Kullanıcı kimliğine bağlı, çünkü aynı
+		     UUID Firebase setUserID ve RevenueCat appUserID olarak kullanılıyor. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+
+		<!-- RevenueCat abonelik durumu ve paywall satın alma event'leri. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePurchaseHistory</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+
+		<!-- §06 §1 satır 15: cihazda üretilen UUID. Hesap yok, e-posta yok;
+		     destek için kullanıcının kopyalayabildiği tek kimlik bu. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- AppSettingsStore: ayarlar, sayaçlar ve prompt bayrakları. Yalnızca
+		     bu uygulamanın kendi verisi, App Group yok. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+
+		<!-- §09 §4: 200 MB altında replay kaydı başlamıyor; DeviceConditions
+		     boş alanı bunun için soruyor. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>85F4.1</string>
+			</array>
+		</dict>
+
+		<!-- Kayıt künyesi ve arşiv kotası dosya boyutlarını ve tarihlerini
+		     okuyor; veri cihazdan çıkmıyor. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

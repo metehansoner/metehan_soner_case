@@ -21,6 +21,9 @@ struct MarqueeSwitch: View {
                     Capsule().strokeBorder(AppColors.accentGold.opacity(0.35), lineWidth: 1)
                 }
         }
+        // Dar bir satırda sıkışırsa `KAPALI` iki satıra bölünüyor; anahtar
+        // doğal genişliğini isteyip yeri başlıktan alsın.
+        .fixedSize()
         .contentShape(Capsule())
         .onTapGesture {
             withAnimation(.snappy(duration: 0.18)) { isOn.toggle() }
@@ -33,6 +36,7 @@ struct MarqueeSwitch: View {
     private func segment(_ title: String, isActive: Bool) -> some View {
         Text(title)
             .textStyle(.sectionLabel)
+            .lineLimit(1)
             .foregroundStyle(isActive ? AppColors.textOnAmber : AppColors.textMuted)
             .padding(.vertical, 7)
             .padding(.horizontal, 14)

@@ -216,6 +216,7 @@ struct WordListSection: View {
         draft = ""
         // Klavye açık kalıyor; odak kaybı 20 kelimelik girişi bitiriyor.
         isEntryFocused = true
+        Analytics.customDeckWordAdd(wordCount: result.addedCount)
     }
 
     private func merge(_ text: String) {
@@ -226,6 +227,7 @@ struct WordListSection: View {
         }
         Haptics.selection()
         words = result.words
+        Analytics.customDeckWordAdd(wordCount: result.addedCount)
     }
 
     private func remove(at index: Int) {

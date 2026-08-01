@@ -67,6 +67,7 @@ struct CustomDeckListView: View {
                 router.pop()
             } label: {
                 Image(systemName: "chevron.left")
+                    .flipsForRightToLeftLayoutDirection(true)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(AppColors.accentGold)
                     .frame(width: 44, height: 44)
@@ -131,6 +132,7 @@ struct CustomDeckListView: View {
                 // §09 §9: Premium'dan düşen kullanıcının fazla desteleri
                 // silinmiyor, salt-okunur kalıyor — kendi emeğini kaybetmiyor.
                 Image(systemName: isReadOnly ? "lock.fill" : "chevron.right")
+                    .flipsForRightToLeftLayoutDirection(true)
                     .font(.system(size: isReadOnly ? 12 : 14, weight: .semibold))
                     .foregroundStyle(isReadOnly ? AppColors.stateLocked : AppColors.accentGold)
             }
@@ -228,6 +230,7 @@ struct CustomDeckListView: View {
             sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
         )
         modelContext.insert(deck)
+        Analytics.customDeckCreate(wordCount: 0)
         router.push(.customEditor(deck.uuid.uuidString))
     }
 

@@ -12,7 +12,10 @@ import SwiftUI
 /// etmiyor, bu geçiş rahatsız etmiyor.
 struct MatchEndView: View {
     let match: TeamMatch
+    /// §04 §4.3: jenerikteki `ARŞİVE GİT` yalnızca o maçtan kayıt kaldıysa.
+    var hasReels: Bool
     var onRematch: () -> Void
+    var onArchive: () -> Void
     var onExit: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -228,6 +231,7 @@ struct MatchEndView: View {
             onExit()
         } label: {
             Image(systemName: "chevron.left")
+                    .flipsForRightToLeftLayoutDirection(true)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(AppColors.accentGold)
                 .frame(width: 42, height: 42)
@@ -243,6 +247,42 @@ struct MatchEndView: View {
 
     /// § `08` B1: `TEKRAR OYNA` ve `PAYLAŞ` sabit duruyor, jeneriği beklemiyor.
     private var actionBar: some View {
+        VStack(spacing: 10) {
+            if hasReels {
+                Button {
+                    Haptics.secondaryButton()
+                    onArchive()
+                } label: {
+                    HStack(spacing: 7) {
+                        Image(systemName: "film.stack")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(l10n.t("teams.goToArchive"))
+                            .font(AppFont.display(12, weight: .semibold))
+                            .tracking(1.6)
+                            .textCase(.uppercase)
+                    }
+                    .foregroundStyle(AppColors.accentGold)
+                }
+                .buttonStyle(.plain)
+            }
+
+            buttonRow
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 14)
+        .padding(.bottom, 30)
+        .background {
+            LinearGradient(
+                colors: [.clear, AppColors.bgFilmBlack.opacity(0.97)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+
+    private var buttonRow: some View {
         HStack(spacing: 10) {
             ShareLink(item: shareText) {
                 Text(l10n.t("teams.share"))
@@ -281,18 +321,6 @@ struct MatchEndView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 14)
-        .padding(.bottom, 30)
-        .background {
-            LinearGradient(
-                colors: [.clear, AppColors.bgFilmBlack.opacity(0.97)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        }
-        .frame(maxHeight: .infinity, alignment: .bottom)
     }
 
     private var shareText: String {

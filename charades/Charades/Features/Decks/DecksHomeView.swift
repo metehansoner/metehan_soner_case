@@ -28,8 +28,15 @@ struct DecksHomeView: View {
 
     @State private var filter: DeckFilter = .all
     @State private var collapseProgress: Double = 0
+    /// §04 §4.3 giriş noktası 1: header'daki makara koşullu, sayısı da rozette.
+    @State private var archiveCount = 0
 
     private var dailyFreeDeckID: String? { DeckCatalog.dailyFreeDeckID() }
+
+    /// §09 §7: yalnızca aboneliği düşen kullanıcıya ve yalnızca bir kez.
+    private var showsLapseNotice: Bool {
+        subscriptions.didLapse && !settings.lapseNoticeShown
+    }
 
     var body: some View {
         ZStack {
@@ -39,12 +46,25 @@ struct DecksHomeView: View {
                 VStack(spacing: 0) {
                     scrollOffsetReader
 
+                    if showsLapseNotice {
+                        LapseNoticeCard(
+                            onSeeTicket: {
+                                settings.markLapseNoticeShown()
+                                router.openPaywall(.vipButton)
+                            },
+                            onDismiss: settings.markLapseNoticeShown
+                        )
+                        .padding(.horizontal, 18)
+                        .padding(.top, 15)
+                    }
+
                     if !subscriptions.isPremium,
                        let dailyFreeDeckID,
                        let deck = DeckCatalog.deck(dailyFreeDeckID) {
                         NowShowingStrip(deck: deck) { router.openDeckDetail(deck.id) }
                             .padding(.horizontal, 18)
                             .padding(.top, 15)
+                            .onAppear { Analytics.dailyFreeDeckView(deckID: deck.id) }
                     }
 
                     sectionRow
@@ -69,6 +89,14 @@ struct DecksHomeView: View {
             .safeAreaInset(edge: .top, spacing: 0) { topBar }
             .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
         }
+        // Premium'a dönülünce bilgi kartı sıfırlanıyor; ikinci bir düşüşte
+        // kullanıcı yine bir kez bilgilendiriliyor.
+        .onChange(of: subscriptions.isPremium, initial: true) { _, isPremium in
+            settings.syncLapseNotice(isPremium: isPremium)
+        }
+        // Arşivden dönüşte kayıt silinmiş olabiliyor; tur sonrası dönüşte de
+        // yeni bir makara eklenmiş oluyor.
+        .task(id: router.path) { archiveCount = ReplayStore.reelCount() }
     }
 
     // MARK: Üst sabit alan
@@ -77,12 +105,14 @@ struct DecksHomeView: View {
         VStack(spacing: 12) {
             HeaderBar(
                 collapseProgress: collapseProgress,
-                // §1: makara ikonu arşivde kayıt varken görünüyor. Replay
-                // deposu P15'te geliyor; o zamana kadar arşiv boş.
-                archiveCount: 0,
+                // §1: makara ikonu **yalnızca** arşivde kayıt varken görünüyor.
+                archiveCount: archiveCount,
                 isPremium: subscriptions.isPremium,
                 onTapVIP: { router.openPaywall(.vipButton) },
-                onTapArchive: { router.push(.archive) },
+                onTapArchive: {
+                    Analytics.replayArchiveOpen(entry: .header, reelCount: archiveCount)
+                    router.push(.archive)
+                },
                 onTapSettings: { router.isShowingSettings = true }
             )
 
@@ -147,6 +177,7 @@ struct DecksHomeView: View {
             // önceki turdan taşınan mod burada düşüyor.
             setup.mode = .classic
         }
+        Haptics.primaryButton()
         onPlay()
     }
 
@@ -280,7 +311,9 @@ struct DecksHomeView: View {
 
                 ForEach(savedMixes) { mix in
                     Button { playSavedMix(mix) } label: {
-                        SavedMixCard(mix: mix)
+                        // §09 §7: abonelik düşerse kayıtlı karışımlar silinmiyor,
+                        // görünür ve salt-okunur kalıyor.
+                        SavedMixCard(mix: mix, isLocked: !subscriptions.isPremium)
                     }
                     .buttonStyle(.plain)
                     .contextMenu {
@@ -317,6 +350,7 @@ struct DecksHomeView: View {
                 // kullanıcı için detay sheet'inden geçmek gereksiz adım.
                 .onLongPressGesture(minimumDuration: 0.3) {
                     guard !isLocked else {
+                        Haptics.lockedWall()
                         router.openPaywall(.lockedDeck(deck.id))
                         return
                     }
@@ -325,7 +359,13 @@ struct DecksHomeView: View {
                         Haptics.stepperLimit()
                         return
                     }
+                    let wasSelected = setup.isSelected(deck.id)
                     setup.toggle(deck.id)
+                    if wasSelected {
+                        Haptics.deckDeselected()
+                    } else {
+                        Haptics.deckSelected()
+                    }
                 }
             }
         }

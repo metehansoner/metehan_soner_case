@@ -61,7 +61,9 @@ private struct BulbTimeline<Content: View>: View {
     let content: (@escaping (Int) -> Double) -> Content
 
     var body: some View {
-        if reduceMotion {
+        // §08 §5: nabız süregelen bir efekt — ısınmada sabit yanık kalıyor.
+        // Ampuller sönmüyor, yalnızca 12 fps'lik çizim duruyor.
+        if reduceMotion || ThermalMonitor.shared.isThrottled {
             content { _ in 1 }
         } else {
             TimelineView(.animation(minimumInterval: 1.0 / 12)) { context in

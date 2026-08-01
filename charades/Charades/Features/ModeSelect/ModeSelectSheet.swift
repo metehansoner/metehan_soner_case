@@ -49,6 +49,7 @@ struct ModeSelectSheet: View {
             return
         }
         Haptics.modeSelected()
+        Analytics.modeSelect(mode: mode.id)
         onSelect(mode)
     }
 }

@@ -120,7 +120,11 @@ struct HeaderCircleIconButton: View {
     var action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            Haptics.secondaryButton()
+            SoundService.buttonTap()
+            action()
+        } label: {
             Image(systemName: systemName)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(tint)

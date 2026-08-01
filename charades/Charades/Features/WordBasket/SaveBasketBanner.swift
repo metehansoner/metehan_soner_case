@@ -124,6 +124,9 @@ struct SaveBasketBanner: View {
                 sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
             )
         )
+        // Sepetten kaydedilen deste boş doğmuyor; `word_count` burada gerçek
+        // bir dağılım veriyor.
+        Analytics.customDeckCreate(wordCount: words.count)
         // Taslak artık kalıcı bir deste; bir sonraki açılışta sepete geri
         // dolmasın, kullanıcı aynı kelimeleri iki kayıtta görmesin.
         AppSettingsStore.shared.clearBasketDraft()

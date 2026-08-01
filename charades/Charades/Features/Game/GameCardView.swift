@@ -164,6 +164,12 @@ struct GameCardView: View {
 
             Spacer()
 
+            if game.isRecording {
+                recordingDot
+            }
+
+            Spacer()
+
             VStack(alignment: .trailing, spacing: 0) {
                 Text("\(game.score)")
                     .font(AppFont.display(30, weight: .bold))
@@ -177,6 +183,28 @@ struct GameCardView: View {
         }
         .padding(.top, 16)
         .accessibilityElement(children: .combine)
+    }
+
+    /// §04 §4.1: kamera önizlemesi **gösterilmiyor** — kullanıcı kendini
+    /// görmesin, doğal davransın. Kaydın sürdüğünü söyleyen tek işaret bu nokta;
+    /// nabzı yavaş, kelimeyle yarışmıyor.
+    private var recordingDot: some View {
+        TimelineView(.periodic(from: .now, by: 0.9)) { context in
+            let isOn = Int(context.date.timeIntervalSinceReferenceDate / 0.9) % 2 == 0
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(AppColors.stateSkip)
+                    .frame(width: 7, height: 7)
+                    .opacity(isOn ? 1 : 0.3)
+                Text(l10n.t("replay.rec"))
+                    .font(AppFont.ui(8.5, weight: .bold))
+                    .tracking(1.6)
+                    .foregroundStyle(Color(hex: 0x8A7860))
+            }
+            .animation(.easeInOut(duration: 0.35), value: isOn)
+        }
+        .padding(.top, 7)
+        .accessibilityHidden(true)
     }
 
     // MARK: Alt şerit

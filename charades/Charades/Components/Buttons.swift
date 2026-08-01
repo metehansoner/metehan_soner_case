@@ -49,6 +49,12 @@ struct MarqueeButtonStyle: ButtonStyle {
                 }
                 .scaleEffect(isPressed ? 0.97 : 1)
                 .animation(.easeOut(duration: 0.12), value: isPressed)
+                // §4.1: prepare parmak *inince*; ses de aynı anda (tap-down).
+                .onChange(of: isPressed) { _, pressed in
+                    guard pressed else { return }
+                    Haptics.prepareImpact()
+                    SoundService.buttonTap()
+                }
         }
     }
 }
@@ -84,6 +90,11 @@ struct SecondaryButtonStyle: ButtonStyle {
                         }
                 }
                 .opacity(configuration.isPressed && isEnabled ? 0.82 : 1)
+                .onChange(of: configuration.isPressed) { _, pressed in
+                    guard pressed, isEnabled else { return }
+                    Haptics.prepareImpact()
+                    SoundService.buttonTap()
+                }
         }
     }
 }

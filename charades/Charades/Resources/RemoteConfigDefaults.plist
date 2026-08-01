@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  09-kesinti-ve-sinir-durumlari.md §8: her Remote Config anahtarının bundle
+  içinde varsayılan değeri var. İlk açılışta ağ yoksa RC cache'i boş kalıyor;
+  SEZON chip'i ve "ŞİMDİ VİZYONDA" şeridi bu dosyayla doğru davranıyor. RC
+  yalnızca üzerine yazıyor.
+
+  Firebase sarmalayıcısı P16'da geliyor; o zaman bu dosya
+  setDefaults(fromPlist:) ile aynen kullanılacak.
+-->
+<plist version="1.0">
+<dict>
+	<!-- Sezon pencereleri. Biçim: g|h = miladi|hicri "AA-GG/AA-GG",
+	     e = paskalyaya göre "-öncesi/+sonrası", çoklu pencere "|" ile. -->
+	<key>season_windows</key>
+	<dict>
+		<key>newYear</key>
+		<string>g:12-15/01-05</string>
+		<key>christmas</key>
+		<string>g:12-01/12-31</string>
+		<key>christmasMovies</key>
+		<string>g:12-01/12-31</string>
+		<key>valentine</key>
+		<string>g:02-07/02-20</string>
+		<key>halloween</key>
+		<string>g:10-20/10-31</string>
+		<key>ramadan</key>
+		<string>h:09-01/09-30</string>
+		<key>eid</key>
+		<string>h:10-01/10-04|h:12-10/12-14</string>
+		<key>summer</key>
+		<string>g:06-01/08-31</string>
+		<key>backToSchool</key>
+		<string>g:08-25/09-20</string>
+		<key>easter</key>
+		<string>e:-10/+2</string>
+	</dict>
+
+	<!-- §05 §2: POPÜLER chip'i. Kullanım verisi geldikçe RC güncelliyor. -->
+	<key>popular_decks</key>
+	<array>
+		<string>party</string>
+		<string>jobs</string>
+		<string>movieClassics</string>
+		<string>emotions</string>
+		<string>animalsAct</string>
+		<string>superheroes</string>
+		<string>kidsFirst</string>
+		<string>chores</string>
+		<string>food</string>
+		<string>nineties</string>
+		<string>animals</string>
+		<string>household</string>
+	</array>
+
+	<!--
+	  §09 §11 madde 3: editoryal incelemesi biten desteler günlük rotasyona
+	  girer. Boş liste "katalogdaki sabit sıranın tamamı" demek; muaf tutulan
+	  desteler aşağıda.
+	-->
+	<key>daily_free_pool_exclusions</key>
+	<array>
+		<string>dares</string>
+		<string>partyFlirty</string>
+		<string>bachelor</string>
+	</array>
+
+	<!-- §03 §1: sosyal kanıt ekranı v1'de kapalı, ilk ~500 gerçek yorumdan
+	     sonra bu bayrakla açılıyor. -->
+	<key>social_proof_enabled</key>
+	<false/>
+</dict>
+</plist>

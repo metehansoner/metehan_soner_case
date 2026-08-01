@@ -61,6 +61,11 @@ struct HowToPlaySlider: View {
                 .padding(.bottom, 10)
             }
             .animation(.easeOut(duration: 0.2), value: index)
+            // §03 §5: hangi sayfada bırakıldığı, slider'ın uzunluğunu
+            // tartışmanın tek verisi.
+            .onChange(of: index, initial: true) { _, page in
+                Analytics.howToView(mode: mode.id, page: page + 1)
+            }
             #if DEBUG
             .onAppear {
                 if let page = debugStartPage { index = min(page, pages.count) - 1 }
@@ -178,7 +183,7 @@ private struct HowToPlayPage: View {
     private var artwork: some View {
         switch page.artwork {
         case .posterFan:
-            PosterFanArt()
+            PosterFan()
         case .illustration(let name):
             Image(name)
                 .resizable()
@@ -190,60 +195,6 @@ private struct HowToPlayPage: View {
 }
 
 // MARK: - Çizilen görseller
-
-/// Sayfa 1: dört afişin yelpazesi. Kapak görselleri zaten bundle'da (§ `05` §8),
-/// ayrı bir illüstrasyon üretmek yerine gerçek kapaklar diziliyor — kullanıcı
-/// bir sonraki ekranda tam olarak bunları görecek.
-private struct PosterFanArt: View {
-    private static let deckIDs = ["party", "movieClassics", "animals", "nineties"]
-    private static let angles: [Double] = [-16, -5.5, 5.5, 16]
-
-    var body: some View {
-        ZStack {
-            ForEach(Array(Self.deckIDs.enumerated()), id: \.offset) { index, id in
-                let angle = Self.angles[index]
-                MiniPoster(deckID: id)
-                    .rotationEffect(.degrees(angle), anchor: .bottom)
-                    .offset(x: CGFloat(angle) * 3.6, y: abs(angle) * 0.9)
-                    .zIndex(Double(index))
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 12)
-    }
-}
-
-private struct MiniPoster: View {
-    let deckID: String
-
-    var body: some View {
-        let section = DeckCatalog.deck(deckID)?.section ?? .party
-        RoundedRectangle(cornerRadius: 8)
-            .fill(AppColors.surfaceCard)
-            .overlay {
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(AppColors.accentGold.opacity(0.55), lineWidth: 1)
-            }
-            .overlay {
-                VStack(spacing: 0) {
-                    ZStack {
-                        section.artGradient
-                        Image("deck_\(deckID)")
-                            .resizable()
-                            .scaledToFit()
-                            .padding(7)
-                    }
-                    Rectangle()
-                        .fill(AppColors.surfaceTicket)
-                        .frame(height: 11)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .padding(3)
-            }
-            .frame(width: 74, height: 99)
-            .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
-    }
-}
 
 /// Sayfa 4: telefonun öne (DOĞRU, yeşil) ve arkaya (PAS, kırmızı) eğilişi.
 /// Ok yönleri dilden ve RTL'den bağımsız (§ `04` §2, § `06` §2).

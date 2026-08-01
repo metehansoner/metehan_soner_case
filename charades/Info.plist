@@ -30,6 +30,34 @@
 		<string>sv</string>
 		<string>uk</string>
 	</array>
+	<!--
+	  §03 §5: funnel event'leri elle yazılıyor. Otomatik `screen_view`
+	  raporlaması tek `UIHostingController` üzerinden çalışan bir SwiftUI
+	  uygulamasında her ekranı aynı isimle sayıyor: gürültü üretip funnel'ı
+	  okunmaz hâle getiriyor.
+	-->
+	<key>FirebaseAutomaticScreenReportingEnabled</key>
+	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Charades records your funny moments during a round so you can watch them later in the Film Archive. Recordings stay on your device and are never uploaded.</string>
+	<!--
+	  §07 §7: CoreMotion device motion izin istemiyor, bu satır teknik olarak
+	  gerekli değil. Apple'ın Privacy Manifest kategorileri arasında da hareket
+	  yok; beyan edilebileceği tek yer burası. İncelemede "eğme mekaniği neden
+	  var" sorusunu peşinen cevaplıyor.
+	-->
+	<key>NSMotionUsageDescription</key>
+	<string>Charades uses device motion so you can tilt the phone forward or back to mark a word correct or skipped. Motion data stays on your device.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Charades saves the replay you choose to your photo library. It never reads your existing photos.</string>
+	<key>PrivacyURL</key>
+	<string>$(PRIVACY_URL)</string>
+	<key>RevenueCatAPIKey</key>
+	<string>$(REVENUECAT_API_KEY)</string>
+	<key>SupportEmail</key>
+	<string>teaomo.touch@gmail.com</string>
+	<key>TermsURL</key>
+	<string>$(TERMS_URL)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Oswald-SemiBold.ttf</string>

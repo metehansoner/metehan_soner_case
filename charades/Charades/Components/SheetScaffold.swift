@@ -65,6 +65,7 @@ struct SheetScaffold<Content: View>: View {
         }
         .presentationCornerRadius(28)
         .presentationBackground(.clear)
+        .localizedLayout()
     }
 
     private func circleButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {
@@ -73,6 +74,8 @@ struct SheetScaffold<Content: View>: View {
             action()
         } label: {
             Image(systemName: systemImage)
+                // §06 §2: geri oku RTL'de aynalanıyor, kapatma çarpısı simetrik.
+                .flipsForRightToLeftLayoutDirection(true)
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(AppColors.textSecondary)
                 .frame(width: 30, height: 30)
@@ -86,5 +89,17 @@ struct SheetScaffold<Content: View>: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+    }
+}
+
+extension View {
+    /// §06 §2: sheet'ler ayrı bir presentation context'inde açılıyor ve
+    /// `\.locale` ile `\.layoutDirection` mirası içeri taşınmıyor. Yeniden
+    /// verilmezse Arapça'da sheet içeriği soldan sağa kalıyor ve ALL CAPS
+    /// dönüşümü Türkçe'de "i" harfini bozuyor.
+    func localizedLayout() -> some View {
+        let l10n = LocalizationManager.shared
+        return environment(\.locale, Locale(identifier: l10n.localeCode))
+            .environment(\.layoutDirection, l10n.layoutDirection)
     }
 }

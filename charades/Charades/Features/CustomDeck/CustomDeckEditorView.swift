@@ -96,6 +96,7 @@ struct CustomDeckEditorView: View {
                 router.pop()
             } label: {
                 Image(systemName: "chevron.left")
+                    .flipsForRightToLeftLayoutDirection(true)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(AppColors.accentGold)
                     .frame(width: 44, height: 44)
@@ -253,6 +254,7 @@ struct CustomDeckEditorView: View {
         )
         modelContext.insert(deck)
         createdID = deck.uuid
+        Analytics.customDeckCreate(wordCount: 0)
     }
 
     private func discardIfEmpty() {

@@ -7,6 +7,8 @@ import SwiftUI
 /// köşedeki `MIX` etiketi.
 struct SavedMixCard: View {
     let mix: SavedMix
+    /// §09 §7: abonelik düşünce karışım silinmiyor, salt-okunur oluyor.
+    var isLocked = false
 
     @Environment(LocalizationManager.self) private var l10n
 
@@ -29,8 +31,12 @@ struct SavedMixCard: View {
 
                 titleStrip
             }
+            .saturation(isLocked ? 0.3 : 1)
+            .brightness(isLocked ? -0.18 : 0)
 
             tag
+
+            if isLocked { lockLayer }
         }
         .padding(5)
         .background {
@@ -45,7 +51,7 @@ struct SavedMixCard: View {
         .shadow(color: .black.opacity(0.55), radius: 8, y: 5)
         .aspectRatio(3.0 / 4.0, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(l10n.t("featured.mix")), \(mix.name), \(deckSummary)")
+        .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
     }
 
@@ -69,9 +75,33 @@ struct SavedMixCard: View {
         .padding(.vertical, 7)
     }
 
+    private var accessibilityLabel: String {
+        var parts = [l10n.t("featured.mix"), mix.name, deckSummary]
+        if isLocked { parts.append(l10n.t("deck.locked.stamp")) }
+        return parts.joined(separator: ", ")
+    }
+
     private var deckSummary: String {
         let decks = l10n.t("mix.deckCount", count: mix.deckIDs.count)
         return "\(decks) · \(l10n.t("playbar.cards", count: mix.cardCount))"
+    }
+
+    /// Kilitli deste kartıyla aynı dil (§01 §4): asma kilit + `BİLET GEREKLİ`.
+    private var lockLayer: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(AppColors.accentGold)
+
+            Text(l10n.t("deck.locked.stamp"))
+                .font(AppFont.ui(7, weight: .bold))
+                .tracking(1.1)
+                .textCase(.uppercase)
+                .foregroundStyle(AppColors.accentGold)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColors.bgFilmBlack.opacity(0.4))
+        .allowsHitTesting(false)
     }
 
     private var tag: some View {

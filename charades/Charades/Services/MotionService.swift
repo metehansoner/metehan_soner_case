@@ -49,6 +49,7 @@ final class MotionService {
 
     private var lastTriggerTime: TimeInterval = 0
     private var onTrigger: ((TiltDetector.Trigger) -> Void)?
+    private var didPrepareForApproach = false
 
     private init() {}
 
@@ -91,6 +92,7 @@ final class MotionService {
         }
         self.onTrigger = onTrigger
         lastTriggerTime = now
+        didPrepareForApproach = false
         detector.reset(at: now)
         state = .running
     }
@@ -163,6 +165,19 @@ final class MotionService {
         }
 
         angle = detector.smoothedAngle
+
+        // §4.1: DOĞRU/PAS için generator eşiğe yaklaşırken hazırlanıyor —
+        // aksi hâlde ilk haptik ~100 ms gecikiyor.
+        let magnitude = abs(angle)
+        if magnitude > detector.thresholds.release * 0.7,
+           magnitude < detector.thresholds.arm {
+            if !didPrepareForApproach {
+                Haptics.prepareNotification()
+                didPrepareForApproach = true
+            }
+        } else if magnitude < detector.thresholds.release {
+            didPrepareForApproach = false
+        }
 
         // §2: tur içi yeniden kalibrasyon — kullanıcı telefonu kaydırdığında
         // oyunun kilitlenmesini engelliyor.
