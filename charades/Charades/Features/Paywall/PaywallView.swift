@@ -58,6 +58,9 @@ struct PaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // `paywall.html` `.content { inset:0 }` — afiş duvarı status bar
+            // altına kadar uzar; aksi hâlde kayma üstte sert kesilir.
+            .ignoresSafeArea(edges: .top)
 
             escapeControl
         }
@@ -383,7 +386,8 @@ struct PaywallView: View {
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, 16)
-            .safeAreaPadding(.top, 4)
+            // `paywall.html` `.skip { top: 60px }` — status bar altına yapışmasın.
+            .safeAreaPadding(.top, 26)
 
         case .modal:
             Button(action: dismiss) {
