@@ -193,7 +193,7 @@ def check_json_files(seeds: list[dict], strict: bool, r: Report) -> None:
 def check_assets(seeds: list[dict], r: Report) -> None:
     """#4 — deck_{id} imageset. Kapaklar `DeckCovers/` altında (P3)."""
     covers_dir = ASSETS / "DeckCovers"
-    teslim = ROOT.parent / "Charedes_document" / "teslim" / "deste-kapaklari"
+    teslim = ROOT / "Charedes_document" / "teslim" / "deste-kapaklari"
     covers = {p.stem for p in teslim.glob("deck_*.png")} if teslim.exists() else set()
     for s in seeds:
         if not s["v1"]:

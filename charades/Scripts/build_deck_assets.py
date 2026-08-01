@@ -31,7 +31,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT.parent / "Charedes_document" / "teslim" / "deste-kapaklari"
+SOURCE = ROOT / "Charedes_document" / "teslim" / "deste-kapaklari"
 ASSETS = ROOT / "Charades" / "Assets.xcassets" / "DeckCovers"
 
 SIZE = 512

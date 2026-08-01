@@ -26,7 +26,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT.parent / "Charedes_document" / "teslim" / "ekran-gorselleri"
+SOURCE = ROOT / "Charedes_document" / "teslim" / "ekran-gorselleri"
 ASSETS = ROOT / "Charades" / "Assets.xcassets" / "Illustrations"
 
 LONG_EDGE = 1024

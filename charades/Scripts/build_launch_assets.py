@@ -27,7 +27,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
-ICON = ROOT.parent / "Charedes_document" / "teslim" / "app-ikonu" / "ikon-1024.png"
+ICON = ROOT / "Charedes_document" / "teslim" / "app-ikonu" / "ikon-1024.png"
 ASSETS = ROOT / "Charades" / "Assets.xcassets" / "Launch"
 
 # §01 §1 renk jetonları — `AppColors` ile birebir aynı olmak zorunda.
