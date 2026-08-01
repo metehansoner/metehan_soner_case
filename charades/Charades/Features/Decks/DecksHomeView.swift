@@ -184,7 +184,7 @@ struct DecksHomeView: View {
             return
         }
         Haptics.primaryButton()
-        router.setupStep = .preset
+        router.setupStep = .mode
     }
 
     private func openWordBasket() {

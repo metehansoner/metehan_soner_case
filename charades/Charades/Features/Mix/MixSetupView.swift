@@ -7,7 +7,7 @@ import SwiftUI
 /// seçimi değiştiriyor. Burada kullanıcı zaten "birden fazla deste seçiyorum"
 /// bağlamında ve her deste için sheet açıp kapamak akışı öldürüyor.
 struct MixSetupView: View {
-    /// Karışım hazır — kurulum zinciri Tur Ön Ayar'dan devam ediyor (§02 §3).
+    /// Karışım hazır — kurulum sheet'ine (mod + tur ayarı) dönülüyor.
     var onContinue: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n

@@ -147,7 +147,7 @@ struct SettingsDivider: View {
 }
 
 /// İki ya da üç seçenekli kapsül segment (§ `06` §1 satır 3 ve 4).
-/// `RoundPresetSheet`teki zorluk satırının aynısı; orada inline duruyordu.
+/// Kurulum sheet'indeki zorluk satırının aynısı; orada inline duruyordu.
 struct SettingsSegment<Option: Hashable>: View {
     let options: [Option]
     let title: (Option) -> String

@@ -6,7 +6,7 @@ import SwiftUI
 /// **yok** — isim alanı koymak custom deste editörünün akışa taktığı freni geri
 /// getirirdi. Kaydetme tur sonunda soruluyor (`SaveBasketBanner`).
 struct WordBasketView: View {
-    /// Kurulum zinciri Tur Ön Ayar'dan devam ediyor (§02 §3).
+    /// Kurulum sheet'ine (mod + tur ayarı) dönülüyor.
     var onContinue: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n

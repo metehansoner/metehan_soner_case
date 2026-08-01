@@ -2,10 +2,9 @@ import SwiftUI
 
 /// Sheet iskeleti — `ornek-ekranlar.html` `.sheet` / `.grabber` / `.sheet-head`.
 ///
-/// Mod Seçimi, Tur Ön Ayar ve Nasıl Oynanır zincirleme açılıyor (§ `02` §3):
-/// üçü de aynı sheet'in içinde adım değiştiriyor, ayrı ayrı sunulmuyor. Bu
-/// yüzden başlık çubuğu ortak bir iskelet — adım değişince yalnızca içerik
-/// çapraz geçiş yapıyor, sheet yeniden açılmıyor.
+/// Kurulum sheet'i (mod + tur ayarı) ve Nasıl Oynanır aynı sheet iskeletini
+/// paylaşıyor: adım değişince yalnızca içerik geçiş yapıyor, sheet yeniden
+/// açılmıyor.
 struct SheetScaffold<Content: View>: View {
     let title: String
     /// Zincirin ilk adımında yok; sonraki adımlarda sola dönüş.

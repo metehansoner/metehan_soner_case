@@ -1,7 +1,7 @@
 import Observation
 import SwiftUI
 
-/// §02 §5'teki rota listesi. Deste Detayı, Mod Seçimi, Tur Ön Ayar, Ayarlar ve
+/// §02 §5'teki rota listesi. Deste Detayı, kurulum sheet'i, Ayarlar ve
 /// Dil **sheet** olarak sunuluyor, bu yüzden path'e girmiyor.
 ///
 /// `archive` ve `archivePlayer` bilinçli olarak oyun akışının dışında: arşivden
@@ -70,15 +70,15 @@ enum PaywallVariant {
     }
 }
 
-/// Tur kurulumunun sheet zinciri — §02 §3: Mod Seçimi → Tur Ön Ayar →
-/// (ilk kez) Nasıl Oynanır → oyun.
+/// Tur kurulumunun sheet zinciri — Mod + tur ayarı tek adım, ardından (ilk kez)
+/// Nasıl Oynanır → oyun.
 ///
-/// Üç adım **tek bir sheet'in içinde** yer değiştiriyor, üç ayrı sheet olarak
+/// Adımlar **tek bir sheet'in içinde** yer değiştiriyor, ayrı sheet olarak
 /// sunulmuyor: iOS'ta bir sheet'i kapatıp diğerini açmak arada boş ekran ve
-/// zamanlama sorunu üretiyor, kullanıcı da her adımda perdeyi yeniden görüyor.
+/// zamanlama sorunu üretiyor.
 enum SetupStep: Hashable {
+    /// Mod kartları + süre/zorluk + OYNA.
     case mode
-    case preset
     /// `continuesToGame` false ise `?` butonundan açılmış demektir (Deste
     /// Detayı, Duraklat): kapanınca tur başlamıyor.
     case howToPlay(mode: GameMode, continuesToGame: Bool)

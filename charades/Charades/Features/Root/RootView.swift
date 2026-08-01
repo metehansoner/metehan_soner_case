@@ -150,22 +150,18 @@ struct RootView: View {
         )
     }
 
-    /// Üç adım aynı sheet'in içinde yer değiştiriyor; sheet bir kez açılıyor.
+    /// Mod+ayar ve Nasıl Oynanır aynı sheet'in içinde; sheet bir kez açılıyor.
     @ViewBuilder
     private var setupSheet: some View {
         Group {
             switch router.setupStep {
             case .mode:
-                ModeSelectSheet(onSelect: chooseMode, onClose: router.closeSetup)
-                    .presentationDetents([.fraction(0.88)])
-
-            case .preset:
-                RoundPresetSheet(
-                    onBack: { router.setupStep = .mode },
+                ModeSelectSheet(
                     onClose: router.closeSetup,
-                    onPlay: finishPreset
+                    onPlay: finishSetup,
+                    onNeedsSideSetup: openSideSetup
                 )
-                .presentationDetents([.fraction(0.62)])
+                .presentationDetents([.large])
 
             case .howToPlay(let mode, let continuesToGame):
                 HowToPlaySlider(
@@ -191,12 +187,9 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.2), value: router.setupStep)
     }
 
-    private func chooseMode(_ mode: GameMode) {
-        setup.mode = mode
-
-        // §04 §1: `ownWords` deste seçmiyor, kelime kaynağı kullanıcı. Mod
-        // Seçimi'nden gelindiğinde önceden seçilmiş deste **düşüyor** —
-        // kaynak değişti.
+    /// Takım / Kelime Sepeti / Mix kurulumu — sheet kapanır, tam ekran rota açılır.
+    private func openSideSetup(for mode: GameMode) {
+        // §04 §1: `ownWords` deste seçmiyor; önceden seçilmiş deste düşüyor.
         if !mode.needsDeckSelection {
             setup.clearSelection()
             router.closeSetup()
@@ -208,19 +201,14 @@ struct RootView: View {
             router.push(.teamSetup)
             return
         }
-        // Mix kurulumu (2+ deste, karışım önizlemesi) ayrı bir ekran; seçim
-        // zaten Mix'e yetiyorsa oraya uğramaya gerek yok.
-        if mode == .mix, !setup.isMix {
+        if mode == .mix {
             router.closeSetup()
             router.push(.mix)
-            return
         }
-
-        router.setupStep = .preset
     }
 
-    /// §02 §3: Tur Ön Ayar'dan sonra Nasıl Oynanır **ilk kez** araya giriyor.
-    private func finishPreset() {
+    /// OYNA: ilk kez Nasıl Oynanır, değilse doğrudan oyun.
+    private func finishSetup() {
         let settings = AppSettingsStore.shared
         guard settings.hasSeenHowToPlay(setup.mode) else {
             router.setupStep = .howToPlay(mode: setup.mode, continuesToGame: true)
@@ -425,8 +413,8 @@ struct RootView: View {
     ///
     ///   -DeckDetail party      deste detayı sheet'i
     ///   -Mode rapid            oyun modu (varsayılan `classic`)
-    ///   -ModeSelect            Mod Seçimi sheet'i
-    ///   -Preset party          Tur Ön Ayar sheet'i, verilen deste seçili
+    ///   -ModeSelect            Mod + tur ayarı sheet'i
+    ///   -Preset party          Aynı sheet, verilen deste seçili
     ///   -HowTo                 Nasıl Oynanır slider'ı
     ///   -StartGame a,b         turu başlat (Yatay Çevir ekranı); virgülle Mix
     ///   -SkipRotate            cihaz yatay gelmiş gibi davran
@@ -637,7 +625,7 @@ struct RootView: View {
             router.beginSetup()
         } else if let ids = value(after: "-Preset") {
             setup.select(all: deckIDs(ids))
-            router.setupStep = .preset
+            router.setupStep = .mode
         } else if arguments.contains("-HowTo") {
             router.openHowToPlay(for: setup.mode)
         } else if let ids = value(after: "-StartGame") {
@@ -656,15 +644,15 @@ struct RootView: View {
     private func destination(for route: AppRoute) -> some View {
         switch route {
         case .mix:
-            MixSetupView { router.setupStep = .preset }
+            MixSetupView { router.setupStep = .mode }
         case .customList:
             CustomDeckListView()
         case .customEditor(let id):
             CustomDeckEditorView(deckID: id.flatMap(UUID.init(uuidString:)))
         case .wordBasket:
-            WordBasketView { router.setupStep = .preset }
+            WordBasketView { router.setupStep = .mode }
         case .teamSetup:
-            TeamSetupView { router.setupStep = .preset }
+            TeamSetupView { router.setupStep = .mode }
         case .archive:
             ArchiveView()
         case .archivePlayer(let id):

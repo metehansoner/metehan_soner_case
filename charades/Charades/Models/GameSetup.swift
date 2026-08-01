@@ -26,7 +26,7 @@ final class GameSetup {
         didSet { if mode != oldValue { duration = nil } }
     }
 
-    /// Tur Ön Ayar ekranındaki değerler — **yalnızca o tur için** (§09 §9).
+    /// Kurulum sheet'indeki süre/zorluk — **yalnızca o tur için** (§09 §9).
     /// `nil` ise varsayılan geçerli: moda ait süre ya da ayarlardaki tercih.
     var duration: Int?
     var difficulty: CardDifficultyFilter?
