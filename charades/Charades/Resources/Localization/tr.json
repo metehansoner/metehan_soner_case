@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Mix'ten çıkar",
   "deck.favorite": "Favori",
   "deck.noContent": "Bu destenin kelimeleri henüz hazırlanıyor.",
+  "deck.play.hint": "Mod seçimi bir sonraki adımda",
+  "deck.detail.title": "Deste",
   "nowShowing.badge": "◆ Şimdi vizyonda · Bugün bedava",
   "nowShowing.remaining": "Kalan",
   "featured.mix": "Mix",

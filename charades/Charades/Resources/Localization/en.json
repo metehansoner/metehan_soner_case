@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Remove from mix",
   "deck.favorite": "Favorite",
   "deck.noContent": "Words for this deck are still in production.",
+  "deck.play.hint": "Mode selection is next",
+  "deck.detail.title": "Deck",
   "nowShowing.badge": "◆ Now showing · Free today",
   "nowShowing.remaining": "Left",
   "featured.mix": "Mix",
