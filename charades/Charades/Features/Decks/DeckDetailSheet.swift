@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Deste Detayı (ekran 5) — `ornek-ekranlar.html` birebir sheet düzeni.
+/// Deste Detayı (ekran 5) — `ornek-ekranlar.html` sheet düzeni.
 ///
-/// Sol afiş + sağ meta, kesik çerçeveli örnek kelimeler, altta `.btn-wide`
-/// tarzı `OYNA` (ampullü Marquee değil).
+/// Üstte `DESTE` başlığı + çarpı; solda küçük afiş, sağda başlık/etiket/açıklama;
+/// altta kesik çerçeveli örnek kelimeler ve tam genişlik `OYNA`.
 struct DeckDetailSheet: View {
     let deck: DeckDef
 
@@ -29,138 +29,66 @@ struct DeckDetailSheet: View {
     private var hasContent: Bool { DeckCatalog.contentReadyIDs.contains(deck.id) }
 
     var body: some View {
-        VStack(spacing: 0) {
-            grabber
-            header
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    hero
-                        .padding(.horizontal, 20)
+        SheetScaffold(title: l10n.t("deck.detail.title"), onClose: { dismiss() }) {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        hero
 
-                    if !sampleWords.isEmpty {
-                        sampleWordSection
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
-                    } else if !hasContent {
-                        Text(l10n.t("deck.noContent"))
-                            .font(AppFont.ui(12))
-                            .foregroundStyle(AppColors.textMuted)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 28)
-                            .padding(.top, 20)
+                        if !sampleWords.isEmpty {
+                            sampleWordSection
+                        } else if !hasContent {
+                            Text(l10n.t("deck.noContent"))
+                                .font(AppFont.ui(12))
+                                .foregroundStyle(AppColors.textMuted)
+                                .frame(maxWidth: .infinity)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 12)
+                        }
                     }
-
-                    actions
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
                 }
+                .scrollIndicators(.hidden)
+
+                actions
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 10)
             }
-            .scrollIndicators(.hidden)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background { sheetBackground }
         .presentationDetents([.fraction(0.72)])
-        .presentationCornerRadius(28)
-        .presentationBackground(.clear)
-        .localizedLayout()
         .task(id: deck.id) { loadSampleWords() }
     }
 
-    // MARK: Chrome — `.grabber` / `.sheet-head`
-
-    private var grabber: some View {
-        Capsule()
-            .fill(AppColors.accentGold.opacity(0.6))
-            .frame(width: 38, height: 4)
-            .padding(.top, 9)
-    }
-
-    private var header: some View {
-        HStack {
-            Text(l10n.t("deck.detail.title"))
-                .font(AppFont.display(21, weight: .bold))
-                .appTracking(2.6)
-                .textCase(.uppercase)
-                .foregroundStyle(AppColors.textCream)
-
-            Spacer(minLength: 0)
-
-            Button {
-                Haptics.secondaryButton()
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(AppColors.textSecondary)
-                    .frame(width: 30, height: 30)
-                    .background {
-                        Circle()
-                            .fill(AppColors.surfaceCardRaised.opacity(0.9))
-                            .overlay {
-                                Circle().strokeBorder(AppColors.accentGold.opacity(0.45), lineWidth: 1)
-                            }
-                    }
-                    .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.close"))
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 14)
-        .padding(.bottom, 16)
-    }
-
-    private var sheetBackground: some View {
-        LinearGradient(
-            stops: [
-                .init(color: Color(hex: 0x4A1720), location: 0),
-                .init(color: AppColors.bgVelvetDeep, location: 0.26),
-                .init(color: AppColors.surfaceCard, location: 1),
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(AppColors.accentGold.opacity(0.5))
-                .frame(height: 1)
-        }
-        .overlay { GrainOverlay() }
-        .ignoresSafeArea()
-    }
-
-    // MARK: Hero — `.dd-hero`
+    // MARK: Hero — afiş sol, meta sağ
 
     private var hero: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: 16) {
             miniPoster
-                .frame(width: 104)
+                .frame(width: 128)
+                .spotlightSweep(cornerRadius: 14)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(l10n.t(deck.titleKey))
-                    .font(AppFont.accent(22, weight: .black))
+                    .font(AppFont.accent(26, weight: .black))
                     .foregroundStyle(AppColors.textCream)
-                    .lineSpacing(0)
                     .fixedSize(horizontal: false, vertical: true)
 
                 tagRow
-                    .padding(.top, 9)
+                    .padding(.top, 10)
 
                 Text(l10n.t(deck.descKey))
-                    .font(AppFont.ui(11.5))
+                    .font(AppFont.ui(13))
                     .foregroundStyle(AppColors.textSecondary)
-                    .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 10)
+                    .padding(.top, 11)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    /// HTML `.dd-poster` / `.dd-pin` / `.dd-art` (amblem %66).
+    /// HTML `.dd-poster` — küçük çerçeveli afiş + alt şerit.
     private var miniPoster: some View {
         VStack(spacing: 0) {
             ZStack {
@@ -170,21 +98,20 @@ struct DeckDetailSheet: View {
                 Image(deck.imageName)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(17) // ~%66 of square
+                    .padding(16)
             }
             .aspectRatio(1, contentMode: .fit)
             .saturation(isLocked ? 0.3 : 1)
             .brightness(isLocked ? -0.18 : 0)
 
             Text(l10n.t(deck.titleKey))
-                .font(AppFont.accent(9, weight: .black))
+                .font(AppFont.accent(10.5, weight: .black))
                 .foregroundStyle(AppColors.textOnPoster)
                 .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 3)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 5)
                 .background {
                     LinearGradient(
                         colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
@@ -193,21 +120,21 @@ struct DeckDetailSheet: View {
                     )
                 }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(AppColors.accentGold.opacity(0.3), lineWidth: 1)
         }
-        .padding(4)
+        .padding(5)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(AppColors.surfaceCard)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(AppColors.accentGold, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(AppColors.accentGold, lineWidth: 1.5)
                 }
         }
-        .shadow(color: .black.opacity(0.6), radius: 11, y: 8)
+        .shadow(color: .black.opacity(0.55), radius: 10, y: 6)
     }
 
     private var tagRow: some View {
@@ -225,30 +152,29 @@ struct DeckDetailSheet: View {
         }
     }
 
-    // MARK: Örnek kelimeler — `.wordbox` / `.wchip`
+    // MARK: Örnek kelimeler
 
     private var sampleWordSection: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("◆  \(l10n.t("deck.sampleWords"))")
-                .font(AppFont.ui(9, weight: .bold))
+                .font(AppFont.ui(10, weight: .bold))
                 .appTracking(2.2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
 
-            FlowLayout(spacing: 6, alignment: .leading) {
+            FlowLayout(spacing: 7, alignment: .leading) {
                 ForEach(Array(sampleWords.enumerated()), id: \.offset) { index, word in
                     SampleChip(text: word, isBlurred: index >= 3)
                 }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 13)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(AppColors.surfaceCard.opacity(0.8))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(
                             AppColors.accentGold.opacity(0.36),
                             style: StrokeStyle(lineWidth: 1, dash: [5, 4])
@@ -257,47 +183,20 @@ struct DeckDetailSheet: View {
         }
     }
 
-    // MARK: CTA — `.btn-wide` (kapsül/ampul yok)
+    // MARK: CTA
 
     private var actions: some View {
         VStack(spacing: 8) {
-            Button {
-                Haptics.primaryButton()
+            Button(l10n.t(isLocked ? "deck.buyTicket" : "common.play")) {
                 if isLocked {
                     router.openPaywall(.lockedDeck(deck.id))
                 } else {
                     setup.select(only: deck.id)
                     router.beginSetupAfterDeckDetail()
                 }
-            } label: {
-                Text(l10n.t(isLocked ? "deck.buyTicket" : "common.play"))
-                    .font(AppFont.display(17, weight: .bold))
-                    .appTracking(3)
-                    .textCase(.uppercase)
-                    .foregroundStyle(AppColors.textOnAmber)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [AppColors.accentAmber, AppColors.accentAmberDeep],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .overlay(alignment: .top) {
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .strokeBorder(Color.white.opacity(0.28), lineWidth: 1)
-                                    .padding(.bottom, 40)
-                                    .clipped()
-                            }
-                            .shadow(color: AppColors.accentAmber.opacity(0.36), radius: 13)
-                    }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(MarqueeButtonStyle())
             .disabled(!isLocked && !hasContent)
-            .opacity((!isLocked && !hasContent) ? 0.45 : 1)
 
             if !isLocked {
                 Text(l10n.t("deck.play.hint"))
@@ -309,6 +208,7 @@ struct DeckDetailSheet: View {
         }
     }
 
+    /// §4: 6 kelime. Deste dosyası burada lazy yükleniyor — ana ekranda değil.
     private func loadSampleWords() {
         let cards = CardBank.shared.cards(in: deck.id)
         guard !cards.isEmpty else {
@@ -326,17 +226,17 @@ private struct DetailTag: View {
 
     var body: some View {
         Text(text)
-            .font(AppFont.ui(8.5, weight: .semibold))
+            .font(AppFont.ui(9.5, weight: .semibold))
             .appTracking(1.2)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentGold)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
             .background {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 4)
                     .fill(AppColors.accentAmber.opacity(0.14))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        RoundedRectangle(cornerRadius: 4)
                             .strokeBorder(AppColors.accentGold.opacity(0.34), lineWidth: 1)
                     }
             }
@@ -349,13 +249,13 @@ private struct SampleChip: View {
 
     var body: some View {
         Text(text)
-            .font(AppFont.display(12, weight: .medium))
+            .font(AppFont.display(13.5, weight: .medium))
             .appTracking(0.8)
             .foregroundStyle(AppColors.textCream.opacity(isBlurred ? 0.85 : 1))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 6)
             .background {
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: 6)
                     .fill(
                         LinearGradient(
                             colors: [
@@ -367,7 +267,7 @@ private struct SampleChip: View {
                         )
                     )
                     .overlay {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 6)
                             .strokeBorder(AppColors.accentGold.opacity(0.24), lineWidth: 1)
                     }
             }
