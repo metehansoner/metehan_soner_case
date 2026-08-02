@@ -416,8 +416,7 @@ struct RootView: View {
     ///   -ModeSelect            Mod + tur ayarı sheet'i
     ///   -Preset party          Aynı sheet, verilen deste seçili
     ///   -HowTo                 Nasıl Oynanır slider'ı
-    ///   -StartGame a,b         turu başlat (Yatay Çevir ekranı); virgülle Mix
-    ///   -SkipRotate            cihaz yatay gelmiş gibi davran
+    ///   -StartGame a,b         turu başlat (forced-landscape); virgülle Mix
     ///   -TouchAnswers          dokunmatik cevap (tilt yerine ekran yarıları)
     ///   -ShortRound            süre 12 sn (tur sonu ekranını hızlı görmek için)
     ///   -Premium               abonelik açık (kilitli modları denemek için)
@@ -631,9 +630,6 @@ struct RootView: View {
         } else if let ids = value(after: "-StartGame") {
             setup.select(all: deckIDs(ids))
             startGame()
-            if arguments.contains("-SkipRotate") {
-                liveGame?.deviceBecameLandscape()
-            }
         } else if let id = value(after: "-SelectDeck") {
             setup.select(only: id)
         }

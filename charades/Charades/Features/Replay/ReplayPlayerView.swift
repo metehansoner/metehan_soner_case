@@ -557,8 +557,9 @@ struct ArchivePlayerScreen: View {
                 )
             }
         }
-        // §09 §1: video 16:9, yatay doğal. Arşiv portrait, oynatıcı landscape.
-        .onAppear { OrientationLock.shared.lockLandscape() }
+        // §09 §1: video 16:9 yatay; pencere portrait kalır, içerik forced-landscape.
+        .forcedLandscape()
+        .onAppear { OrientationLock.shared.lockPortrait() }
         .onDisappear { OrientationLock.shared.lockPortrait() }
     }
 }

@@ -2,10 +2,10 @@ import SwiftUI
 
 /// Oyun akışı — 04-oyun-modlari.md §3, yön katmanı 09-kesinti-ve-sinir-durumlari.md §1.
 ///
-/// Tek bir view'ın fazları iki yöne bölünmüş durumda ve yön **yalnızca iki kez**
-/// değişiyor: oyun girişinde landscape'e, maç sonunda portrait'e. Faz başına ayrı
-/// ayrı kilit değiştirmek iOS'ta en çok görsel hata üreten yer, o yüzden kilit
-/// tek bir türetilmiş değere (`LiveGame.prefersLandscape`) bağlı.
+/// Landscape fazlar `ForcedLandscapeContainer` ile çiziliyor: pencere portrait
+/// kalır, içerik 90° döner. Böylece Control Center yön kilidi açık olsa bile
+/// oyun yatay düzenini korur; sistem `requestGeometryUpdate` başarısına
+/// bağımlı değiliz.
 ///
 /// `RootView` bu view'ı `NavigationStack`in **yerine** render ediyor (§02 §5):
 /// tur sırasında geri butonu ve swipe-back yok, çıkışın tek yolu duraklat.
@@ -33,14 +33,91 @@ struct GameFlowView: View {
 
     var body: some View {
         ZStack {
-            switch game.phase {
-            case .orientationPrompt:
-                OrientationPromptView(
-                    onLandscape: game.deviceBecameLandscape,
-                    onPlayInPortrait: game.switchToPortraitPlay
-                )
-                .transition(.opacity)
+            phaseContent
 
+            if showsSoftPaywall {
+                SoftPaywallPanel(
+                    onSeeTicket: {
+                        showsSoftPaywall = false
+                        showsFullPaywall = true
+                    },
+                    onClose: { showsSoftPaywall = false }
+                )
+            }
+
+            VStack {
+                replayNotice
+                Spacer()
+            }
+        }
+        .animation(.easeInOut(duration: 0.22), value: game.phase)
+        // Soft paywall landscape fazda (tur sonu) açılıyor; dönüşün dışında
+        // kalsaydı alındaki telefonda yan okunurdu.
+        .forcedLandscape(game.prefersLandscape)
+        .animation(
+            reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.34, dampingFraction: 0.85),
+            value: showsSoftPaywall
+        )
+        .fullScreenCover(isPresented: $showsReplay) {
+            if let reel = game.reel {
+                ReplayPlayerView(
+                    reel: reel,
+                    onDelete: {
+                        game.deleteReel()
+                        showsReplay = false
+                    },
+                    onClose: { showsReplay = false }
+                )
+                .forcedLandscape()
+                .environment(l10n)
+                .localizedLayout()
+            }
+        }
+        .fullScreenCover(isPresented: $showsFullPaywall) {
+            PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
+                .forcedLandscape()
+                .environment(LocalizationManager.shared)
+                .environment(AppSettingsStore.shared)
+                .environment(SubscriptionStore.shared)
+                .localizedLayout()
+        }
+        .statusBarHidden()
+        .persistentSystemOverlays(.hidden)
+        .onAppear {
+            // Pencere hep portrait; landscape yalnızca view dönüşü.
+            OrientationLock.shared.lockPortrait()
+            syncBrightness()
+        }
+        .onChange(of: game.phase) { _, newPhase in
+            OrientationLock.shared.lockPortrait()
+            syncBrightness()
+            if newPhase == .roundEnd { offerSoftPaywall() }
+        }
+        .onDisappear { ScreenBrightness.restore() }
+        #if DEBUG
+        // Simülatörde dokunuş yok; oynatıcı `-AutoScore` gibi kendiliğinden
+        // açılabilsin diye.
+        .onChange(of: game.reel != nil) { _, hasReel in
+            guard hasReel, ProcessInfo.processInfo.arguments.contains("-AutoReplay") else { return }
+            showsReplay = true
+        }
+        #endif
+        // §09 §2: arka plan, gelen çağrı ve ekran kilidi aynı yol — otomatik
+        // duraklat. Genel ilke: hiçbir kesinti tur sonuçlarını yok etmiyor.
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                game.handleSceneActive()
+            } else {
+                ScreenBrightness.restore()
+                game.handleSceneInactive()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var phaseContent: some View {
+        ZStack {
+            switch game.phase {
             case .slate:
                 SlateView(
                     scene: game.sceneNumber,
@@ -118,76 +195,6 @@ struct GameFlowView: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.22), value: game.phase)
-        .overlay {
-            if showsSoftPaywall {
-                SoftPaywallPanel(
-                    onSeeTicket: {
-                        showsSoftPaywall = false
-                        showsFullPaywall = true
-                    },
-                    onClose: { showsSoftPaywall = false }
-                )
-            }
-        }
-        // Reduce Motion'da yaylı giriş sönümleniyor: panel kayarak değil
-        // belirerek geliyor.
-        .animation(
-            reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.34, dampingFraction: 0.85),
-            value: showsSoftPaywall
-        )
-        .overlay(alignment: .top) { replayNotice }
-        .fullScreenCover(isPresented: $showsReplay) {
-            if let reel = game.reel {
-                ReplayPlayerView(
-                    reel: reel,
-                    onDelete: {
-                        game.deleteReel()
-                        showsReplay = false
-                    },
-                    onClose: { showsReplay = false }
-                )
-                .environment(l10n)
-                .localizedLayout()
-            }
-        }
-        .fullScreenCover(isPresented: $showsFullPaywall) {
-            PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
-                .environment(LocalizationManager.shared)
-                .environment(AppSettingsStore.shared)
-                .environment(SubscriptionStore.shared)
-                .localizedLayout()
-        }
-        .statusBarHidden()
-        .persistentSystemOverlays(.hidden)
-        .onAppear {
-            syncOrientation()
-            syncBrightness()
-        }
-        .onChange(of: game.phase) { _, newPhase in
-            syncOrientation()
-            syncBrightness()
-            if newPhase == .roundEnd { offerSoftPaywall() }
-        }
-        .onDisappear { ScreenBrightness.restore() }
-        #if DEBUG
-        // Simülatörde dokunuş yok; oynatıcı `-AutoScore` gibi kendiliğinden
-        // açılabilsin diye.
-        .onChange(of: game.reel != nil) { _, hasReel in
-            guard hasReel, ProcessInfo.processInfo.arguments.contains("-AutoReplay") else { return }
-            showsReplay = true
-        }
-        #endif
-        // §09 §2: arka plan, gelen çağrı ve ekran kilidi aynı yol — otomatik
-        // duraklat. Genel ilke: hiçbir kesinti tur sonuçlarını yok etmiyor.
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
-                game.handleSceneActive()
-            } else {
-                ScreenBrightness.restore()
-                game.handleSceneInactive()
-            }
-        }
     }
 
     /// §09 §2: düşük güç modu, ısınma ve dolu disk kaydı sessizce iptal
@@ -260,14 +267,6 @@ struct GameFlowView: View {
             ScreenBrightness.dim()
         } else {
             ScreenBrightness.restore()
-        }
-    }
-
-    private func syncOrientation() {
-        if game.prefersLandscape {
-            OrientationLock.shared.lockLandscape()
-        } else {
-            OrientationLock.shared.lockPortrait()
         }
     }
 }

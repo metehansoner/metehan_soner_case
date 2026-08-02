@@ -4,14 +4,12 @@ import SwiftUI
 
 /// Oyun akışının fazları — 09-kesinti-ve-sinir-durumlari.md §1.
 ///
-/// §1'in tablosu 8 satır: buradaki 7'si P4 ve P6'nın kapsamı. Kalanı ve yönü —
-/// `replay` landscape (P15) — kendi paketinde ekleniyor. Yön eşlemesi
-/// `prefersLandscape` içinde tek yerde duruyor, yeni faz oraya bir satır.
+/// Landscape fazlar sistem yönüne bağlanmıyor: `ForcedLandscapeContainer`
+/// içeriği 90° çeviriyor (cihaz yön kilidi açık/kapalı fark etmez). Eşleme
+/// `prefersLandscape` içinde tek yerde; yeni faz oraya bir satır.
 enum LivePhase: Equatable {
-    /// Portrait: "telefonu yatay çevir" istemi.
-    case orientationPrompt
     /// §08 A2 + B5: klaket ve başlık kartı. Landscape — geri sayımın devamı
-    /// gibi okunuyor, arada yön değişirse akış iki ekrana bölünüyor.
+    /// gibi okunuyor.
     case slate
     /// Landscape: 3-2-1. Motion kalibrasyonu burada yapılıyor.
     case countdown
@@ -94,9 +92,10 @@ final class LiveGame {
     /// Takım Savaşı'nda maçın tamamı; diğer modlarda `nil`.
     let match: TeamMatch?
 
-    /// §09 §1: "Yatay çeviremiyorum" ekran 13'te seçilebildiği için ikisi de
-    /// tur **başlamadan** değişebiliyor; geri sayım başladıktan sonra sabit.
+    /// Cevap yöntemi tur başında sabitleniyor (ayar / sensör).
     private(set) var answerInput: AnswerInput
+    /// Portrait yedek düzeni (küçük punto). Sistem yönüne bağlı değil —
+    /// `ForcedLandscapeContainer` kullanılmadığı nadir yollar için.
     private(set) var playsInPortrait: Bool
 
     // MARK: Durum
@@ -177,12 +176,12 @@ final class LiveGame {
     /// §04 §3: son 10 saniyede sayaç `stateWarning`e dönüyor.
     var isInFinalTen: Bool { phase == .playing && remaining <= 10 }
 
-    /// Yön kilidinin faz eşlemesi (§09 §1). Yön yalnızca iki kez değişiyor:
-    /// oyun girişinde landscape'e, maç sonunda portrait'e.
+    /// Forced-landscape faz eşlemesi (§09 §1). Pencere hep portrait kalır;
+    /// `true` iken içerik `ForcedLandscapeContainer` ile 90° çizilir.
     var prefersLandscape: Bool {
         guard !playsInPortrait else { return false }
         switch phase {
-        case .orientationPrompt, .matchEnd: return false
+        case .matchEnd: return false
         case .slate, .countdown, .playing, .paused, .roundEnd, .teamHandoff: return true
         }
     }
@@ -242,30 +241,12 @@ final class LiveGame {
 
         remaining = duration
         remainingExact = TimeInterval(duration)
-        phase = playsInPortrait ? .slate : .orientationPrompt
+        // Eski "telefonu yatay çevir" kapısı yok: UI forced-landscape ile
+        // çiziliyor, cihaz yön kilidine bağlı değil.
+        phase = .slate
     }
 
     // MARK: Faz geçişleri
-
-    /// Cihaz fiziksel olarak yatay geldi (ekran 13'ün tek ilerleme koşulu).
-    func deviceBecameLandscape() {
-        guard phase == .orientationPrompt else { return }
-        beginSlate()
-    }
-
-    /// §09 §1: "Yatay çeviremiyorum".
-    ///
-    /// Eski hâlinde bu seçenek yalnızca **cevap yöntemini** dokunmatiğe
-    /// çeviriyordu ve yön problemini çözmüyordu; yatakta oynayan, cihaz yön
-    /// kilidi açık olan veya motor kısıtlı kullanıcı için çıkmaz sokaktı.
-    /// Artık tur portrait'te açılıyor: tilt yok, telefonun alna konması
-    /// gerekmiyor, kullanıcı ekranı elinde tutup başkasına gösteriyor.
-    func switchToPortraitPlay() {
-        guard phase == .orientationPrompt else { return }
-        playsInPortrait = true
-        answerInput = .touch
-        beginSlate()
-    }
 
     /// §08 A2: turun onay ekranı. Klaketin kendi süresi `SlateView` içinde;
     /// model yalnızca hangi sürümün oynayacağını ve künyeyi veriyor.

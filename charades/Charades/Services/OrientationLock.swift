@@ -3,13 +3,9 @@ import UIKit
 
 /// Yön katmanı — 09-kesinti-ve-sinir-durumlari.md §1.
 ///
-/// Uygulamanın tamamı portrait, oyun ekranı landscape. Kilit
-/// `AppDelegate.supportedInterfaceOrientationsFor` üzerinden okunuyor ve
-/// `requestGeometryUpdate` ile fiili döndürme yapılıyor.
-///
-/// **Yön yalnızca iki kez değişiyor:** oyun girişinde landscape'e, maç sonunda
-/// portrait'e. Faz başına ayrı ayrı kilit değiştirmek iOS'ta en çok görsel hata
-/// üreten yer; `roundEnd` ve `paused` bu yüzden landscape kalıyor (§1 tablosu).
+/// Uygulama penceresi **her zaman portrait**. Oyun / replay yatay düzeni
+/// `ForcedLandscapeContainer` ile çiziliyor; sistem `requestGeometryUpdate`
+/// ve cihaz yön kilidine bağlanılmıyor.
 @MainActor
 @Observable
 final class OrientationLock {
@@ -27,9 +23,8 @@ final class OrientationLock {
 
     func lockPortrait() { apply(.portrait) }
 
-    /// §1: oyun landscape'te açılıyor. İki landscape de açık — kullanıcının
-    /// telefonu hangi tarafa çevirdiği onun tercihi, tilt işareti zaten
-    /// kalibrasyonda sabitleniyor (§04 §2).
+    /// Eski sistem-landscape yolu. Oyun artık forced-landscape kullandığı için
+    /// çağrılmıyor; API test / geri dönüş için duruyor.
     func lockLandscape() { apply(.landscape) }
 
     private func apply(_ newMask: UIInterfaceOrientationMask) {
@@ -46,9 +41,6 @@ final class OrientationLock {
             window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
         }
         scene.requestGeometryUpdate(.iOS(interfaceOrientations: newMask)) { error in
-            // Kullanıcının cihaz yön kilidi açıksa sistem isteği reddedebiliyor.
-            // §1'in "yatay çeviremiyorum" yolu bu durumun kullanıcı tarafındaki
-            // karşılığı; burada sessiz kalmak doğru, tur yine de oynanabiliyor.
             #if DEBUG
             print("Yön güncellemesi reddedildi: \(error)")
             #endif
