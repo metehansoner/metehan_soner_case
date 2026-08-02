@@ -20,19 +20,24 @@ struct DeckCard: View {
     /// §05 §6: Mix kurulumunda seçili kartlar onay yerine **kaçıncı sırada**
     /// seçildiklerini gösteriyor — karışım göstergesindeki renk sırası bu.
     var selectionOrder: Int?
+    /// Ana ızgarada kilit/ücretsiz rozetleri kapalı: tüm kartlar aktif görünür,
+    /// premium bilgisi deste detayında (§ kullanıcı tercihi).
+    var showsAccessState: Bool = true
 
     @Environment(LocalizationManager.self) private var l10n
+
+    private var visuallyLocked: Bool { showsAccessState && isLocked }
 
     var body: some View {
         ZStack {
             poster
                 // §04 anatomi: kilitli görsel sepia + karartma. Filtre yalnızca
                 // afiş katmanına uygulanıyor.
-                .saturation(isLocked ? 0.3 : 1)
-                .brightness(isLocked ? -0.22 : 0)
-                .colorMultiply(isLocked ? Color(hex: 0xC9A98A) : .white)
+                .saturation(visuallyLocked ? 0.3 : 1)
+                .brightness(visuallyLocked ? -0.22 : 0)
+                .colorMultiply(visuallyLocked ? Color(hex: 0xC9A98A) : .white)
 
-            if isLocked {
+            if visuallyLocked {
                 lockLayer
             }
 
@@ -41,7 +46,7 @@ struct DeckCard: View {
         }
         .padding(5)
         // Kilitli kartın sepyası kadar sert değil: bu bir engel değil uyarı.
-        .opacity(isOffMode && !isLocked ? 0.62 : 1)
+        .opacity(isOffMode && !visuallyLocked ? 0.62 : 1)
         .background {
             RoundedRectangle(cornerRadius: 14)
                 .fill(AppColors.surfaceCard)
@@ -105,7 +110,7 @@ struct DeckCard: View {
         // Etiket başlık şeridinin değil afiş alanının altına oturuyor; şeridin
         // üstünde deste adını kapatıyordu.
         .overlay(alignment: .bottomLeading) {
-            if isOffMode, !isLocked {
+            if isOffMode, !visuallyLocked {
                 offModeTag.padding(7)
             }
         }
@@ -209,11 +214,13 @@ struct DeckCard: View {
         }
     }
 
-    /// Kalıcı ücretsiz deste ile "bugün bedava" ayrı iki durum; ikisi de
-    /// kilitsiz ama biri yarın da kilitsiz, diğeri değil (§05 §4).
+    /// Kalıcı ücretsiz / bugün bedava yalnızca `showsAccessState` açıkken.
+    /// Ana ızgarada gizlenir; `YENİ` rozeti kalır.
     private var ribbonKey: String? {
-        if isDailyFree { return "deck.dailyFree.badge" }
-        if deck.isFree { return "deck.free.badge" }
+        if showsAccessState {
+            if isDailyFree { return "deck.dailyFree.badge" }
+            if deck.isFree { return "deck.free.badge" }
+        }
         if deck.isNew() { return "deck.new.badge" }
         return nil
     }
@@ -284,9 +291,9 @@ struct DeckCard: View {
         var parts = [l10n.t(deck.titleKey)]
         if let cardCount { parts.append(l10n.t("deck.cardCount", count: cardCount)) }
         if let selectionOrder { parts.append(l10n.t("mix.selection.order", ["order": "\(selectionOrder)"])) }
-        if isLocked { parts.append(l10n.t("deck.locked.stamp")) }
-        if isOffMode, !isLocked { parts.append(l10n.t("deck.describeOnly.badge")) }
-        if let ribbonKey, !isLocked { parts.append(l10n.t(ribbonKey)) }
+        if showsAccessState, isLocked { parts.append(l10n.t("deck.locked.stamp")) }
+        if isOffMode, !visuallyLocked { parts.append(l10n.t("deck.describeOnly.badge")) }
+        if let ribbonKey, !visuallyLocked { parts.append(l10n.t(ribbonKey)) }
         return parts.joined(separator: ", ")
     }
 }

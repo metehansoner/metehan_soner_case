@@ -156,6 +156,19 @@ struct DecksHomeView: View {
             router.openPaywall(.mix)
             return
         }
+        // Ana ızgarada kilit görünmez; PlayBar'dan çıkışta premium desteyi yakala.
+        if !subscriptions.isPremium,
+           let lockedID = setup.selectedDeckIDs.first(where: {
+               DeckCatalog.deck($0)?.isLocked(
+                   isPremium: false,
+                   dailyFreeDeckID: dailyFreeDeckID
+               ) == true
+           })
+        {
+            Haptics.lockedWall()
+            router.openPaywall(.lockedDeck(lockedID))
+            return
+        }
         if setup.isMix {
             setup.mode = .mix
         } else if setup.mode == .mix || !setup.mode.needsDeckSelection {
@@ -314,20 +327,17 @@ struct DecksHomeView: View {
             }
 
             ForEach(visibleDecks) { deck in
-                let isLocked = deck.isLocked(
-                    isPremium: subscriptions.isPremium,
-                    dailyFreeDeckID: dailyFreeDeckID
-                )
                 Button {
                     router.openDeckDetail(deck.id)
                 } label: {
                     DeckCard(
                         deck: deck,
                         isSelected: setup.isSelected(deck.id),
-                        isLocked: isLocked,
-                        isDailyFree: deck.id == dailyFreeDeckID && !deck.isFree,
+                        isLocked: false,
+                        isDailyFree: false,
                         cardCount: DeckCardCounts.count(for: deck.id),
-                        isOffMode: isOffMode(deck)
+                        isOffMode: isOffMode(deck),
+                        showsAccessState: false
                     )
                 }
                 .buttonStyle(.plain)
@@ -335,12 +345,8 @@ struct DecksHomeView: View {
                 // zaman detaya gidiyor. İki deste seçip Mix'e girmek isteyen
                 // kullanıcı için detay sheet'inden geçmek gereksiz adım.
                 .onLongPressGesture(minimumDuration: 0.3) {
-                    guard !isLocked else {
-                        Haptics.lockedWall()
-                        router.openPaywall(.lockedDeck(deck.id))
-                        return
-                    }
-                    // §05 §6: 8 destelik karışım tavanı burada da geçerli.
+                    // Ana ızgarada kilit görünmez; premium kontrolü detay /
+                    // OYNA anında. Burada yalnızca karışım tavanı bakılır.
                     guard setup.canToggleInMix(deck.id) else {
                         Haptics.stepperLimit()
                         return
