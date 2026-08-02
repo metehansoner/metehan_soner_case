@@ -410,7 +410,8 @@ struct PaywallView: View {
             .accessibilityLabel(l10n.t("common.close"))
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, 16)
-            .safeAreaPadding(.top, 6)
+            // Status bar / Dynamic Island'a yapışmasın; biraz nefes alanı.
+            .safeAreaPadding(.top, 18)
             .opacity(canDismiss ? 1 : 0)
             .allowsHitTesting(canDismiss)
         }
