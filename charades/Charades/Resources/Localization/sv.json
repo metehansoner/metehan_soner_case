@@ -461,6 +461,7 @@
   "game.rotate.touchMode": "Spela med tryck",
   "game.rotate.touchMode.hint": "Ingen lutning — svara genom att trycka på skärmen",
   "game.countdown.caption": "Sätt telefonen mot pannan",
+  "game.countdown.ready": "Gör dig redo",
   "slate.scene": "Scen",
   "slate.take": "Tagning",
   "slate.deck": "Lek",

@@ -133,7 +133,11 @@ struct GameFlowView: View {
                 .transition(.opacity)
 
             case .countdown:
-                CountdownView(value: game.countdownValue, onTap: game.shortenCountdown)
+                CountdownView(
+                    value: game.countdownValue,
+                    reel: game.sceneNumber,
+                    onTap: game.shortenCountdown
+                )
                     .transition(.opacity)
 
             case .playing:

@@ -461,6 +461,7 @@
   "game.rotate.touchMode": "Play by Tapping",
   "game.rotate.touchMode.hint": "No tilting — answer by tapping the screen",
   "game.countdown.caption": "Put the phone on your forehead",
+  "game.countdown.ready": "Get Ready",
   "slate.scene": "Scene",
   "slate.take": "Take",
   "slate.deck": "Deck",
