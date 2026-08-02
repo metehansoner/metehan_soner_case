@@ -332,6 +332,8 @@
   "deck.removeFromMix": "Makni iz miksa",
   "deck.favorite": "Favorit",
   "deck.noContent": "Riječi za ovaj špil još su u pripremi.",
+  "deck.play.hint": "Odabir načina je sljedeći korak",
+  "deck.detail.title": "Špil",
   "nowShowing.badge": "◆ Sada na programu · Danas besplatno",
   "nowShowing.remaining": "Preostalo",
   "featured.mix": "Miks",

@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Aus dem Mix",
   "deck.favorite": "Favorit",
   "deck.noContent": "Die Wörter für dieses Deck entstehen noch.",
+  "deck.play.hint": "Moduswahl folgt als Nächstes",
+  "deck.detail.title": "Deck",
   "nowShowing.badge": "◆ Jetzt im Kino · Heute gratis",
   "nowShowing.remaining": "Übrig",
   "featured.mix": "Mix",

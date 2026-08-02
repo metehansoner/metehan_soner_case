@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Retirer du mélange",
   "deck.favorite": "Favori",
   "deck.noContent": "Les mots de ce paquet sont encore en production.",
+  "deck.play.hint": "Le choix du mode vient ensuite",
+  "deck.detail.title": "Jeu",
   "nowShowing.badge": "◆ À l'affiche · Gratuit aujourd'hui",
   "nowShowing.remaining": "Reste",
   "featured.mix": "Mélange",

@@ -66,10 +66,22 @@ final class LocalizationManager {
         _ = localeCode
         let merged = args.merging(["count": "\(count)"]) { current, _ in current }
         let category = Self.pluralCategory(count, locale: localeCode)
-        let english = Self.loadJSON(named: "en")
+        let candidates = ["\(key).\(category.rawValue)", "\(key).other", key]
 
-        for candidate in ["\(key).\(category.rawValue)", "\(key).other", key] {
-            if let value = strings[candidate] ?? english?[candidate] {
+        // Önce seçili dilin kendi dosyası: eksik `.one` aynı dilin `.other`ına
+        // düşer. Merge edilmiş `strings` tablosunda İngilizce `.one` olduğu için
+        // oradan bakmak `id`/`ms`/`tr` gibi dilleri İngilizceye kaçırıyordu.
+        if localeCode != "en", let localized = Self.loadJSON(named: localeCode) {
+            for candidate in candidates {
+                if let value = localized[candidate] {
+                    return substitute(value, merged)
+                }
+            }
+        }
+
+        let english = Self.loadJSON(named: "en")
+        for candidate in candidates {
+            if let value = english?[candidate] {
                 return substitute(value, merged)
             }
         }

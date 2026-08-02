@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Treu de la barreja",
   "deck.favorite": "Preferit",
   "deck.noContent": "Les paraules d'aquesta baralla encara estan en producció.",
+  "deck.play.hint": "La selecció de mode és el pas següent",
+  "deck.detail.title": "Baralla",
   "nowShowing.badge": "◆ En cartellera · Gratis avui",
   "nowShowing.remaining": "Queda",
   "featured.mix": "Barreja",

@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Ta bort ur mixen",
   "deck.favorite": "Favorit",
   "deck.noContent": "Orden till den här leken är fortfarande under produktion.",
+  "deck.play.hint": "Lägesval är nästa steg",
+  "deck.detail.title": "Kortlek",
   "nowShowing.badge": "◆ På bio nu · Gratis idag",
   "nowShowing.remaining": "Kvar",
   "featured.mix": "Mix",

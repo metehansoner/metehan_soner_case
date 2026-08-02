@@ -332,6 +332,8 @@
   "deck.removeFromMix": "Odebrat z mixu",
   "deck.favorite": "Oblíbené",
   "deck.noContent": "Slova tohoto balíčku se ještě chystají.",
+  "deck.play.hint": "Výběr režimu přijde v dalším kroku",
+  "deck.detail.title": "Balíček",
   "nowShowing.badge": "◆ Právě hrajeme · Dnes zdarma",
   "nowShowing.remaining": "Zbývá",
   "featured.mix": "Mix",

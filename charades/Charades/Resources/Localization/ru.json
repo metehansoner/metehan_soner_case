@@ -332,6 +332,8 @@
   "deck.removeFromMix": "Убрать из микса",
   "deck.favorite": "В избранное",
   "deck.noContent": "Слова для этой колоды ещё готовятся.",
+  "deck.play.hint": "Выбор режима — следующий шаг",
+  "deck.detail.title": "Колода",
   "nowShowing.badge": "◆ В прокате · Сегодня бесплатно",
   "nowShowing.remaining": "Осталось",
   "featured.mix": "Микс",

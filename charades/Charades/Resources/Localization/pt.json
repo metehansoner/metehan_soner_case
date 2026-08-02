@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Tirar da mistura",
   "deck.favorite": "Favorito",
   "deck.noContent": "As palavras deste baralho ainda estão em produção.",
+  "deck.play.hint": "A escolha do modo é o passo seguinte",
+  "deck.detail.title": "Baralho",
   "nowShowing.badge": "◆ Em exibição · Grátis hoje",
   "nowShowing.remaining": "Resta",
   "featured.mix": "Mistura",

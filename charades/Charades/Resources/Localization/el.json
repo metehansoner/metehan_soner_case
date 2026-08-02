@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Βγάλε από το μιξ",
   "deck.favorite": "Αγαπημένη",
   "deck.noContent": "Οι λέξεις αυτής της τράπουλας ετοιμάζονται ακόμη.",
+  "deck.play.hint": "Η επιλογή λειτουργίας είναι το επόμενο βήμα",
+  "deck.detail.title": "Τράπουλα",
   "nowShowing.badge": "◆ Παίζεται τώρα · Δωρεάν σήμερα",
   "nowShowing.remaining": "Μένει",
   "featured.mix": "Μιξ",

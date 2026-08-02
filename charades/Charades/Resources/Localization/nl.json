@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Uit de mix halen",
   "deck.favorite": "Favoriet",
   "deck.noContent": "De woorden voor dit deck zijn nog in de maak.",
+  "deck.play.hint": "Moduskeuze volgt in de volgende stap",
+  "deck.detail.title": "Deck",
   "nowShowing.badge": "◆ Nu te zien · Vandaag gratis",
   "nowShowing.remaining": "Over",
   "featured.mix": "Mix",

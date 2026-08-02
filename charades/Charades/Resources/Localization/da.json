@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Fjern fra mikset",
   "deck.favorite": "Favorit",
   "deck.noContent": "Ordene til dette kortspil er stadig under produktion.",
+  "deck.play.hint": "Valg af tilstand er næste skridt",
+  "deck.detail.title": "Bunke",
   "nowShowing.badge": "◆ Vises nu · Gratis i dag",
   "nowShowing.remaining": "Tilbage",
   "featured.mix": "Miks",

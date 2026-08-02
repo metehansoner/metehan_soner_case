@@ -332,6 +332,8 @@
   "deck.removeFromMix": "أزل من الخليط",
   "deck.favorite": "مفضلة",
   "deck.noContent": "كلمات هذه المجموعة قيد الإعداد.",
+  "deck.play.hint": "اختيار الوضع في الخطوة التالية",
+  "deck.detail.title": "مجموعة",
   "nowShowing.badge": "◆ يُعرض الآن · مجاني اليوم",
   "nowShowing.remaining": "المتبقي",
   "featured.mix": "خليط",

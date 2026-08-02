@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Fjern fra miksen",
   "deck.favorite": "Favoritt",
   "deck.noContent": "Ordene til denne stokken er fortsatt under produksjon.",
+  "deck.play.hint": "Modusvalg er neste steg",
+  "deck.detail.title": "Kortstokk",
   "nowShowing.badge": "◆ Vises nå · Gratis i dag",
   "nowShowing.remaining": "Igjen",
   "featured.mix": "Miks",

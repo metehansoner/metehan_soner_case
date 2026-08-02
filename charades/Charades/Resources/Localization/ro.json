@@ -332,6 +332,8 @@
   "deck.removeFromMix": "Scoate din amestec",
   "deck.favorite": "Favorit",
   "deck.noContent": "Cuvintele acestui pachet sunt încă în producție.",
+  "deck.play.hint": "Selectarea modului e pasul următor",
+  "deck.detail.title": "Pachet",
   "nowShowing.badge": "◆ Acum pe ecran · Gratis azi",
   "nowShowing.remaining": "Rămase",
   "featured.mix": "Amestec",

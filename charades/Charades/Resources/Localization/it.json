@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Togli dal misto",
   "deck.favorite": "Preferito",
   "deck.noContent": "Le parole di questo mazzo sono ancora in produzione.",
+  "deck.play.hint": "La selezione della modalità è il passo successivo",
+  "deck.detail.title": "Mazzo",
   "nowShowing.badge": "◆ In sala · Oggi gratis",
   "nowShowing.remaining": "Resta",
   "featured.mix": "Misto",

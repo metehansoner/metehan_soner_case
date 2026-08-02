@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Poista sekoituksesta",
   "deck.favorite": "Suosikki",
   "deck.noContent": "Tämän pakan sanat ovat vielä tuotannossa.",
+  "deck.play.hint": "Pelitilan valinta on seuraava vaihe",
+  "deck.detail.title": "Pakka",
   "nowShowing.badge": "◆ Nyt esillä · Tänään ilmainen",
   "nowShowing.remaining": "Jäljellä",
   "featured.mix": "Sekoitus",

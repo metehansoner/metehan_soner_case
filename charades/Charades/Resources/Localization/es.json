@@ -331,6 +331,8 @@
   "deck.removeFromMix": "Quitar de la mezcla",
   "deck.favorite": "Favorito",
   "deck.noContent": "Las palabras de este mazo aún se están produciendo.",
+  "deck.play.hint": "La selección de modo es el siguiente paso",
+  "deck.detail.title": "Mazo",
   "nowShowing.badge": "◆ En cartelera · Gratis hoy",
   "nowShowing.remaining": "Queda",
   "featured.mix": "Mezcla",

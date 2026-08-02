@@ -332,6 +332,8 @@
   "deck.removeFromMix": "Usuń z miksu",
   "deck.favorite": "Ulubione",
   "deck.noContent": "Hasła do tej talii są jeszcze w przygotowaniu.",
+  "deck.play.hint": "Wybór trybu w następnym kroku",
+  "deck.detail.title": "Talia",
   "nowShowing.badge": "◆ Teraz grane · Dziś za darmo",
   "nowShowing.remaining": "Pozostało",
   "featured.mix": "Miks",
