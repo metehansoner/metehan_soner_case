@@ -6,11 +6,11 @@ import SwiftUI
 /// Ayrı iki faz yapmak aralarına bir kare boşluk koyuyor ve akış iki ayrı ekran
 /// gibi okunuyordu.
 ///
-/// §08 §0 bütçesi:
+/// §08 §0 bütçesi (biraz nefes alan tempo):
 ///
 /// | Tur | Klaket | Başlık | Geri sayım | Toplam |
 /// |---|---|---|---|---|
-/// | Maçın ilki | 0,9 sn | 0,5 sn | 3 sn | 4,4 sn |
+/// | Maçın ilki | ~1,25 sn | 1,4 sn | 3 sn | ~5,65 sn |
 /// | Sonrakiler | 0,35 sn | — | 3 sn | 3,35 sn |
 ///
 /// Ekranın tamamı dokunuşla atlanıyor (§0: geri sayım hariç hepsi atlanabilir).
@@ -37,10 +37,12 @@ struct SlateView: View {
     @State private var showsTitleCard = false
 
     // Süreler tek yerde: bütçe denetimi tabloya bakarak yapılabilsin.
-    private var barFall: TimeInterval { isFull ? 0.42 : 0.18 }
-    private var holdAfterClack: TimeInterval { isFull ? 0.28 : 0.07 }
-    private var exitDuration: TimeInterval { isFull ? 0.2 : 0.1 }
-    private let titleCardDuration: TimeInterval = 0.5
+    private var barFall: TimeInterval { isFull ? 0.55 : 0.18 }
+    private var holdAfterClack: TimeInterval { isFull ? 0.4 : 0.07 }
+    private var exitDuration: TimeInterval { isFull ? 0.3 : 0.1 }
+    /// "Takdim eder" kartı — okunacak kadar durmalı.
+    private let titleCardDuration: TimeInterval = 1.4
+    private let titleCardFade: TimeInterval = 0.35
 
     var body: some View {
         ZStack {
@@ -197,8 +199,11 @@ struct SlateView: View {
         guard !Task.isCancelled else { return }
 
         if isFull {
-            withAnimation(.easeOut(duration: 0.18)) { showsTitleCard = true }
+            withAnimation(.easeOut(duration: titleCardFade)) { showsTitleCard = true }
             try? await Task.sleep(for: .seconds(titleCardDuration))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeIn(duration: titleCardFade)) { showsTitleCard = false }
+            try? await Task.sleep(for: .seconds(titleCardFade))
             guard !Task.isCancelled else { return }
         }
         onFinish()
