@@ -10,6 +10,8 @@ struct FeaturedRow: View {
     /// yazdırıp sonunda paywall göstermek yem-değiştir olurdu. Mix'te durum
     /// farklı: kurulum serbest, duvar oynarken çıkıyor.
     var isWordBasketLocked: Bool
+    /// Destesi yoksa kart "oluştur" kısayolu; varsa yönetim listesine gider.
+    var hasCustomDecks: Bool
     var onMix: () -> Void
     var onWordBasket: () -> Void
     var onCustomDecks: () -> Void
@@ -31,7 +33,7 @@ struct FeaturedRow: View {
                     action: onWordBasket
                 )
                 FeaturedCard(
-                    title: l10n.t("featured.customDeck"),
+                    title: l10n.t(hasCustomDecks ? "customDeck.list.title" : "featured.customDeck"),
                     style: .customDeck,
                     action: onCustomDecks
                 )

@@ -21,6 +21,7 @@ struct CustomDeckEditorView: View {
     @Query private var decks: [CustomDeck]
 
     @State private var createdID: UUID?
+    @State private var wordFlushSignal = 0
     @FocusState private var isNamingFocused: Bool
 
     private var deck: CustomDeck? {
@@ -37,8 +38,8 @@ struct CustomDeckEditorView: View {
             }
         }
         .onAppear(perform: createIfNeeded)
-        // Adsız ve kelimesiz deste listede iz bırakmıyor: kullanıcı `Yeni Deste`ye
-        // yanlışlıkla dokunup geri döndüğünde boş bir kart kalmamalı.
+        // Adsız ve kelimesiz deste listede iz bırakmıyor: kullanıcı yanlışlıkla
+        // dokunup geri döndüğünde boş bir kart kalmamalı.
         .onDisappear(perform: discardIfEmpty)
     }
 
@@ -73,7 +74,7 @@ struct CustomDeckEditorView: View {
                     }
 
                     field(label: l10n.t("customDeck.field.words")) {
-                        WordListSection(words: wordsBinding(deck))
+                        WordListSection(words: wordsBinding(deck), flushSignal: wordFlushSignal)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -249,8 +250,16 @@ struct CustomDeckEditorView: View {
 
     private func createIfNeeded() {
         guard deckID == nil, createdID == nil else { return }
+        let limit = CustomDeckLimits.maxDeckCount(isPremium: subscription.isPremium)
+        guard decks.count < limit else {
+            Haptics.lockedWall()
+            router.openPaywall(.customDeck)
+            router.pop()
+            return
+        }
+        // Boş isim: liste satırı ile "Deste Oluştur" kartı aynı metni paylaşmasın.
         let deck = CustomDeck(
-            name: l10n.t("customDeck.defaultName"),
+            name: "",
             languageCode: l10n.localeCode,
             sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
         )
@@ -263,33 +272,48 @@ struct CustomDeckEditorView: View {
     private func discardIfEmpty() {
         guard let deck else { return }
         // Çıkmadan önce flush: ilişki henüz yazılmamışsa kelimeli deste
-        // yanlışlıkla "boş" sayılıp silinmesin.
+        // yanlışlıkla "boş" sayılıp silinmesin. WordListSection da draft'ı
+        // onDisappear'da ekliyor — çocuk önce çalışır.
         modelContext.persistCustomDecks()
         guard deck.wordCount == 0 else { return }
         let name = deck.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard name.isEmpty || name == l10n.t("customDeck.defaultName") else { return }
+        let defaultName = l10n.t("customDeck.defaultName")
+        guard name.isEmpty || name == defaultName else { return }
         modelContext.delete(deck)
         modelContext.persistCustomDecks()
     }
 
     private func commitAndPop() {
         Haptics.primaryButton()
-        modelContext.persistCustomDecks()
-        router.pop()
+        wordFlushSignal += 1
+        // Flush'ın binding üzerinden yazılması için bir run-loop.
+        Task { @MainActor in
+            await Task.yield()
+            modelContext.persistCustomDecks()
+            router.pop()
+        }
     }
 
     private func play(_ deck: CustomDeck) {
         // §09 §9: yazmak ücretsiz, oynamak Tam Bilet. Duvar burada çıkıyor —
         // kullanıcı destesini bitirmiş, ne satın alacağını görüyor.
-        modelContext.persistCustomDecks()
-        guard subscription.isPremium else {
-            Haptics.lockedWall()
-            router.openPaywall(.customDeck)
-            return
+        wordFlushSignal += 1
+        Task { @MainActor in
+            await Task.yield()
+            modelContext.persistCustomDecks()
+            guard subscription.isPremium else {
+                Haptics.lockedWall()
+                router.openPaywall(.customDeck)
+                return
+            }
+            guard deck.canPlay else {
+                Haptics.stepperLimit()
+                return
+            }
+            Haptics.primaryButton()
+            setup.select(custom: deck.uuid)
+            router.popToRoot()
+            router.beginSetup()
         }
-        Haptics.primaryButton()
-        setup.select(custom: deck.uuid)
-        router.popToRoot()
-        router.beginSetup()
     }
 }

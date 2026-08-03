@@ -31,11 +31,21 @@ struct CustomDeckListView: View {
 
                 ScrollView {
                     VStack(spacing: 10) {
-                        ForEach(Array(decks.enumerated()), id: \.element.uuid) { index, deck in
-                            row(deck, isReadOnly: index >= slotLimit)
-                        }
+                        if decks.isEmpty {
+                            emptyState
+                        } else {
+                            ForEach(Array(decks.enumerated()), id: \.element.uuid) { index, deck in
+                                row(deck, isReadOnly: index >= slotLimit)
+                            }
 
-                        addRow
+                            // Slot doluyken dashed "Yeni Deste" kartı ikinci bir
+                            // boş deste gibi duruyordu — yalnızca yer varken.
+                            if hasFreeSlot {
+                                addRow
+                            } else {
+                                slotsFullNote
+                            }
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 4)
@@ -54,7 +64,7 @@ struct CustomDeckListView: View {
             Button(l10n.t("common.cancel"), role: .cancel) {}
             Button(l10n.t("customDeck.delete.confirm"), role: .destructive, action: deletePending)
         } message: {
-            Text(l10n.t("customDeck.delete.body", ["name": deckPendingDeletion?.name ?? ""]))
+            Text(l10n.t("customDeck.delete.body", ["name": displayName(deckPendingDeletion)]))
         }
     }
 
@@ -97,6 +107,49 @@ struct CustomDeckListView: View {
         .padding(.bottom, 6)
     }
 
+    // MARK: Boş durum — §02 §6
+
+    private var emptyState: some View {
+        VStack(spacing: 18) {
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(
+                    AppColors.accentGold.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 1.5, dash: [6, 5])
+                )
+                .frame(width: 96, height: 128)
+                .overlay {
+                    Image(systemName: "rectangle.portrait.badge.plus")
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(AppColors.accentGold)
+                }
+
+            VStack(spacing: 8) {
+                Text(l10n.t("customDeck.list.emptyTitle"))
+                    .font(AppFont.display(18, weight: .bold))
+                    .appTracking(1.4)
+                    .textCase(.uppercase)
+                    .foregroundStyle(AppColors.textCream)
+                    .multilineTextAlignment(.center)
+
+                Text(l10n.t("customDeck.list.emptyBody"))
+                    .font(AppFont.ui(12))
+                    .foregroundStyle(AppColors.textMuted)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button(action: createDeck) {
+                Text(l10n.t("customDeck.list.emptyAction"))
+                    .lineLimit(1)
+            }
+            .buttonStyle(MarqueeButtonStyle())
+            .padding(.horizontal, 28)
+            .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 28)
+        .padding(.top, 48)
+    }
+
     // MARK: Deste satırı
 
     private func row(_ deck: CustomDeck, isReadOnly: Bool) -> some View {
@@ -115,7 +168,7 @@ struct CustomDeckListView: View {
                     .saturation(isReadOnly ? 0.3 : 1)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(deck.name)
+                    Text(displayName(deck))
                         .font(AppFont.display(16, weight: .semibold))
                         .foregroundStyle(AppColors.textCream)
                         .lineLimit(1)
@@ -157,6 +210,11 @@ struct CustomDeckListView: View {
         }
     }
 
+    private func displayName(_ deck: CustomDeck?) -> String {
+        let name = deck?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return name.isEmpty ? l10n.t("customDeck.defaultName") : name
+    }
+
     private func subtitle(for deck: CustomDeck) -> String {
         let words = l10n.t("customDeck.wordCount", count: deck.wordCount)
         guard deck.canPlay else {
@@ -181,21 +239,19 @@ struct CustomDeckListView: View {
     private var addRow: some View {
         Button(action: createDeck) {
             VStack(spacing: 7) {
-                Image(systemName: hasFreeSlot ? "plus" : "lock.fill")
+                Image(systemName: "plus")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(hasFreeSlot ? AppColors.accentGold : AppColors.stateLocked)
+                    .foregroundStyle(AppColors.accentGold)
 
-                Text(l10n.t(hasFreeSlot ? "customDeck.new" : "customDeck.slotsFull"))
+                Text(l10n.t("customDeck.new"))
                     .font(AppFont.display(14, weight: .semibold))
                     .appTracking(1.4)
                     .textCase(.uppercase)
-                    .foregroundStyle(hasFreeSlot ? AppColors.accentGold : AppColors.stateLocked)
+                    .foregroundStyle(AppColors.accentGold)
 
-                if hasFreeSlot {
-                    Text(l10n.t("customDeck.list.emptySlot", ["index": "\(decks.count + 1)"]))
-                        .font(AppFont.ui(10))
-                        .foregroundStyle(AppColors.textMuted)
-                }
+                Text(l10n.t("customDeck.list.emptySlot", ["index": "\(decks.count + 1)"]))
+                    .font(AppFont.ui(10))
+                    .foregroundStyle(AppColors.textMuted)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
@@ -204,13 +260,23 @@ struct CustomDeckListView: View {
                     .fill(AppColors.surfaceCard.opacity(0.4))
                     .overlay {
                         RoundedRectangle(cornerRadius: 13).strokeBorder(
-                            AppColors.accentGold.opacity(hasFreeSlot ? 0.42 : 0.18),
+                            AppColors.accentGold.opacity(0.42),
                             style: StrokeStyle(lineWidth: 1, dash: [5, 4])
                         )
                     }
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private var slotsFullNote: some View {
+        Text(l10n.t("customDeck.slotsFull"))
+            .font(AppFont.ui(11, weight: .semibold))
+            .appTracking(1.2)
+            .textCase(.uppercase)
+            .foregroundStyle(AppColors.textMuted)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
     }
 
     // MARK: Eylemler
@@ -222,10 +288,10 @@ struct CustomDeckListView: View {
             return
         }
         Haptics.secondaryButton()
-        // İsimsiz deste hemen yazılıyor: editör otomatik kaydediyor (mockup'taki
-        // "otomatik kaydedilir" alt başlığı), yani düzenlenecek bir kayıt şart.
+        // İsimsiz deste hemen yazılıyor: editör otomatik kaydediyor. İsim
+        // boş bırakılıyor — "Yeni Deste" hem satır hem + kartı olmasın diye.
         let deck = CustomDeck(
-            name: l10n.t("customDeck.defaultName"),
+            name: "",
             languageCode: l10n.localeCode,
             sortIndex: (decks.map(\.sortIndex).max() ?? -1) + 1
         )

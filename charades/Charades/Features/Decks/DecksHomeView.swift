@@ -67,9 +67,10 @@ struct DecksHomeView: View {
 
                     FeaturedRow(
                         isWordBasketLocked: !subscriptions.isPremium,
+                        hasCustomDecks: !customDecks.isEmpty,
                         onMix: { router.push(.mix) },
                         onWordBasket: openWordBasket,
-                        onCustomDecks: { router.push(.customList) }
+                        onCustomDecks: openCustomDecks
                     )
 
                     if visibleDecks.isEmpty {
@@ -210,6 +211,16 @@ struct DecksHomeView: View {
         router.push(.wordBasket)
     }
 
+    /// Destesi yoksa editöre kısayol (§02 boş durum); varsa yönetim listesi.
+    /// Listeye uğrayıp hemen "Yeni Deste +" görmek çift kapı gibi duruyordu.
+    private func openCustomDecks() {
+        if customDecks.isEmpty {
+            router.push(.customEditor(nil))
+        } else {
+            router.push(.customList)
+        }
+    }
+
     /// Izgaradaki custom deste **oynamak** için; düzenleme uzun basışta ve
     /// `BENİM DESTELERİM` listesinde (§05 §7'nin iki kapısı).
     private func playCustomDeck(_ deck: CustomDeck) {
@@ -304,6 +315,7 @@ struct DecksHomeView: View {
                         }
                         Button(l10n.t("common.delete"), systemImage: "trash", role: .destructive) {
                             modelContext.delete(deck)
+                            modelContext.persistCustomDecks()
                         }
                     }
                 }
@@ -321,6 +333,7 @@ struct DecksHomeView: View {
                         }
                         Button(l10n.t("mix.saved.delete"), systemImage: "trash", role: .destructive) {
                             modelContext.delete(mix)
+                            modelContext.persistCustomDecks()
                         }
                     }
                 }

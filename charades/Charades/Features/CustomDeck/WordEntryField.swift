@@ -11,6 +11,8 @@ struct WordListSection: View {
     /// Ekran açılır açılmaz klavye — sepette şart (§02 §24), editörde önce isim
     /// alanı doldurulduğu için kapalı.
     var autoFocusesEntry = false
+    /// Artınca alandaki yazı listeye alınır (Kaydet / Oyna öncesi).
+    var flushSignal: Int = 0
 
     @Environment(LocalizationManager.self) private var l10n
 
@@ -46,6 +48,9 @@ struct WordListSection: View {
             #endif
             if autoFocusesEntry { isEntryFocused = true }
         }
+        // KAYDET / geri: alandaki yazı `EKLE`ye basılmadan kalmasın.
+        .onDisappear(perform: flushDraft)
+        .onChange(of: flushSignal) { _, _ in flushDraft() }
     }
 
     // MARK: Giriş satırı
@@ -204,6 +209,11 @@ struct WordListSection: View {
     }
 
     // MARK: Eylemler
+
+    private func flushDraft() {
+        guard !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        add()
+    }
 
     private func add() {
         let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)

@@ -63,7 +63,7 @@ struct CustomDeckCard: View {
 
     private var titleStrip: some View {
         VStack(spacing: 2) {
-            Text(deck.name)
+            Text(displayName)
                 .font(AppFont.accent(13, weight: .black))
                 .lineSpacing(-1)
                 .multilineTextAlignment(.center)
@@ -88,6 +88,11 @@ struct CustomDeckCard: View {
                 endPoint: .bottom
             )
         }
+    }
+
+    private var displayName: String {
+        let name = deck.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? l10n.t("customDeck.defaultName") : name
     }
 
     /// §05 §7: custom kelimeler çevrilmiyor; kart hangi dilde yazıldığını
@@ -150,7 +155,7 @@ struct CustomDeckCard: View {
     }
 
     private var accessibilityLabel: String {
-        var parts = [deck.name, l10n.t("customDeck.wordCount", count: deck.wordCount)]
+        var parts = [displayName, l10n.t("customDeck.wordCount", count: deck.wordCount)]
         if !deck.canPlay { parts.append(l10n.t("customDeck.draft.badge")) }
         if isLocked { parts.append(l10n.t("deck.locked.stamp")) }
         return parts.joined(separator: ", ")
