@@ -5,7 +5,7 @@ import UserNotifications
 
 /// Ekran 20 — Ayarlar (§ `06` §1).
 ///
-/// Beş grup, 15 satır.
+/// Beş grup; Oyun grubunda Nasıl Oynanır satırı da var.
 struct SettingsSheet: View {
     var onManageSubscription: () -> Void
     /// Replay premium bir özellik; kilitli anahtara dokunuş paywall'a gidiyor.
@@ -22,6 +22,7 @@ struct SettingsSheet: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var isShowingLanguage = false
+    @State private var isShowingHowToPlay = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var cameraStatus = ReplayRecorder.cameraAuthorization
     @State private var isShowingReplayPrivacy = false
@@ -48,6 +49,17 @@ struct SettingsSheet: View {
         .sheet(isPresented: $isShowingLanguage) {
             LanguageSheet { isShowingLanguage = false }
                 .environment(l10n)
+        }
+        .sheet(isPresented: $isShowingHowToPlay) {
+            HowToPlaySlider(
+                mode: .classic,
+                startsRound: false,
+                onClose: { isShowingHowToPlay = false },
+                onFinish: { isShowingHowToPlay = false }
+            )
+            .environment(l10n)
+            .environment(settings)
+            .presentationDetents([.fraction(0.78)])
         }
         .sheet(isPresented: $isShowingReplayPrivacy) {
             ReplayPrivacySheet(
@@ -121,6 +133,16 @@ struct SettingsSheet: View {
                     title: { l10n.t($0.titleKey) },
                     selection: $settings.difficulty
                 )
+            }
+
+            SettingsDivider()
+
+            SettingsRow(
+                icon: "questionmark.circle",
+                title: l10n.t("howToPlay.title"),
+                action: { isShowingHowToPlay = true }
+            ) {
+                SettingsDisclosure()
             }
         }
     }

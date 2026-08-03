@@ -17,9 +17,11 @@ struct CurtainRevealView: View {
 
     @State private var isOpen = false
     @State private var showsStage = false
+    /// Üst spot / ampul parlaklığı — 0 sönük, 1 tam yanık. Titreme akışı bunu sürer.
+    @State private var lampLevel: Double = 0
 
-    /// Splash süresi — perde + sahne görünümü.
-    private let total: TimeInterval = 2.0
+    /// Splash süresi — perde + lamba titremesi + sahne görünümü.
+    private let total: TimeInterval = 2.2
     private let plaqueSide: CGFloat = 168
 
     var body: some View {
@@ -30,7 +32,7 @@ struct CurtainRevealView: View {
 
                 spotCone
                     .frame(width: geometry.size.width, height: geometry.size.height)
-                    .opacity(showsStage ? 1 : 0)
+                    .opacity(lampLevel)
 
                 plaque
                     .opacity(showsStage ? 1 : 0)
@@ -63,7 +65,7 @@ struct CurtainRevealView: View {
     // MARK: Katmanlar
 
     /// Sahne ışığı — `ornek-ekranlar.html` `.spotcone`. Perde açılınca üstten
-    /// ikona düşen konik amber huzme; kapalıyken yok.
+    /// ikona düşen konik amber huzme; `lampLevel` ile titrer.
     private var spotCone: some View {
         GeometryReader { geometry in
             let width = min(geometry.size.width * 0.64, 280)
@@ -107,10 +109,15 @@ struct CurtainRevealView: View {
         Image("launch_plaque")
             .frame(width: plaqueSide, height: plaqueSide)
             .overlay {
-                BulbRing(countPerSide: 8, diameter: 4, color: AppColors.accentAmber, isLit: showsStage)
-                    .padding(-11)
+                BulbRing(
+                    countPerSide: 8,
+                    diameter: 4,
+                    color: AppColors.accentAmber,
+                    isLit: lampLevel > 0.12
+                )
+                .padding(-11)
             }
-            .shadow(color: AppColors.accentAmber.opacity(showsStage ? 0.55 : 0), radius: 36, y: 0)
+            .shadow(color: AppColors.accentAmber.opacity(0.55 * lampLevel), radius: 36, y: 0)
             .shadow(color: .black.opacity(0.55), radius: 26, y: 14)
     }
 
@@ -121,7 +128,7 @@ struct CurtainRevealView: View {
                 .appTracking(6)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream)
-                .shadow(color: AppColors.accentAmber.opacity(showsStage ? 0.5 : 0), radius: 11)
+                .shadow(color: AppColors.accentAmber.opacity(0.5 * lampLevel), radius: 11)
 
             HStack(spacing: 8) {
                 rule
@@ -166,27 +173,52 @@ struct CurtainRevealView: View {
             withAnimation(.easeOut(duration: 0.2)) {
                 isOpen = true
                 showsStage = true
+                lampLevel = 1
             }
             try? await Task.sleep(for: .milliseconds(200))
             onFinish()
             return
         }
 
-        withAnimation(.easeInOut(duration: total * 0.85).delay(0.12)) {
+        withAnimation(.easeInOut(duration: total * 0.78).delay(0.12)) {
             isOpen = true
+        }
+        withAnimation(.easeOut(duration: 0.28).delay(0.22)) {
             showsStage = true
         }
 
         async let prepared: Void = prepareCatalog()
-        async let shown: Void = holdFullDuration()
+        async let shown: Void = playLampAndHold()
         _ = await (prepared, shown)
         onFinish()
     }
 
-    /// §02 §4: hazırlık 1,2 saniyeden kısa sürdüyse **yine de** bekleniyor.
-    /// Yarım kesilmiş animasyon hızlı açılıştan kötü hissettiriyor.
-    private func holdFullDuration() async {
-        try? await Task.sleep(for: .seconds(total))
+    /// Eski sahne lambası: yanmaya çalışır, iki kez söner, sonra sabit kalır.
+    /// `sfx_bulb_flicker` ile aynı pencerede (~0.35–1.1 sn).
+    private func playLampAndHold() async {
+        let deadline = ContinuousClock.now + .seconds(total)
+
+        try? await Task.sleep(for: .milliseconds(380))
+
+        // 1. tutukluk — kısa parlama, sonra sönüş
+        withAnimation(.easeIn(duration: 0.05)) { lampLevel = 0.85 }
+        try? await Task.sleep(for: .milliseconds(70))
+        withAnimation(.easeOut(duration: 0.06)) { lampLevel = 0 }
+        try? await Task.sleep(for: .milliseconds(110))
+
+        // 2. tutukluk — daha zayıf, biraz daha uzun sönük
+        withAnimation(.easeIn(duration: 0.04)) { lampLevel = 0.55 }
+        try? await Task.sleep(for: .milliseconds(55))
+        withAnimation(.easeOut(duration: 0.07)) { lampLevel = 0 }
+        try? await Task.sleep(for: .milliseconds(140))
+
+        // Kalıcı yanış
+        withAnimation(.easeOut(duration: 0.22)) { lampLevel = 1 }
+
+        let remaining = deadline - ContinuousClock.now
+        if remaining > .zero {
+            try? await Task.sleep(for: remaining)
+        }
     }
 
     /// Deste kataloğu ilk erişimde kuruluyor (§05 §2). Kelime dosyaları
