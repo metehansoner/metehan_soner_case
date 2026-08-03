@@ -66,6 +66,7 @@ struct CustomDeckEditorView: View {
                         // isim ve kapak değiştikçe ızgarada nasıl görüneceği.
                         CustomDeckCard(deck: deck, isLocked: false)
                             .frame(width: 96)
+                            .id("preview-\(deck.coverTemplate)-\(deck.coverImageData?.count ?? 0)")
 
                         nameField(deck)
                     }
@@ -74,9 +75,21 @@ struct CustomDeckEditorView: View {
                         CoverPicker(
                             selection: Binding(
                                 get: { deck.cover },
-                                set: { deck.coverTemplate = $0.rawValue }
+                                set: { newCover in
+                                    deck.coverTemplate = newCover.rawValue
+                                    deck.coverImageData = nil
+                                    deck.updatedAt = .now
+                                    modelContext.persistCustomDecks()
+                                }
                             ),
-                            imageData: $deck.coverImageData
+                            imageData: Binding(
+                                get: { deck.coverImageData },
+                                set: { data in
+                                    deck.coverImageData = data
+                                    deck.updatedAt = .now
+                                    modelContext.persistCustomDecks()
+                                }
+                            )
                         )
                         // Şerit ekranın kenarına kadar kaysın: 12 şablon
                         // 20pt'lik iç boşlukta kesik görünüyordu.

@@ -20,8 +20,19 @@ struct CustomCoverArt: View {
                 template
             }
         }
+        // Canvas ilk çizimi önbelleğe alabiliyor; kapak/foto değişince kimlik
+        // değişmezse önizleme eski şablonda kalıyordu.
+        .id(artIdentity)
         .clipped()
         .allowsHitTesting(false)
+    }
+
+    private var artIdentity: String {
+        if let imageData {
+            "photo-\(imageData.count)"
+        } else {
+            "template-\(cover.rawValue)"
+        }
     }
 
     private var template: some View {
@@ -366,8 +377,9 @@ struct CoverPicker: View {
                 ForEach(CustomDeckCover.allCases) { cover in
                     Button {
                         Haptics.deckSelected()
+                        // Foto varsa binding set zaten temizliyor; seçim
+                        // değişimi gözlemi tetiklesin diye tek yerden yazılıyor.
                         selection = cover
-                        imageData = nil
                     } label: {
                         CoverSwatch(isSelected: imageData == nil && selection == cover) {
                             CustomCoverArt(cover: cover)
@@ -375,6 +387,7 @@ struct CoverPicker: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(l10n.t(cover.titleKey))
+                    .accessibilityAddTraits(imageData == nil && selection == cover ? .isSelected : [])
                 }
             }
             .padding(.horizontal, 20)
