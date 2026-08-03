@@ -8,7 +8,7 @@ import SwiftUI
 struct PosterFan: View {
     var deckIDs: [String] = ["party", "movieClassics", "animals", "nineties"]
 
-    private static let angles: [Double] = [-16, -5.5, 5.5, 16]
+    private static let angles: [Double] = [-15, -5, 5, 15]
 
     var body: some View {
         ZStack {
@@ -16,12 +16,12 @@ struct PosterFan: View {
                 let angle = Self.angles[index]
                 FanPoster(deckID: id)
                     .rotationEffect(.degrees(angle), anchor: .bottom)
-                    .offset(x: CGFloat(angle) * 3.6, y: abs(angle) * 0.9)
+                    .offset(x: CGFloat(angle) * 4.2, y: abs(angle) * 1.05)
                     .zIndex(Double(index))
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 12)
+        .padding(.top, 8)
         .accessibilityHidden(true)
     }
 }
@@ -29,31 +29,53 @@ struct PosterFan: View {
 private struct FanPoster: View {
     let deckID: String
 
+    @Environment(LocalizationManager.self) private var l10n
+
+    private var deck: DeckDef? { DeckCatalog.deck(deckID) }
+    private var section: DeckSection { deck?.section ?? .party }
+    private var titleKey: String { deck?.titleKey ?? "deck.\(deckID).title" }
+    private var imageName: String { deck?.imageName ?? "deck_\(deckID)" }
+
     var body: some View {
-        let section = DeckCatalog.deck(deckID)?.section ?? .party
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: 11)
             .fill(AppColors.surfaceCard)
             .overlay {
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(AppColors.accentGold.opacity(0.55), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 11)
+                    .strokeBorder(AppColors.accentGold.opacity(0.55), lineWidth: 1.2)
             }
             .overlay {
                 VStack(spacing: 0) {
                     ZStack {
                         section.artGradient
-                        Image("deck_\(deckID)")
+                        Image(imageName)
                             .resizable()
                             .scaledToFit()
-                            .padding(7)
+                            .padding(9)
                     }
-                    Rectangle()
-                        .fill(AppColors.surfaceTicket)
-                        .frame(height: 11)
+
+                    Text(l10n.t(titleKey))
+                        .font(AppFont.accent(10, weight: .black))
+                        .lineSpacing(-1)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.7)
+                        .foregroundStyle(AppColors.textOnPoster)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 5)
+                        .padding(.top, 5)
+                        .padding(.bottom, 6)
+                        .background {
+                            LinearGradient(
+                                colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .padding(3)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .padding(4)
             }
-            .frame(width: 74, height: 99)
-            .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
+            .frame(width: 102, height: 138)
+            .shadow(color: .black.opacity(0.5), radius: 6, y: 4)
     }
 }
