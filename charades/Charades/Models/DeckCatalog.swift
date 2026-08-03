@@ -173,7 +173,7 @@ enum DeckCatalog {
     /// §10 §4: kodlama 3 örnek deste ile başlıyor. Kelime dosyası olmayan bir
     /// deste ızgarada kilitli değil **içeriksiz** — P3 bunu ayırt etmek için
     /// bu listeyi okuyor, `CardBank` boş havuzla tur başlatmıyor.
-    static let contentReadyIDs: Set<String> = ["party", "movieClassics", "cities", "icebreaker", "partyFlirty", "dares", "karaoke", "dance"]
+    static let contentReadyIDs: Set<String> = ["party", "movieClassics", "cities", "icebreaker", "partyFlirty", "dares", "karaoke", "dance", "bachelor", "jobs", "emotions", "animalsAct", "chores", "sportsAct"]
 
     /// Remote Config'ten gelen sezon penceresi ezmeleri (§09 §8). Bundle
     /// varsayılanı aşağıdaki tabloda; RC yalnızca üzerine yazıyor.

@@ -110,9 +110,9 @@ struct PaywallView: View {
     @ViewBuilder
     private var header: some View {
         if usesShowcaseChrome {
-            // HTML `.collage.tall` — 318pt, ekranın ~%36'sı.
+            // HTML `.collage.tall` — üç kolonlu okunaklı afişler için biraz daha yüksek.
             PosterWall(decks: DeckCatalog.v1)
-                .frame(height: 318)
+                .frame(height: 340)
         } else {
             contextHero
         }

@@ -33,8 +33,8 @@ struct CustomDeckEditorView: View {
 
     /// Alandaki taslak da eklense oynamaya yeter mi — buton durumu için.
     private func projectedWordCount(for deck: CustomDeck) -> Int {
-        var words = deck.words
-        var draft = wordDraft
+        let words = deck.words
+        let draft = wordDraft
         let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
         return result.addedCount > 0 ? result.words.count : deck.wordCount
     }

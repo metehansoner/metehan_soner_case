@@ -15,30 +15,30 @@ struct PosterWall: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// `paywall.html`: 4 kolon. Tempo biraz yavaş — vitrin, kaydırma çubuğu değil.
-    private static let durations: [Double] = [48, 60, 54, 66]
-    private static let columnCount = 4
+    /// §03 §2: üç kolon — dört kolon kartları okunamayacak kadar küçültüyordu.
+    private static let durations: [Double] = [48, 58, 52]
+    private static let columnCount = 3
 
     var body: some View {
         GeometryReader { geometry in
-            let gaps = CGFloat(Self.columnCount - 1) * 7
-            let columnWidth = max(geometry.size.width - 20 - gaps, 0) / CGFloat(Self.columnCount)
+            let gaps = CGFloat(Self.columnCount - 1) * 8
+            let columnWidth = max(geometry.size.width - 16 - gaps, 0) / CGFloat(Self.columnCount)
 
-            HStack(spacing: 7) {
+            HStack(spacing: 8) {
                 ForEach(0..<Self.columnCount, id: \.self) { index in
                     PosterColumn(
                         decks: slice(index),
                         width: columnWidth,
                         duration: Self.durations[index],
-                        isReversed: index == 1 || index == 3,
+                        isReversed: index == 1,
                         isAnimated: !reduceMotion
                     )
                 }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .rotationEffect(.degrees(-3), anchor: UnitPoint(x: 0.5, y: 0.4))
-            .scaleEffect(1.07, anchor: UnitPoint(x: 0.5, y: 0.4))
+            .scaleEffect(1.08, anchor: UnitPoint(x: 0.5, y: 0.4))
         }
         .clipped()
         .opacity(opacity)
@@ -57,13 +57,13 @@ struct PosterWall: View {
         .accessibilityHidden(true)
     }
 
-    /// Mockup kolon başına 7 afiş; fazlası şeridi ağırlaştırıyor.
+    /// Kolon başına birkaç afiş; fazlası şeridi ağırlaştırıyor.
     private func slice(_ index: Int) -> [DeckDef] {
         let stride = decks.enumerated().compactMap {
             $0.offset % Self.columnCount == index ? $0.element : nil
         }
         let pool = stride.isEmpty ? decks : stride
-        return Array(pool.prefix(7))
+        return Array(pool.prefix(6))
     }
 }
 
@@ -179,63 +179,69 @@ private struct PosterStrip: View, Equatable {
 
 // MARK: - Mini afiş
 
-/// Ana ekrandaki deste kartının küçültülmüş hâli — `paywall.html` `.mini`.
-///
-/// HTML anatomisi: dış 3:4 kutu → 3pt pad → esnek art + sabit şerit.
-/// `GeometryReader` + `maxHeight: .infinity` burada çöküyordu (yalnız şerit
-/// kalıyordu); art alanı `layoutPriority` ile sabit oranlı.
+/// Ana ekrandaki deste kartının küçültülmüş hâli — paywall afiş duvarı +
+/// kilitli deste hero kartı. Tipografi kart genişliğine göre ölçekleniyor;
+/// sabit 6pt yazı duvarda okunmuyordu.
 struct DeckMiniPoster: View {
     let deck: DeckDef
 
     @Environment(LocalizationManager.self) private var l10n
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                deck.section.artGradient
-                HalftoneTexture(dotSize: 0.7, spacing: 3, color: .black.opacity(0.65))
-                    .opacity(0.2)
-                Image(deck.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    // HTML: amblem art alanının ~%62'si.
-                    .padding(.horizontal, 19)
-                    .padding(.vertical, 14)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .layoutPriority(1)
+        GeometryReader { geo in
+            let w = geo.size.width
+            let titleSize = max(10, min(14, w * 0.1))
+            let artPad = max(10, w * 0.11)
+            let stripPadH = max(5, w * 0.06)
+            let corner = max(7, w * 0.07)
 
-            Text(l10n.t(deck.titleKey))
-                .font(AppFont.accent(6, weight: .black))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .foregroundStyle(AppColors.textOnPoster)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 3)
-                .padding(.top, 2.5)
-                .padding(.bottom, 3)
-                .background {
-                    LinearGradient(
-                        colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+            VStack(spacing: 0) {
+                ZStack {
+                    deck.section.artGradient
+                    HalftoneTexture(dotSize: 0.7, spacing: 3, color: .black.opacity(0.65))
+                        .opacity(0.2)
+                    Image(deck.imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(artPad)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
+
+                Text(l10n.t(deck.titleKey))
+                    .font(AppFont.accent(titleSize, weight: .black))
+                    .lineSpacing(-1)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.72)
+                    .foregroundStyle(AppColors.textOnPoster)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, stripPadH)
+                    .padding(.top, max(4, w * 0.04))
+                    .padding(.bottom, max(5, w * 0.045))
+                    .background {
+                        LinearGradient(
+                            colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: corner * 0.7, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: corner * 0.7, style: .continuous)
+                    .strokeBorder(AppColors.accentGold.opacity(0.28), lineWidth: 0.5)
+            }
+            .padding(max(3, w * 0.03))
+            .background {
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .fill(AppColors.surfaceCard)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: corner, style: .continuous)
+                            .strokeBorder(AppColors.accentGold.opacity(0.34), lineWidth: 1)
+                    }
+            }
+            .shadow(color: .black.opacity(0.5), radius: 6, y: 4)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .strokeBorder(AppColors.accentGold.opacity(0.28), lineWidth: 0.5)
-        }
-        .padding(3)
-        .background {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(AppColors.surfaceCard)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .strokeBorder(AppColors.accentGold.opacity(0.34), lineWidth: 1)
-                }
-        }
-        .shadow(color: .black.opacity(0.5), radius: 6, y: 4)
     }
 }

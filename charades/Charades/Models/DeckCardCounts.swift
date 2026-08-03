@@ -13,13 +13,19 @@ enum DeckCardCounts {
     static func count(for deckID: String) -> Int? { table[deckID] }
 
     static let table: [String: Int] = [
+        "animalsAct": 20,
+        "bachelor": 20,
+        "chores": 20,
         "cities": 64,
         "dance": 20,
         "dares": 20,
+        "emotions": 20,
         "icebreaker": 20,
+        "jobs": 20,
         "karaoke": 20,
         "movieClassics": 63,
         "party": 65,
         "partyFlirty": 20,
+        "sportsAct": 20,
     ]
 }
