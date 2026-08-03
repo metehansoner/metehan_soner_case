@@ -45,7 +45,7 @@ struct FeaturedRow: View {
 
 private struct FeaturedCard: View {
     enum Style {
-        /// §4: Mix dönen film makarası, Kendi Kelimelerin boş bilet + kalem,
+        /// §4: Mix dönen film makarası, Kendi Kelimelerin kelime kartları + kalem,
         /// Custom boş afiş + artı. Üçü de ızgaradaki desteden farklı görsel dil.
         case mix, wordBasket, customDeck
     }
@@ -103,15 +103,7 @@ private struct FeaturedCard: View {
         case .mix:
             SpinningReel(isSpinning: !reduceMotion)
         case .wordBasket:
-            Image(systemName: "ticket")
-                .font(.system(size: 22, weight: .light))
-                .foregroundStyle(AppColors.accentGold)
-                .overlay(alignment: .bottomTrailing) {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(AppColors.accentAmber)
-                        .offset(x: 4, y: 3)
-                }
+            WordBasketIcon()
         case .customDeck:
             Image(systemName: "rectangle.portrait.badge.plus")
                 .font(.system(size: 22, weight: .light))
@@ -163,6 +155,54 @@ private struct StripedFill: View {
             }
         }
         .allowsHitTesting(false)
+    }
+}
+
+/// Kendi Kelimelerin: üst üste iki kelime kartı + ince kalem — bilet ikonundan
+/// daha okunaklı; Mix makarası / Custom afiş ile aynı “çizim” dili.
+private struct WordBasketIcon: View {
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .strokeBorder(AppColors.accentBrass, lineWidth: 1.2)
+                    .frame(width: 16, height: 20)
+                    .rotationEffect(.degrees(-11))
+                    .offset(x: -5, y: 0)
+
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(AppColors.surfaceCard.opacity(0.55))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .strokeBorder(AppColors.accentGold, lineWidth: 1.35)
+                    }
+                    .overlay(alignment: .top) {
+                        VStack(spacing: 2.5) {
+                            Capsule()
+                                .fill(AppColors.accentGold.opacity(0.9))
+                                .frame(width: 9, height: 1.4)
+                            Capsule()
+                                .fill(AppColors.accentGold.opacity(0.55))
+                                .frame(width: 7, height: 1.4)
+                            Capsule()
+                                .fill(AppColors.accentGold.opacity(0.35))
+                                .frame(width: 5, height: 1.4)
+                        }
+                        .padding(.top, 5)
+                    }
+                    .frame(width: 16, height: 20)
+                    .offset(x: 2, y: 0)
+            }
+            .frame(width: 26, height: 22)
+
+            Image(systemName: "pencil")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(AppColors.accentAmber)
+                .rotationEffect(.degrees(18))
+                .offset(x: 5, y: 4)
+        }
+        .frame(width: 30, height: 26)
+        .accessibilityHidden(true)
     }
 }
 
