@@ -8,6 +8,7 @@ struct DeckDetailSheet: View {
     let deck: DeckDef
 
     @Environment(LocalizationManager.self) private var l10n
+    @Environment(AppSettingsStore.self) private var settings
     @Environment(SubscriptionStore.self) private var subscriptions
     @Environment(AppRouter.self) private var router
     @Environment(GameSetup.self) private var setup
@@ -187,16 +188,22 @@ struct DeckDetailSheet: View {
 
     private var actions: some View {
         VStack(spacing: 8) {
-            Button(l10n.t(isLocked ? "deck.buyTicket" : "common.play")) {
-                if isLocked {
-                    router.openPaywall(.lockedDeck(deck.id))
-                } else {
-                    setup.select(only: deck.id)
-                    router.beginSetupAfterDeckDetail()
+            HStack(spacing: 10) {
+                Button(l10n.t(isLocked ? "deck.buyTicket" : "common.play")) {
+                    if isLocked {
+                        router.openPaywall(.lockedDeck(deck.id))
+                    } else {
+                        setup.select(only: deck.id)
+                        router.beginSetupAfterDeckDetail()
+                    }
                 }
+                .buttonStyle(MarqueeButtonStyle())
+                .disabled(!isLocked && !hasContent)
+
+                // §02 §4: ikon buton `FAVORİ` — filtre chip'i en az bir favori
+                // varken görünüyor (§09 §9).
+                favoriteButton
             }
-            .buttonStyle(MarqueeButtonStyle())
-            .disabled(!isLocked && !hasContent)
 
             if !isLocked {
                 Text(l10n.t("deck.play.hint"))
@@ -206,6 +213,32 @@ struct DeckDetailSheet: View {
                     .frame(maxWidth: .infinity)
             }
         }
+    }
+
+    private var favoriteButton: some View {
+        let isFavorite = settings.isFavorite(deck.id)
+        return Button {
+            Haptics.secondaryButton()
+            settings.toggleFavorite(deck.id)
+        } label: {
+            Image(systemName: isFavorite ? "star.fill" : "star")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(isFavorite ? AppColors.accentAmber : AppColors.accentBrass)
+                .frame(width: 52, height: 52)
+                .background {
+                    Circle()
+                        .fill(AppColors.surfaceCardRaised)
+                        .overlay {
+                            Circle()
+                                .strokeBorder(AppColors.accentGold.opacity(0.4), lineWidth: 1)
+                        }
+                }
+                .frame(width: 52, height: 52)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(l10n.t("deck.favorite"))
+        .accessibilityAddTraits(isFavorite ? .isSelected : [])
     }
 
     /// §4: 6 kelime. Deste dosyası burada lazy yükleniyor — ana ekranda değil.

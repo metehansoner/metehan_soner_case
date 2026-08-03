@@ -350,7 +350,8 @@ struct DecksHomeView: View {
                         isDailyFree: false,
                         cardCount: DeckCardCounts.count(for: deck.id),
                         isOffMode: isOffMode(deck),
-                        showsAccessState: false
+                        showsAccessState: false,
+                        isFavorite: settings.isFavorite(deck.id)
                     )
                 }
                 .buttonStyle(.plain)

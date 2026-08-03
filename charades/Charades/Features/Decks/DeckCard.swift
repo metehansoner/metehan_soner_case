@@ -23,6 +23,8 @@ struct DeckCard: View {
     /// Ana ızgarada kilit/ücretsiz rozetleri kapalı: tüm kartlar aktif görünür,
     /// premium bilgisi deste detayında (§ kullanıcı tercihi).
     var showsAccessState: Bool = true
+    /// Favori yıldızı — ızgarada durum okunaklı kalsın diye.
+    var isFavorite: Bool = false
 
     @Environment(LocalizationManager.self) private var l10n
 
@@ -43,6 +45,9 @@ struct DeckCard: View {
 
             reelTag
             ribbon
+            if isFavorite {
+                favoriteMark
+            }
         }
         .padding(5)
         // Kilitli kartın sepyası kadar sert değil: bu bir engel değil uyarı.
@@ -214,6 +219,30 @@ struct DeckCard: View {
         }
     }
 
+    /// Favori rozeti — kurdele yokken sağ üstte, varken onun altında değil
+    /// afiş köşesinde kalır; ribbon varsa sol alt yerine sağ üst ribbon'ın
+    /// yerini bırakıp art alanının sağ altına yakın küçük yıldız.
+    private var favoriteMark: some View {
+        Image(systemName: "star.fill")
+            .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(AppColors.accentAmber)
+            .padding(6)
+            .background {
+                Circle()
+                    .fill(AppColors.bgFilmBlack.opacity(0.72))
+                    .overlay {
+                        Circle().strokeBorder(AppColors.accentAmber.opacity(0.55), lineWidth: 0.5)
+                    }
+            }
+            .padding(9)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: ribbonKey == nil ? .topTrailing : .bottomLeading
+            )
+            .accessibilityHidden(true)
+    }
+
     /// Kalıcı ücretsiz / bugün bedava yalnızca `showsAccessState` açıkken.
     /// Ana ızgarada gizlenir; `YENİ` rozeti kalır.
     private var ribbonKey: String? {
@@ -294,6 +323,7 @@ struct DeckCard: View {
         if showsAccessState, isLocked { parts.append(l10n.t("deck.locked.stamp")) }
         if isOffMode, !visuallyLocked { parts.append(l10n.t("deck.describeOnly.badge")) }
         if let ribbonKey, !visuallyLocked { parts.append(l10n.t(ribbonKey)) }
+        if isFavorite { parts.append(l10n.t("deck.favorite")) }
         return parts.joined(separator: ", ")
     }
 }
