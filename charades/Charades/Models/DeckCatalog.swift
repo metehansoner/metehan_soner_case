@@ -168,12 +168,12 @@ struct DeckDef: Identifiable, Hashable, Sendable {
 enum DeckCatalog {
 
     /// §05 §4: kalıcı ücretsiz deste.
-    static let freeDeckID = "party"
+    static let freeDeckID = "cities"
 
     /// §10 §4: kodlama 3 örnek deste ile başlıyor. Kelime dosyası olmayan bir
     /// deste ızgarada kilitli değil **içeriksiz** — P3 bunu ayırt etmek için
     /// bu listeyi okuyor, `CardBank` boş havuzla tur başlatmıyor.
-    static let contentReadyIDs: Set<String> = ["party", "movieClassics", "cities"]
+    static let contentReadyIDs: Set<String> = ["party", "movieClassics", "cities", "icebreaker", "partyFlirty", "dares", "karaoke", "dance"]
 
     /// Remote Config'ten gelen sezon penceresi ezmeleri (§09 §8). Bundle
     /// varsayılanı aşağıdaki tabloda; RC yalnızca üzerine yazıyor.
@@ -217,6 +217,37 @@ enum DeckCatalog {
     /// Izgarada gösterilecek desteler: sezon destesi penceresi dışındaysa listede yok.
     static func visibleDecks(on date: Date = .now) -> [DeckDef] {
         v1.filter { $0.isInSeason(on: date) }
+    }
+
+    // MARK: Ana ekran sırası (All)
+
+    /// Açılışta bir kez karıştırılır; süreç boyunca sabit kalır.
+    nonisolated(unsafe) private(set) static var sessionOrderIDs: [String] = []
+
+    /// Her uygulama açılışında All ızgarasının sırasını yeniler.
+    static func refreshSessionOrder(on date: Date = .now) {
+        sessionOrderIDs = visibleDecks(on: date).map(\.id).shuffled()
+    }
+
+    /// All filtresi: oturum sırası. Premium değilse kalıcı ücretsiz deste en başta.
+    static func homeOrderedDecks(isPremium: Bool, on date: Date = .now) -> [DeckDef] {
+        let decks = visibleDecks(on: date)
+        if sessionOrderIDs.isEmpty {
+            refreshSessionOrder(on: date)
+        }
+        let rank = Dictionary(
+            uniqueKeysWithValues: sessionOrderIDs.enumerated().map { ($1, $0) }
+        )
+        var ordered = decks.sorted { a, b in
+            let ra = rank[a.id] ?? Int.max
+            let rb = rank[b.id] ?? Int.max
+            if ra != rb { return ra < rb }
+            return a.reelNumber < b.reelNumber
+        }
+        if !isPremium, let index = ordered.firstIndex(where: \.isFree) {
+            ordered.insert(ordered.remove(at: index), at: 0)
+        }
+        return ordered
     }
 
     // MARK: Günlük bedava deste

@@ -40,6 +40,9 @@ final class LiveGame {
 
     /// Tur sonu ekranında kolonlar arası taşınabilen tek cevap (§02 ekran 17).
     struct Answer: Identifiable, Equatable {
+        /// `card.k` değil: havuz başa dönünce aynı kart tur içinde tekrar
+        /// gelebilir (§09 §4); `ForEach` ve dokunarak düzeltme çakışırdı.
+        let id: String
         let card: Card
         var isCorrect: Bool
         /// Tur başından itibaren saniye. Replay zaman çizelgesi bu damgayı
@@ -48,7 +51,12 @@ final class LiveGame {
         /// burada duruyor, kaydın karşılığı `ReplayRecorder` içinde.
         let offset: TimeInterval
 
-        var id: String { card.k }
+        init(card: Card, isCorrect: Bool, offset: TimeInterval) {
+            self.id = UUID().uuidString
+            self.card = card
+            self.isCorrect = isCorrect
+            self.offset = offset
+        }
     }
 
     enum Flash: Equatable {
@@ -609,10 +617,14 @@ final class LiveGame {
 
         // §09 §9: düzeltme replay damgasını da çevirmek zorunda; yoksa kullanıcı
         // "doğru" diye düzelttiği kelimeyi replay'de kırmızı `PAS` damgasıyla
-        // görüyor.
+        // görüyor. Aynı kart tur içinde tekrar geldiyse kaçıncı oluşum
+        // olduğuna bakıyoruz — damga anahtarı hâlâ `card.k`.
         guard var reel else { return }
-        if let markIndex = reel.marks.firstIndex(where: { $0.key == id }) {
-            reel.marks[markIndex].isCorrect = answers[index].isCorrect
+        let cardKey = answers[index].card.k
+        let ordinal = answers.prefix(index + 1).filter { $0.card.k == cardKey }.count - 1
+        let markIndices = reel.marks.indices.filter { reel.marks[$0].key == cardKey }
+        if ordinal < markIndices.count {
+            reel.marks[markIndices[ordinal]].isCorrect = answers[index].isCorrect
             self.reel = reel
             ReplayStore.save(reel)
         }

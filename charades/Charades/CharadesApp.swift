@@ -25,6 +25,9 @@ struct CharadesApp: App {
         // §06 §3: bildirim metninde o günün deste adı geçtiği için tekrarlayan
         // tetik kullanılamıyor; pencere her açılışta yeniden planlanıyor.
         NotificationService.scheduleChanged()
+        // All ızgarası her açılışta farklı sırada; ücretsiz kullanıcıda free
+        // deste ayrıca en başa çekiliyor (`homeOrderedDecks`).
+        DeckCatalog.refreshSessionOrder()
         // §04 §4.2: arşivin bakımı açılışta yapılıyor — öksüz dosyalar, yaşı
         // geçen kayıtlar ve kota. İlk kareyi beklemesin diye ertelendi.
         Task { ReplayStore.runLaunchMaintenance(settings: AppSettingsStore.shared) }

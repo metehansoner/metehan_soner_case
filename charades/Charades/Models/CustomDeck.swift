@@ -18,21 +18,21 @@ enum CustomDeckLimits: Sendable {
     nonisolated static func maxDeckCount(isPremium: Bool) -> Int { isPremium ? 3 : 1 }
 }
 
-/// §05 §7: 12 hazır retro afiş şablonu — soyut ve konusuz, böylece custom içerik
-/// ızgaranın tasarımını bozamıyor. Çizimleri P8'deki `CoverPicker`'da.
+/// §05 §7: 12 hazır tema afişi. Ham `rawValue` SwiftData'da saklanıyor —
+/// isimler değişse de sıra (0…11) sabit kalmalı.
 enum CustomDeckCover: Int, CaseIterable, Identifiable, Sendable {
-    case velvet = 0
-    case filmStrip
-    case spotlight
-    case star
-    case ticket
-    case marquee
-    case reel
-    case curtain
-    case clapper
-    case sunburst
-    case posterFrame
-    case bulbBorder
+    case animals = 0
+    case people
+    case vehicles
+    case food
+    case sports
+    case music
+    case travel
+    case home
+    case nature
+    case party
+    case jobs
+    case fantasy
 
     nonisolated var id: Int { rawValue }
     nonisolated var titleKey: String { "customDeck.cover.\(String(describing: self))" }
@@ -110,7 +110,7 @@ final class CustomDeck {
     }
 
     var cover: CustomDeckCover {
-        CustomDeckCover(rawValue: coverTemplate) ?? .velvet
+        CustomDeckCover(rawValue: coverTemplate) ?? .animals
     }
 
     var orderedCards: [CustomCard] {

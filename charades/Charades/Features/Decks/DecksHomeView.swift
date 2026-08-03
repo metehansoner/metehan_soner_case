@@ -402,7 +402,7 @@ struct DecksHomeView: View {
         let decks = DeckCatalog.visibleDecks()
         switch filter {
         case .all:
-            return decks
+            return DeckCatalog.homeOrderedDecks(isPremium: subscriptions.isPremium)
         case .popular:
             // Sıra Remote Config'ten geliyor; katalog sırası değil o sıra geçerli.
             let ranking = Dictionary(

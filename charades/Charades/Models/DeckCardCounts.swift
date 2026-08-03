@@ -14,7 +14,12 @@ enum DeckCardCounts {
 
     static let table: [String: Int] = [
         "cities": 64,
+        "dance": 20,
+        "dares": 20,
+        "icebreaker": 20,
+        "karaoke": 20,
         "movieClassics": 63,
         "party": 65,
+        "partyFlirty": 20,
     ]
 }

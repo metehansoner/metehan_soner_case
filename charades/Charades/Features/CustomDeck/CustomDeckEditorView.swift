@@ -23,6 +23,7 @@ struct CustomDeckEditorView: View {
 
     @State private var createdID: UUID?
     @State private var wordDraft = ""
+    @State private var showDeleteConfirm = false
     @FocusState private var isNamingFocused: Bool
 
     private var deck: CustomDeck? {
@@ -51,6 +52,15 @@ struct CustomDeckEditorView: View {
         // Adsız ve kelimesiz deste listede iz bırakmıyor: kullanıcı yanlışlıkla
         // dokunup geri döndüğünde boş bir kart kalmamalı.
         .onDisappear(perform: discardIfEmpty)
+        .alert(
+            l10n.t("customDeck.delete.title"),
+            isPresented: $showDeleteConfirm
+        ) {
+            Button(l10n.t("common.cancel"), role: .cancel) {}
+            Button(l10n.t("customDeck.delete.confirm"), role: .destructive, action: deleteDeck)
+        } message: {
+            Text(l10n.t("customDeck.delete.body", ["name": displayName(deck)]))
+        }
     }
 
     private func editor(_ deck: CustomDeck) -> some View {
@@ -147,10 +157,25 @@ struct CustomDeckEditorView: View {
             }
             .frame(maxWidth: .infinity)
 
-            Color.clear.frame(width: 44, height: 44)
+            Button {
+                Haptics.secondaryButton()
+                showDeleteConfirm = true
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppColors.accentGold)
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(l10n.t("common.delete"))
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 6)
+    }
+
+    private func displayName(_ deck: CustomDeck?) -> String {
+        let name = deck?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return name.isEmpty ? l10n.t("customDeck.defaultName") : name
     }
 
     // MARK: Alanlar
@@ -309,6 +334,14 @@ struct CustomDeckEditorView: View {
         guard name.isEmpty || name == defaultName else { return }
         modelContext.delete(deck)
         modelContext.persistCustomDecks()
+    }
+
+    private func deleteDeck() {
+        guard let deck else { return }
+        Haptics.deckDeselected()
+        modelContext.delete(deck)
+        modelContext.persistCustomDecks()
+        router.pop()
     }
 
     /// Taslağı yazar, kaydeder; `Kaydet` / geri çıkar, `Kaydet ve Oyna` oyuna geçer.
