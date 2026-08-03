@@ -6,7 +6,8 @@ import SwiftUI
 /// Alanlar doğrudan SwiftData nesnesine yazıyor: mockup'taki "otomatik
 /// kaydedilir" alt başlığı bu. Yerel bir kopya tutup `KAYDET`te yazsaydık,
 /// 40 kelime girip uygulamayı arka plana atan kullanıcı hepsini kaybederdi.
-/// `KAYDET` bu yüzden bir yazma değil, "bitirdim" düğmesi.
+/// `KAYDET` bu yüzden bir yazma değil, "bitirdim" düğmesi — basılmadan önce
+/// alandaki taslak kelime senkron listeye alınır.
 struct CustomDeckEditorView: View {
     /// `nil`: listeye uğramadan açılan yeni deste (Öne Çıkanlar kısayolu).
     let deckID: UUID?
@@ -21,12 +22,20 @@ struct CustomDeckEditorView: View {
     @Query private var decks: [CustomDeck]
 
     @State private var createdID: UUID?
-    @State private var wordFlushSignal = 0
+    @State private var wordDraft = ""
     @FocusState private var isNamingFocused: Bool
 
     private var deck: CustomDeck? {
         let id = deckID ?? createdID
         return decks.first { $0.uuid == id }
+    }
+
+    /// Alandaki taslak da eklense oynamaya yeter mi — buton durumu için.
+    private func projectedWordCount(for deck: CustomDeck) -> Int {
+        var words = deck.words
+        var draft = wordDraft
+        let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
+        return result.addedCount > 0 ? result.words.count : deck.wordCount
     }
 
     var body: some View {
@@ -37,6 +46,7 @@ struct CustomDeckEditorView: View {
                 editor(deck)
             }
         }
+        .dismissKeyboardOnTap()
         .onAppear(perform: createIfNeeded)
         // Adsız ve kelimesiz deste listede iz bırakmıyor: kullanıcı yanlışlıkla
         // dokunup geri döndüğünde boş bir kart kalmamalı.
@@ -74,12 +84,16 @@ struct CustomDeckEditorView: View {
                     }
 
                     field(label: l10n.t("customDeck.field.words")) {
-                        WordListSection(words: wordsBinding(deck), flushSignal: wordFlushSignal)
+                        WordListSection(
+                            words: wordsBinding(deck),
+                            draft: $wordDraft
+                        )
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 4)
                 .padding(.bottom, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
@@ -94,7 +108,7 @@ struct CustomDeckEditorView: View {
         HStack(spacing: 0) {
             Button {
                 Haptics.secondaryButton()
-                router.pop()
+                finishEditing(playAfter: false)
             } label: {
                 Image(systemName: "chevron.left")
                     .flipsForRightToLeftLayoutDirection(true)
@@ -197,7 +211,7 @@ struct CustomDeckEditorView: View {
 
     private func footer(_ deck: CustomDeck) -> some View {
         VStack(spacing: 7) {
-            if !deck.canPlay {
+            if projectedWordCount(for: deck) < CustomDeckLimits.minWordsToPlay {
                 Text(l10n.t("customDeck.needsMore", count: CustomDeckLimits.minWordsToPlay))
                     .font(AppFont.ui(11))
                     .foregroundStyle(AppColors.stateWarning)
@@ -205,7 +219,8 @@ struct CustomDeckEditorView: View {
 
             HStack(spacing: 10) {
                 Button {
-                    commitAndPop()
+                    Haptics.primaryButton()
+                    finishEditing(playAfter: false)
                 } label: {
                     // İki butonun yüksekliği eşit kalmalı: `KAYDET VE OYNA`
                     // uzun dillerde iki satıra taşıp yanındakini kısa bırakıyor.
@@ -214,14 +229,14 @@ struct CustomDeckEditorView: View {
                 .buttonStyle(SecondaryButtonStyle())
 
                 Button {
-                    play(deck)
+                    finishEditing(playAfter: true)
                 } label: {
                     Text(l10n.t("customDeck.saveAndPlay"))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
                 .buttonStyle(MarqueeButtonStyle())
-                .disabled(!deck.canPlay)
+                .disabled(projectedWordCount(for: deck) < CustomDeckLimits.minWordsToPlay)
             }
         }
         .padding(.horizontal, 20)
@@ -271,9 +286,9 @@ struct CustomDeckEditorView: View {
 
     private func discardIfEmpty() {
         guard let deck else { return }
-        // Çıkmadan önce flush: ilişki henüz yazılmamışsa kelimeli deste
-        // yanlışlıkla "boş" sayılıp silinmesin. WordListSection da draft'ı
-        // onDisappear'da ekliyor — çocuk önce çalışır.
+        // Çıkmadan önce taslak hâlâ duruyorsa yaz: swipe-back parent
+        // `leaveEditor` çağırmadan pop edebiliyor.
+        _ = commitPendingDraft(into: deck, trackAnalytics: false)
         modelContext.persistCustomDecks()
         guard deck.wordCount == 0 else { return }
         let name = deck.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -283,24 +298,19 @@ struct CustomDeckEditorView: View {
         modelContext.persistCustomDecks()
     }
 
-    private func commitAndPop() {
-        Haptics.primaryButton()
-        wordFlushSignal += 1
-        // Flush'ın binding üzerinden yazılması için bir run-loop.
-        Task { @MainActor in
-            await Task.yield()
-            modelContext.persistCustomDecks()
+    /// Taslağı yazar, kaydeder; `Kaydet` / geri çıkar, `Kaydet ve Oyna` oyuna geçer.
+    private func finishEditing(playAfter: Bool) {
+        guard let deck else {
             router.pop()
+            return
         }
-    }
 
-    private func play(_ deck: CustomDeck) {
-        // §09 §9: yazmak ücretsiz, oynamak Tam Bilet. Duvar burada çıkıyor —
-        // kullanıcı destesini bitirmiş, ne satın alacağını görüyor.
-        wordFlushSignal += 1
-        Task { @MainActor in
-            await Task.yield()
-            modelContext.persistCustomDecks()
+        _ = commitPendingDraft(into: deck, trackAnalytics: true)
+        modelContext.persistCustomDecks()
+
+        if playAfter {
+            // §09 §9: yazmak ücretsiz, oynamak Tam Bilet. Duvar burada çıkıyor —
+            // kullanıcı destesini bitirmiş, ne satın alacağını görüyor.
             guard subscription.isPremium else {
                 Haptics.lockedWall()
                 router.openPaywall(.customDeck)
@@ -314,6 +324,34 @@ struct CustomDeckEditorView: View {
             setup.select(custom: deck.uuid)
             router.popToRoot()
             router.beginSetup()
+            return
+        }
+
+        leaveEditor(saved: deck)
+    }
+
+    @discardableResult
+    private func commitPendingDraft(into deck: CustomDeck, trackAnalytics: Bool) -> WordList.Insertion {
+        var words = deck.words
+        let flush = WordDraft.flush(draft: &wordDraft, into: &words)
+        if flush.addedCount > 0 {
+            deck.replaceWords(words)
+            if trackAnalytics {
+                Analytics.customDeckWordAdd(wordCount: flush.addedCount)
+            }
+        }
+        return flush
+    }
+
+    /// Featured kısayolundan (`deckID == nil`) gelindiyse listeye düş: kayıt
+    /// teyidi görünsün. Listeden gelindiyse bir basamak geri.
+    private func leaveEditor(saved deck: CustomDeck) {
+        let hasContent = deck.wordCount > 0
+            || !deck.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if deckID == nil, hasContent {
+            router.path = [.customList]
+        } else {
+            router.pop()
         }
     }
 }

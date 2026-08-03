@@ -1,4 +1,16 @@
 import SwiftUI
+import UIKit
+
+enum Keyboard {
+    static func dismiss() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+    }
+}
 
 extension View {
     /// Görünen boyutu değiştirmeden dokunma alanını en az 44pt'ye açar.
@@ -10,5 +22,18 @@ extension View {
     func tapTarget(_ side: CGFloat = 44) -> some View {
         frame(minWidth: side, minHeight: side)
             .contentShape(Rectangle())
+    }
+
+    /// Boş zemine dokununca klavyeyi kapatır.
+    ///
+    /// `simultaneousGesture` kullanılmıyor: `+` / Kaydet ile aynı anda
+    /// `resignFirstResponder` olursa odak geri gelince ScrollView giriş
+    /// alanına zıplıyor.
+    func dismissKeyboardOnTap() -> some View {
+        background {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture(perform: Keyboard.dismiss)
+        }
     }
 }

@@ -13,6 +13,16 @@ struct WordBasketView: View {
     @Environment(AppRouter.self) private var router
     @Environment(GameSetup.self) private var setup
 
+    @State private var wordDraft = ""
+
+    private var isPlayableIncludingDraft: Bool {
+        var words = setup.basketWords
+        var draft = wordDraft
+        let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
+        let count = result.addedCount > 0 ? result.words.count : words.count
+        return count >= CustomDeckLimits.minWordsToPlay
+    }
+
     var body: some View {
         @Bindable var setup = setup
 
@@ -26,11 +36,16 @@ struct WordBasketView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         header
 
-                        WordListSection(words: $setup.basketWords, autoFocusesEntry: true)
+                        WordListSection(
+                            words: $setup.basketWords,
+                            draft: $wordDraft,
+                            autoFocusesEntry: true
+                        )
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 6)
                     .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .scrollIndicators(.hidden)
                 .scrollDismissesKeyboard(.interactively)
@@ -38,6 +53,7 @@ struct WordBasketView: View {
                 footer
             }
         }
+        .dismissKeyboardOnTap()
     }
 
     // MARK: Başlık
@@ -98,7 +114,7 @@ struct WordBasketView: View {
 
     private var footer: some View {
         VStack(spacing: 7) {
-            if !setup.isBasketPlayable {
+            if !isPlayableIncludingDraft {
                 Text(l10n.t("words.hint.min"))
                     .font(AppFont.ui(11))
                     .foregroundStyle(AppColors.stateWarning)
@@ -106,10 +122,14 @@ struct WordBasketView: View {
 
             Button(l10n.t("common.play")) {
                 Haptics.primaryButton()
+                var words = setup.basketWords
+                if WordDraft.flush(draft: &wordDraft, into: &words).addedCount > 0 {
+                    setup.basketWords = words
+                }
                 onContinue()
             }
             .buttonStyle(MarqueeButtonStyle())
-            .disabled(!setup.isBasketPlayable)
+            .disabled(!isPlayableIncludingDraft)
         }
         .padding(.horizontal, 20)
         .padding(.top, 10)

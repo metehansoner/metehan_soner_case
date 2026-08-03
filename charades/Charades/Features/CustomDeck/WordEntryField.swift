@@ -6,17 +6,19 @@ import SwiftUI
 /// sayaç, toplu ekleme ve chip listesi tek yerde. İki ekranda "aynı kelimeyi iki
 /// kez ekledim" ya da "Enter'a bastım" davranışının ayrışması kullanıcıya hata
 /// gibi görünürdü.
+///
+/// `draft` üstte tutuluyor: Kaydet / geri / Oyna, `onChange` yarışına
+/// kalmadan alandaki yazıyı senkron flush edebilsin. Aksi hâlde kullanıcı
+/// "yazdım kaydettim" sanıp boş deste / önceki ekrana dönüş görüyordu.
 struct WordListSection: View {
     @Binding var words: [String]
+    @Binding var draft: String
     /// Ekran açılır açılmaz klavye — sepette şart (§02 §24), editörde önce isim
     /// alanı doldurulduğu için kapalı.
     var autoFocusesEntry = false
-    /// Artınca alandaki yazı listeye alınır (Kaydet / Oyna öncesi).
-    var flushSignal: Int = 0
 
     @Environment(LocalizationManager.self) private var l10n
 
-    @State private var draft = ""
     @State private var flashedIndex: Int?
     @State private var isBulkPasting = false
     @FocusState private var isEntryFocused: Bool
@@ -48,9 +50,10 @@ struct WordListSection: View {
             #endif
             if autoFocusesEntry { isEntryFocused = true }
         }
-        // KAYDET / geri: alandaki yazı `EKLE`ye basılmadan kalmasın.
-        .onDisappear(perform: flushDraft)
-        .onChange(of: flushSignal) { _, _ in flushDraft() }
+        // Geri jesti / beklenmedik kaybolma: alandaki yazı listeye alınsın.
+        .onDisappear {
+            WordDraft.flush(draft: $draft, into: $words)
+        }
     }
 
     // MARK: Giriş satırı
@@ -70,18 +73,22 @@ struct WordListSection: View {
                 .onSubmit(add)
                 .disabled(isFull)
 
-            Button(action: add) {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .heavy))
-                    .foregroundStyle(AppColors.textOnAmber)
-                    .frame(width: 28, height: 28)
-                    .background(Circle().fill(AppColors.accentAmber))
-                    .tapTarget()
-            }
-            .buttonStyle(.plain)
-            .disabled(draft.isEmpty || isFull)
-            .opacity(draft.isEmpty || isFull ? 0.4 : 1)
-            .accessibilityLabel(l10n.t("words.add"))
+            Image(systemName: "plus")
+                .font(.system(size: 13, weight: .heavy))
+                .foregroundStyle(AppColors.textOnAmber)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(AppColors.accentAmber))
+                .opacity(draft.isEmpty || isFull ? 0.4 : 1)
+                .tapTarget()
+                // `Button` TextField odağını çalıyor; geri verince ScrollView
+                // giriş satırına zıplıyor. TapGesture odak çalmaz.
+                .onTapGesture {
+                    guard !draft.isEmpty, !isFull else { return }
+                    add()
+                }
+                .accessibilityLabel(l10n.t("words.add"))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityRemoveTraits(.isImage)
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
@@ -150,7 +157,9 @@ struct WordListSection: View {
             alignment: .leading,
             spacing: 7
         ) {
-            ForEach(Array(words.enumerated()), id: \.offset) { index, word in
+            // `offset` id olunca başa eklenen her kelime tüm kimlikleri kaydırıp
+            // grid'i yeniden kuruyor → dış ScrollView başa zıplıyordu.
+            ForEach(Array(words.enumerated()), id: \.element) { index, word in
                 chip(index: index, word: word)
             }
         }
@@ -210,18 +219,12 @@ struct WordListSection: View {
 
     // MARK: Eylemler
 
-    private func flushDraft() {
-        guard !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        add()
-    }
-
     private func add() {
-        let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
+        let result = WordDraft.flush(draft: $draft, into: $words)
 
         if let duplicate = result.duplicateIndex {
             // §02 §24: tekrar eden kelime sessizce eklenmiyor, mevcut satır bir an
             // amber yanıyor. Parti ortamında modal okunmuyor, uyarı metni yok.
-            draft = ""
             flash(duplicate)
             return
         }
@@ -230,10 +233,6 @@ struct WordListSection: View {
             return
         }
         Haptics.selection()
-        words = result.words
-        draft = ""
-        // Klavye açık kalıyor; odak kaybı 20 kelimelik girişi bitiriyor.
-        isEntryFocused = true
         Analytics.customDeckWordAdd(wordCount: result.addedCount)
     }
 
@@ -263,5 +262,32 @@ struct WordListSection: View {
             try? await Task.sleep(for: .milliseconds(650))
             if flashedIndex == index { flashedIndex = nil }
         }
+    }
+}
+
+/// Alanındaki yazıyı kelime listesine alma — editör Kaydet/geri ile bölüm
+/// paylaşsın diye `WordListSection` dışında da çağrılabiliyor.
+enum WordDraft {
+    @discardableResult
+    static func flush(draft: inout String, into words: inout [String]) -> WordList.Insertion {
+        let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
+        if result.duplicateIndex != nil {
+            draft = ""
+            return result
+        }
+        guard result.addedCount > 0 else { return result }
+        words = result.words
+        draft = ""
+        return result
+    }
+
+    @discardableResult
+    static func flush(draft: Binding<String>, into words: Binding<[String]>) -> WordList.Insertion {
+        var draftValue = draft.wrappedValue
+        var wordsValue = words.wrappedValue
+        let result = flush(draft: &draftValue, into: &wordsValue)
+        draft.wrappedValue = draftValue
+        words.wrappedValue = wordsValue
+        return result
     }
 }

@@ -159,6 +159,7 @@ final class CustomDeck {
                 survivors[index].order = index
             } else {
                 let card = CustomCard(text: text, order: index)
+                card.deck = self
                 modelContext?.insert(card)
                 survivors.append(card)
             }
