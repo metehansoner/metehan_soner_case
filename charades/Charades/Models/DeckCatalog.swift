@@ -173,7 +173,7 @@ enum DeckCatalog {
     /// §10 §4: kodlama 3 örnek deste ile başlıyor. Kelime dosyası olmayan bir
     /// deste ızgarada kilitli değil **içeriksiz** — P3 bunu ayırt etmek için
     /// bu listeyi okuyor, `CardBank` boş havuzla tur başlatmıyor.
-    static let contentReadyIDs: Set<String> = ["party", "movieClassics", "cities", "icebreaker", "partyFlirty", "dares", "karaoke", "dance", "bachelor", "jobs", "emotions", "animalsAct", "chores", "sportsAct"]
+    static let contentReadyIDs: Set<String> = ["accents", "actors", "animalSounds", "animals", "animalsAct", "anime", "bachelor", "badHabits", "bands", "basketball", "birds", "body", "books", "brands", "capitals", "cars", "cartoonMovies", "celebImpressions", "childhoodGames", "chores", "christmas", "christmasMovies", "cities", "clothes", "colorsShapes", "combat", "countries", "dance", "dares", "dinosaurs", "dogBreeds", "drinks", "eid", "eighties", "emotions", "everyday", "extreme", "fairyTales", "famousWomen", "fitness", "flags", "food", "football", "footballers", "fruits", "genres", "halloween", "historyFigures", "horror", "household", "icebreaker", "instruments", "inventions", "jobs", "karaoke", "kidsFirst", "kitchen", "kpop", "landmarks", "lyrics", "mobileGames", "movieClassics", "movieQuotes", "mythology", "newYear", "nineties", "olympics", "party", "partyFlirty", "ramadan", "retroTech", "school", "science", "scifi", "seaLife", "singers", "socialMedia", "space", "sportsAct", "streaming", "summer", "superheroes", "superpowers", "techCompanies", "toys", "tvCartoons", "tvSeries", "twoThousands", "valentine", "vehicles", "videoGames", "villains"]
 
     /// Remote Config'ten gelen sezon penceresi ezmeleri (§09 §8). Bundle
     /// varsayılanı aşağıdaki tabloda; RC yalnızca üzerine yazıyor.
