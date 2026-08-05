@@ -336,19 +336,31 @@ final class ReplayRecorder {
     }
     #endif
 
-    /// Oyun landscape kilitli ama iki yönü de açık (§09 §1): kullanıcının
-    /// telefonu hangi tarafa çevirdiği kayda da yansımalı, yoksa video baş aşağı
-    /// oluyor.
+    /// Oyun `ForcedLandscapeContainer` (landscapeRight) ile çiziliyor; pencere
+    /// ise OrientationLock yüzünden **hep portrait**. `interfaceOrientation`
+    /// bu yüzden her zaman `.portrait` dönüyordu ve video 90° (dikey)
+    /// damgalanıyordu — yatay kayda rağmen oynatıcıda dikey/yan görünüyordu.
     private static func rotationAngle() -> CGFloat {
-        let orientation = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.interfaceOrientation }
-            .first ?? .portrait
+        let device = UIDevice.current
+        if !device.isGeneratingDeviceOrientationNotifications {
+            device.beginGeneratingDeviceOrientationNotifications()
+        }
 
-        switch orientation {
-        case .landscapeLeft: return 180
-        case .landscapeRight: return 0
-        case .portraitUpsideDown: return 270
-        default: return 90
+        switch device.orientation {
+        case .landscapeLeft:
+            return 180
+        case .landscapeRight:
+            return 0
+        case .portraitUpsideDown:
+            return 270
+        case .portrait:
+            return 90
+        case .faceUp, .faceDown, .unknown:
+            // Alnında çoğu zaman faceUp/unknown — ForcedLandscape varsayılanı
+            // (home sağda / landscapeRight).
+            return 0
+        @unknown default:
+            return 0
         }
     }
 }

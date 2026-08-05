@@ -319,10 +319,7 @@ struct CustomDeckEditorView: View {
         // `leaveEditor` çağırmadan pop edebiliyor.
         _ = commitPendingDraft(into: deck, trackAnalytics: false)
         modelContext.persistCustomDecks()
-        guard deck.wordCount == 0 else { return }
-        let name = deck.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let defaultName = l10n.t("customDeck.defaultName")
-        guard name.isEmpty || name == defaultName else { return }
+        guard !deck.hasListableContent else { return }
         modelContext.delete(deck)
         modelContext.persistCustomDecks()
     }
@@ -364,6 +361,15 @@ struct CustomDeckEditorView: View {
             return
         }
 
+        // Pop'tan önce sil: aksi hâlde ana ızgara boş kartı bir kare gösterir.
+        let shouldKeep = deck.hasListableContent
+        if !shouldKeep {
+            modelContext.delete(deck)
+            modelContext.persistCustomDecks()
+            router.pop()
+            return
+        }
+
         leaveEditor(saved: deck)
     }
 
@@ -383,9 +389,7 @@ struct CustomDeckEditorView: View {
     /// Featured kısayolundan (`deckID == nil`) gelindiyse listeye düş: kayıt
     /// teyidi görünsün. Listeden gelindiyse bir basamak geri.
     private func leaveEditor(saved deck: CustomDeck) {
-        let hasContent = deck.wordCount > 0
-            || !deck.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        if deckID == nil, hasContent {
+        if deckID == nil, deck.hasListableContent {
             router.path = [.customList]
         } else {
             router.pop()

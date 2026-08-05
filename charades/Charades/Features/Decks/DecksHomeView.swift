@@ -25,6 +25,12 @@ struct DecksHomeView: View {
     /// deste, katalog destesiyle aynı ızgarada oynanabilir olmalı.
     @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
 
+    /// Editörün boş taslağı `@Query`'ye düşer; geri dönüşte flaş olmasın diye
+    /// yalnızca içerikli desteler listeleniyor.
+    private var listedCustomDecks: [CustomDeck] {
+        customDecks.filter(\.hasListableContent)
+    }
+
     @State private var filter: DeckFilter = .all
     /// §04 §4.3 giriş noktası 1: header'daki makara; sayısı rozette (0 iken yok).
     @State private var archiveCount = 0
@@ -67,7 +73,7 @@ struct DecksHomeView: View {
 
                     FeaturedRow(
                         isWordBasketLocked: !subscriptions.isPremium,
-                        hasCustomDecks: !customDecks.isEmpty,
+                        hasCustomDecks: !listedCustomDecks.isEmpty,
                         onMix: { router.push(.mix) },
                         onWordBasket: openWordBasket,
                         onCustomDecks: openCustomDecks
@@ -214,7 +220,13 @@ struct DecksHomeView: View {
     /// Destesi yoksa editöre kısayol (§02 boş durum); varsa yönetim listesi.
     /// Listeye uğrayıp hemen "Yeni Deste +" görmek çift kapı gibi duruyordu.
     private func openCustomDecks() {
-        if customDecks.isEmpty {
+        let empties = customDecks.filter { !$0.hasListableContent }
+        if !empties.isEmpty {
+            for draft in empties { modelContext.delete(draft) }
+            modelContext.persistCustomDecks()
+        }
+
+        if listedCustomDecks.isEmpty {
             router.push(.customEditor(nil))
         } else {
             router.push(.customList)
@@ -304,7 +316,7 @@ struct DecksHomeView: View {
             // Karışımlar yalnızca `BENİM DESTELERİM`de: bir filtre seçiliyken
             // ızgara o filtrenin sonucunu göstermeli, karışımın bölümü yok.
             if filter == .all {
-                ForEach(customDecks, id: \.uuid) { deck in
+                ForEach(listedCustomDecks, id: \.uuid) { deck in
                     Button { playCustomDeck(deck) } label: {
                         CustomDeckCard(deck: deck, isLocked: !subscriptions.isPremium)
                     }

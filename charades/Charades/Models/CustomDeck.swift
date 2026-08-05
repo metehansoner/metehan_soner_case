@@ -121,6 +121,13 @@ final class CustomDeck {
 
     var canPlay: Bool { wordCount >= CustomDeckLimits.minWordsToPlay }
 
+    /// Adsız ve kelimesiz taslak — editör açıkken DB'de duruyor ama ana
+    /// ızgarada / listede iz bırakmamalı (`discardIfEmpty` ile aynı kural).
+    var hasListableContent: Bool {
+        wordCount > 0
+            || !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     /// §09 §4: 20 kelimenin altında bilgi satırı gösteriliyor.
     var isBelowRecommended: Bool { wordCount < CustomDeckLimits.recommendedWordCount }
 

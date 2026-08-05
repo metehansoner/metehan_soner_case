@@ -69,7 +69,7 @@ struct ReplayPlayerView: View {
 
     private var stage: some View {
         ZStack {
-            ReplaySurface(player: playback.player)
+            videoSurface
 
             // §08: video sprocket delikli film şeridi çerçevesi içinde oynuyor.
             HStack {
@@ -109,6 +109,21 @@ struct ReplayPlayerView: View {
         .contentShape(Rectangle())
         .onTapGesture { playback.toggle() }
         .frame(maxHeight: .infinity)
+    }
+
+    /// Eski kayıtlar yanlışlıkla dikey (90°) damgalı; landscape sahnede
+    /// -90° ile düzeltiliyor. Yeni kayıtlar zaten yatay.
+    private var videoSurface: some View {
+        GeometryReader { geometry in
+            let corrects = playback.needsPortraitCaptureCorrection
+            let width = corrects ? geometry.size.height : geometry.size.width
+            let height = corrects ? geometry.size.width : geometry.size.height
+
+            ReplaySurface(player: playback.player)
+                .frame(width: width, height: height)
+                .rotationEffect(.degrees(corrects ? -90 : 0))
+                .frame(width: geometry.size.width, height: geometry.size.height)
+        }
     }
 
     private var sprocket: some View {
@@ -624,6 +639,9 @@ final class ReplayPlayback {
     /// olma oranı, özelliğin kalıp kalmayacağının verisi. O an ağır çekimde
     /// olması değil, oturumda **bir kez** açılmış olması sayılıyor.
     private(set) var usedSlowMotion = false
+    /// Eski kayıtlar portrait damgalı (OrientationLock bug); oynatıcıda
+    /// düzeltiliyor. Yeni yatay kayıtlar `false`.
+    private(set) var needsPortraitCaptureCorrection = false
 
     var fraction: Double { duration > 0 ? min(1, time / duration) : 0 }
 
@@ -669,7 +687,22 @@ final class ReplayPlayback {
             }
         }
 
+        Task { await detectPortraitCapture(url) }
         play()
+    }
+
+    /// Tercih edilen transform sonrası dikeyse eski yanlış damga sayılıyor.
+    private func detectPortraitCapture(_ url: URL) async {
+        let asset = AVURLAsset(url: url)
+        guard
+            let track = try? await asset.loadTracks(withMediaType: .video).first,
+            let size = try? await track.load(.naturalSize),
+            let transform = try? await track.load(.preferredTransform)
+        else { return }
+
+        let displayed = size.applying(transform)
+        let isPortrait = abs(displayed.height) > abs(displayed.width)
+        needsPortraitCaptureCorrection = isPortrait
     }
 
     func toggle() {
@@ -741,5 +774,6 @@ final class ReplayPlayback {
         player.pause()
         player.replaceCurrentItem(with: nil)
         isPlaying = false
+        needsPortraitCaptureCorrection = false
     }
 }

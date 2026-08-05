@@ -62,6 +62,7 @@ struct PaywallView: View {
             // altına kadar uzar; aksi hâlde kayma üstte sert kesilir.
             .ignoresSafeArea(edges: .top)
 
+            restoreControl
             escapeControl
         }
         .task {
@@ -281,7 +282,7 @@ struct PaywallView: View {
 
     /// §09 §7 son satır: temiz kurulum + ağ yok + gerçek abone. Planlar
     /// gelmediğinde kullanıcıyı boş ekranla bırakmıyoruz; geri yükleme yolu
-    /// aşağıdaki alt satırda her zaman duruyor.
+    /// sol üstte her zaman duruyor.
     private var unavailableNotice: some View {
         VStack(spacing: 10) {
             if store.isLoadingOffers {
@@ -340,13 +341,6 @@ struct PaywallView: View {
 
     private var legalRow: some View {
         HStack(spacing: 18) {
-            Button {
-                Task { await restore() }
-            } label: {
-                Text(l10n.t("paywall.restore"))
-            }
-            .disabled(store.isRestoring)
-
             if let terms = LegalLinks.terms {
                 Link(l10n.t("paywall.terms"), destination: terms)
             }
@@ -357,6 +351,43 @@ struct PaywallView: View {
         .font(AppFont.ui(10.5))
         .foregroundStyle(AppColors.textMuted)
         .buttonStyle(.plain)
+    }
+
+    /// Geri yükleme sol üstte — satın alma geçmişi olan kullanıcı kaçışın
+    /// yanında, CTA'nın altına gömülmeden buluyor.
+    private var restoreControl: some View {
+        Button {
+            Task { await restore() }
+        } label: {
+            if store.isRestoring {
+                ProgressView()
+                    .tint(AppColors.textSecondary)
+                    .scaleEffect(0.85)
+                    .frame(height: 14)
+            } else {
+                Text(l10n.t("paywall.restore"))
+                    .font(AppFont.display(12, weight: .semibold))
+                    .appTracking(1.6)
+                    .textCase(.uppercase)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(store.isRestoring)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background {
+            Capsule()
+                .fill(AppColors.bgFilmBlack.opacity(0.55))
+                .overlay {
+                    Capsule().strokeBorder(
+                        AppColors.accentGold.opacity(0.3), lineWidth: 1
+                    )
+                }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 16)
+        .safeAreaPadding(.top, variant == .onboarding ? 26 : 18)
     }
 
     /// §03 §2: `ATLA` onboarding varyantında görünür ve sağ üstte — kaçış yolu

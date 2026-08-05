@@ -16,6 +16,12 @@ struct CustomDeckListView: View {
 
     @State private var deckPendingDeletion: CustomDeck?
 
+    /// Editörün boş taslağı listede flaş etmesin; slot hesabı tüm kayıtları
+    /// saymaya devam ediyor (açık taslak yeri tutsun).
+    private var listedDecks: [CustomDeck] {
+        decks.filter(\.hasListableContent)
+    }
+
     private var slotLimit: Int {
         CustomDeckLimits.maxDeckCount(isPremium: subscription.isPremium)
     }
@@ -31,10 +37,10 @@ struct CustomDeckListView: View {
 
                 ScrollView {
                     VStack(spacing: 10) {
-                        if decks.isEmpty {
+                        if listedDecks.isEmpty {
                             emptyState
                         } else {
-                            ForEach(Array(decks.enumerated()), id: \.element.uuid) { index, deck in
+                            ForEach(Array(listedDecks.enumerated()), id: \.element.uuid) { index, deck in
                                 row(deck, isReadOnly: index >= slotLimit)
                             }
 
