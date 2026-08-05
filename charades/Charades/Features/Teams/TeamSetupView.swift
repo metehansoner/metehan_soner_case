@@ -297,29 +297,28 @@ struct TeamSetupView: View {
                     .foregroundStyle(AppColors.textMuted)
             }
 
-            Spacer(minLength: 0)
+            Spacer(minLength: 8)
 
-            HStack(spacing: 2) {
+            HStack(spacing: 4) {
                 roundsStep(systemImage: "minus", delta: -1)
                 Text("\(setup.roundsPerTeam)")
-                    .font(AppFont.display(18, weight: .bold))
+                    .font(AppFont.display(20, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(AppColors.textCream)
-                    .frame(minWidth: 26)
+                    .frame(minWidth: 28)
+                    .accessibilityHidden(true)
                 roundsStep(systemImage: "plus", delta: 1)
-            }
-            .padding(3)
-            .background {
-                Capsule().fill(AppColors.bgFilmBlack.opacity(0.5))
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .background(cardBackground)
     }
 
     private func roundsStep(systemImage: String, delta: Int) -> some View {
         Button {
+            // Açık klavye ilk dokunuşu yutmasın diye önce odak düşüyor.
+            focus = nil
             let next = setup.roundsPerTeam + delta
             guard Team.roundsRange.contains(next) else {
                 Haptics.stepperLimit()
@@ -329,9 +328,18 @@ struct TeamSetupView: View {
             setup.roundsPerTeam = next
         } label: {
             Image(systemName: systemImage)
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(AppColors.accentAmber)
-                .frame(width: 32, height: 32)
+                .frame(width: 42, height: 42)
+                .background {
+                    Circle()
+                        .fill(AppColors.bgFilmBlack.opacity(0.55))
+                        .overlay {
+                            Circle().strokeBorder(AppColors.accentGold.opacity(0.5), lineWidth: 1)
+                        }
+                }
+                .contentShape(Circle())
+                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t(delta > 0 ? "teams.rounds.increase" : "teams.rounds.decrease"))
