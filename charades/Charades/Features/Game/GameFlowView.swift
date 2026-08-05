@@ -243,10 +243,9 @@ struct GameFlowView: View {
     private var playing: some View {
         GameCardView(game: game)
             .pauseGesture(
-                // §09 §3 çakışma 1: iki parmakla dokunma aynı zamanda bir ekran
-                // yarısına dokunma demek. §01 §7 gereği ekran yarıları artık tilt
-                // turunda da cevap verdiği için bu çakışma her moda yayıldı;
-                // duraklatma tek jeste indi: üstten aşağı sürükleme.
+                // Eğ modunda ekran yarıları cevap vermiyor; iki parmakla
+                // duraklatma yine de kapalı — sürükleme her iki modda da çalışıyor
+                // ve dokunmatikte yarılarla çakışıyordu (§09 §3).
                 allowsTwoFingerTap: false,
                 onGestureBegan: game.lockTriggersForPauseGesture,
                 onPause: { game.pause(reason: .user) }

@@ -18,18 +18,20 @@ struct GameCardView: View {
         ZStack {
             poster
 
-            // §01 §7 + §04 §2: ekran yarıları **her modda** cevap veriyor.
-            // Eskiden yalnızca `.touch` seçiliyken çiziliyordu; tilt turunda
-            // motor kısıtlılığı olan ya da sensörü sorunlu cihazda oynayan
-            // kullanıcının tek çıkışı turu bırakıp ayarlara gitmekti.
-            touchTargets
+            // Dokunmatik cevap yalnızca `DOKUN` seçiliyken. Eğ modunda ekrana
+            // basmak istemsiz PAS/DOĞRU üretiyordu; orada mekanik sadece tilt.
+            if game.answerInput == .touch {
+                touchZoneChrome
+                touchTargets
+            }
 
             if let flash = game.flash {
                 answerFlash(flash)
                     .transition(.opacity)
             }
 
-            // Tam ekran PAS/DOĞRU'nun üstünde olmalı; aksi hâlde dokunuş cevap olur.
+            // Eğ modunda da erişilebilir olsun diye touchTargets'tan bağımsız;
+            // dokunmatikte ise yarıların üstünde olmalı.
             pauseButton
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(.top, 36)
@@ -91,7 +93,7 @@ struct GameCardView: View {
                 if game.showsOrientationReminder {
                     reminder
                 }
-                if game.showsInputHint {
+                if game.answerInput == .tilt, game.showsInputHint {
                     inputHint
                 }
             }
@@ -326,6 +328,59 @@ struct GameCardView: View {
             .accessibilityLabel(l10n.t("game.hint.correct"))
         }
         .buttonStyle(.plain)
+    }
+
+    /// Sol/sağ haritası — yalnızca dokunmatik modda, tur boyunca.
+    /// Kelimeyi örtmeden kenarda duruyor; damga anında kayboluyor.
+    private var touchZoneChrome: some View {
+        HStack(spacing: 0) {
+            touchZoneSide(
+                title: l10n.t("game.hint.skip"),
+                color: AppColors.stateSkip,
+                edge: .leading
+            )
+            Rectangle()
+                .fill(AppColors.textOnPoster.opacity(0.12))
+                .frame(width: 1)
+                .padding(.vertical, 28)
+            touchZoneSide(
+                title: l10n.t("game.hint.correct"),
+                color: AppColors.stateCorrect,
+                edge: .trailing
+            )
+        }
+        .allowsHitTesting(false)
+        .opacity(game.flash == nil ? 1 : 0)
+        .accessibilityHidden(true)
+    }
+
+    private func touchZoneSide(title: String, color: Color, edge: HorizontalEdge) -> some View {
+        let isLeading = edge == .leading
+        return ZStack(alignment: isLeading ? .bottomLeading : .bottomTrailing) {
+            LinearGradient(
+                colors: [
+                    color.opacity(0.16),
+                    color.opacity(0.05),
+                    .clear,
+                ],
+                startPoint: isLeading ? .leading : .trailing,
+                endPoint: isLeading ? .trailing : .leading
+            )
+
+            VStack(alignment: isLeading ? .leading : .trailing, spacing: 5) {
+                Image(systemName: isLeading ? "chevron.left" : "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                Text(title)
+                    .font(AppFont.display(18, weight: .bold))
+                    .appTracking(2)
+                    .textCase(.uppercase)
+            }
+            .foregroundStyle(color.opacity(0.95))
+            .padding(.horizontal, isPortrait ? 14 : 18)
+            // Alt kenardan uzak: kelime/ipucu bandının üstünde okunur kalsın.
+            .padding(.bottom, isPortrait ? 56 : 48)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: Geri bildirim
