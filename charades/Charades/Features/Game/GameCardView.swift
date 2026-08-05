@@ -28,6 +28,12 @@ struct GameCardView: View {
                 answerFlash(flash)
                     .transition(.opacity)
             }
+
+            // Tam ekran PAS/DOĞRU'nun üstünde olmalı; aksi hâlde dokunuş cevap olur.
+            pauseButton
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.top, 36)
+                .padding(.leading, isPortrait ? 18 : 26)
         }
         .animation(.easeOut(duration: 0.12), value: game.flash)
     }
@@ -152,6 +158,9 @@ struct GameCardView: View {
 
     private var hud: some View {
         HStack(alignment: .top) {
+            // Çarpı sol üstte overlay; sayaca yer bırak.
+            Color.clear.frame(width: 36, height: 1)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(Self.clock(game.remaining))
                     .font(AppFont.display(38, weight: .bold))
@@ -187,7 +196,7 @@ struct GameCardView: View {
                     .foregroundStyle(AppColors.textOnPosterMuted)
             }
         }
-        .padding(.top, 16)
+        .padding(.top, 12)
         .accessibilityElement(children: .combine)
     }
 
@@ -271,6 +280,34 @@ struct GameCardView: View {
             .overlay {
                 Capsule().strokeBorder(AppColors.stateSkip, lineWidth: 1.5)
             }
+    }
+
+    // MARK: Duraklat
+
+    /// Görünür çıkış yolu — jest (üstten sürükleme) ve arka plan kesintisine
+    /// alternatif. Aynı `PauseOverlay` menüsünü açıyor (§09 §3).
+    private var pauseButton: some View {
+        Button {
+            Haptics.secondaryButton()
+            game.lockTriggersForPauseGesture()
+            game.pause(reason: .user)
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(AppColors.textOnPoster)
+                .frame(width: 30, height: 30)
+                .background {
+                    Circle()
+                        .fill(AppColors.bgFilmBlack.opacity(0.14))
+                        .overlay {
+                            Circle().strokeBorder(AppColors.textOnPoster.opacity(0.4), lineWidth: 1)
+                        }
+                }
+                .contentShape(Circle())
+                .tapTarget()
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(l10n.t("pause.title"))
     }
 
     // MARK: Dokunmatik cevap
