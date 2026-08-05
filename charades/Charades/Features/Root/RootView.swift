@@ -680,15 +680,13 @@ private struct PlaceholderScreen: View {
             PlaceholderContent(title: l10n.t(titleKey), packageNote: packageNote, detail: detail)
         }
         .overlay(alignment: .topLeading) {
-            Button {
+            BackNavButton(
+                tint: AppColors.accentBrass,
+                accessibilityLabel: l10n.t("common.back")
+            ) {
                 router.pop()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentBrass)
-                    .frame(width: 40, height: 40)
             }
-            .padding(.leading, 10)
+            .padding(.leading, 6)
         }
     }
 }

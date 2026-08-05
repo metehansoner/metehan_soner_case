@@ -98,3 +98,30 @@ struct SecondaryButtonStyle: ButtonStyle {
         }
     }
 }
+
+/// Push ekranlarının sol üst geri oku — görünür glyph büyütülmüş, dokunma
+/// alanı en az 52pt (44pt minimumun üstü). Başlık ortalaması için karşı
+/// taraftaki dengeleyici boşluk da `hitSide` ile aynı boyutta olmalı.
+struct BackNavButton: View {
+    var tint: Color = AppColors.accentGold
+    var accessibilityLabel: String
+    var action: () -> Void
+
+    static let hitSide: CGFloat = 52
+
+    var body: some View {
+        Button {
+            Haptics.secondaryButton()
+            action()
+        } label: {
+            Image(systemName: "chevron.left")
+                .flipsForRightToLeftLayoutDirection(true)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: Self.hitSide, height: Self.hitSide)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}

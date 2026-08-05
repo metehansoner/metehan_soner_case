@@ -60,18 +60,9 @@ struct ArchiveView: View {
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            Button {
-                Haptics.secondaryButton()
+            BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 router.pop()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.back"))
 
             Text(l10n.t("archive.title"))
                 .font(AppFont.display(19, weight: .bold))
@@ -89,7 +80,7 @@ struct ArchiveView: View {
                     .appTracking(1.6)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.accentAmber)
-                    .frame(minWidth: 44, minHeight: 44)
+                    .frame(minWidth: BackNavButton.hitSide, minHeight: BackNavButton.hitSide)
             }
             .buttonStyle(.plain)
             .opacity(model.films.isEmpty ? 0 : 1)

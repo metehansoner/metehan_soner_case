@@ -129,18 +129,9 @@ struct CustomDeckEditorView: View {
 
     private func navBar(_ deck: CustomDeck) -> some View {
         HStack(spacing: 0) {
-            Button {
-                Haptics.secondaryButton()
+            BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 finishEditing(playAfter: false)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.back"))
 
             VStack(spacing: 2) {
                 Text(deck.name.isEmpty ? l10n.t("customDeck.defaultName") : deck.name)
@@ -164,7 +155,7 @@ struct CustomDeckEditorView: View {
                 Image(systemName: "trash")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
+                    .frame(width: BackNavButton.hitSide, height: BackNavButton.hitSide)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.delete"))

@@ -89,11 +89,11 @@ struct MatchEndView: View {
     private var column: some View {
         VStack(spacing: 0) {
             Text(l10n.t("teams.credits.presents"))
-                .font(AppFont.ui(11, weight: .bold))
-                .appTracking(8)
+                .font(AppFont.ui(14, weight: .bold))
+                .appTracking(7)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentBrass)
-                .padding(.bottom, 52)
+                .padding(.bottom, 56)
 
             ForEach(match.standings) { standing in
                 block(
@@ -140,17 +140,17 @@ struct MatchEndView: View {
             }
 
             Text(l10n.t("teams.credits.fin"))
-                .font(AppFont.accent(34, weight: .bold, italic: true))
+                .font(AppFont.accent(40, weight: .bold, italic: true))
                 .foregroundStyle(AppColors.accentAmber)
-                .padding(.top, 20)
+                .padding(.top, 24)
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 34)
+        .padding(.horizontal, 28)
     }
 
     private func block(role: String, name: String, detail: String) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Text(role)
                 .textStyle(.creditsRole)
                 .foregroundStyle(AppColors.accentGold)
@@ -158,14 +158,16 @@ struct MatchEndView: View {
             Text(name)
                 .textStyle(.creditsName)
                 .foregroundStyle(AppColors.textCream)
+                .minimumScaleFactor(0.7)
+                .lineLimit(2)
 
             Text(detail)
-                .font(AppFont.display(14, weight: .medium))
-                .appTracking(2.4)
+                .font(AppFont.display(17, weight: .medium))
+                .appTracking(2.2)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textSecondary)
         }
-        .padding(.bottom, 36)
+        .padding(.bottom, 42)
     }
 
     private var suddenDeathWinner: TeamMatch.Standing? {
@@ -235,19 +237,20 @@ struct MatchEndView: View {
             onExit()
         } label: {
             Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                .font(.system(size: 17, weight: .semibold))
+                .flipsForRightToLeftLayoutDirection(true)
+                .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(AppColors.accentGold)
-                .frame(width: 42, height: 42)
+                .frame(width: 48, height: 48)
                 .background {
                     Circle().fill(AppColors.bgFilmBlack.opacity(0.55))
                 }
-                .tapTarget()
+                .frame(width: BackNavButton.hitSide, height: BackNavButton.hitSide)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("round.backToStage"))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(.leading, 14)
+        .padding(.leading, 10)
     }
 
     /// § `08` B1: `TEKRAR OYNA` ve `PAYLAŞ` sabit duruyor, jeneriği beklemiyor.

@@ -295,9 +295,9 @@ struct GameCardView: View {
             game.pause(reason: .user)
         } label: {
             Image(systemName: "xmark")
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(AppColors.textOnPoster)
-                .frame(width: 30, height: 30)
+                .frame(width: 36, height: 36)
                 .background {
                     Circle()
                         .fill(AppColors.bgFilmBlack.opacity(0.14))
@@ -305,8 +305,8 @@ struct GameCardView: View {
                             Circle().strokeBorder(AppColors.textOnPoster.opacity(0.4), lineWidth: 1)
                         }
                 }
+                .frame(width: 48, height: 48)
                 .contentShape(Circle())
-                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("pause.title"))

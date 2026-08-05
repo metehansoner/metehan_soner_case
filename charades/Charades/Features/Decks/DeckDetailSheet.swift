@@ -51,14 +51,18 @@ struct DeckDetailSheet: View {
                     .padding(.bottom, 12)
                 }
                 .scrollIndicators(.hidden)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
                 actions
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
                     .padding(.bottom, 10)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .presentationDetents([.fraction(0.72)])
+        // %70 yükseklik; zemin alta taşırıldığı için arka ekran görünmez.
+        .presentationDetents([.fraction(0.7)])
+        .presentationContentInteraction(.scrolls)
         .task(id: deck.id) { loadSampleWords() }
     }
 

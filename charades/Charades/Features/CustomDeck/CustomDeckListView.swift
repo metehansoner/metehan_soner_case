@@ -72,18 +72,9 @@ struct CustomDeckListView: View {
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            Button {
-                Haptics.secondaryButton()
+            BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 router.pop()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.back"))
 
             VStack(spacing: 2) {
                 Text(l10n.t("customDeck.list.title"))
@@ -101,7 +92,7 @@ struct CustomDeckListView: View {
             }
             .frame(maxWidth: .infinity)
 
-            Color.clear.frame(width: 44, height: 44)
+            Color.clear.frame(width: BackNavButton.hitSide, height: BackNavButton.hitSide)
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 6)

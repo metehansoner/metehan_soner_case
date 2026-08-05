@@ -47,6 +47,7 @@ struct SheetScaffold<Content: View>: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background {
             LinearGradient(
                 stops: [
@@ -66,7 +67,12 @@ struct SheetScaffold<Content: View>: View {
             .ignoresSafeArea()
         }
         .presentationCornerRadius(28)
-        .presentationBackground(.clear)
+        // Opak zemin + alta taşırma: fraction detent'te home indicator
+        // altında arka ekranın görünmesini engeller (SwiftUI bilinen boşluk).
+        .presentationBackground {
+            AppColors.surfaceCard
+                .padding(.bottom, -120)
+        }
         .localizedLayout()
     }
 
@@ -78,9 +84,9 @@ struct SheetScaffold<Content: View>: View {
             Image(systemName: systemImage)
                 // §06 §2: geri oku RTL'de aynalanıyor, kapatma çarpısı simetrik.
                 .flipsForRightToLeftLayoutDirection(true)
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(AppColors.textSecondary)
-                .frame(width: 30, height: 30)
+                .frame(width: 36, height: 36)
                 .background {
                     Circle()
                         .fill(AppColors.surfaceCardRaised.opacity(0.9))
@@ -88,8 +94,8 @@ struct SheetScaffold<Content: View>: View {
                             Circle().strokeBorder(AppColors.accentGold.opacity(0.45), lineWidth: 1)
                         }
                 }
-                // Görünen daire 30pt; dokunma alanı 44pt.
-                .frame(width: 44, height: 44)
+                // Görünen daire 36pt; dokunma alanı 52pt.
+                .frame(width: 52, height: 52)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)

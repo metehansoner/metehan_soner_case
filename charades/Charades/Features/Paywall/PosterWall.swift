@@ -5,9 +5,9 @@ import SwiftUI
 /// Kapaklar **gerçek deste kapaklarından** diziliyor. Kolonlar farklı hızda,
 /// ortadakiler ters yönde; alt kenar kadife perdeye karışıyor.
 ///
-/// Kayma `TimelineView` içinde şeridi yeniden çizmiyor: afişler bir kez kuruluyor,
-/// yalnızca `offset` güncelleniyor. Aksi hâlde 60 fps'te Image decode yarım
-/// kalıyor ve duvarda yalnız başlık şeritleri görünüyordu.
+/// Kayma Core Animation `repeatForever` ile gidiyor: şerit bir kez
+/// `drawingGroup` ile rasterize ediliyor, sonra yalnız ofset kayıyor. Eski
+/// ~30 fps `@State` döngüsü kare kare zıplıyor ve kasıyordu.
 struct PosterWall: View {
     var decks: [DeckDef]
     /// Varyant B'de duvar geri çekiliyor, öndeki bağlam kapağı öne çıkıyor.
@@ -15,8 +15,8 @@ struct PosterWall: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// §03 §2: üç kolon — dört kolon kartları okunamayacak kadar küçültüyordu.
-    private static let durations: [Double] = [48, 58, 52]
+    /// Biraz daha yavaş = daha akıcı his; kolonlar hâlâ birbirinden kayıyor.
+    private static let durations: [Double] = [56, 68, 60]
     private static let columnCount = 3
 
     var body: some View {
@@ -76,66 +76,54 @@ private struct PosterColumn: View {
     let isReversed: Bool
     let isAnimated: Bool
 
-    /// Duvar saatiyle açılış ofseti — paywall açılınca kayma **sıfırdan**
-    /// başlamıyor, zaten akıyormuş gibi duruyor.
-    @State private var drift: CGFloat
+    /// `repeatForever` ofseti — gövde her karede yenilenmiyor, katman kayıyor.
+    @State private var offsetY: CGFloat = 0
 
     private var posterHeight: CGFloat { width * 4 / 3 }
     private var halfHeight: CGFloat {
         CGFloat(decks.count) * (posterHeight + 7)
     }
 
-    init(
-        decks: [DeckDef],
-        width: CGFloat,
-        duration: Double,
-        isReversed: Bool,
-        isAnimated: Bool
-    ) {
-        self.decks = decks
-        self.width = width
-        self.duration = duration
-        self.isReversed = isReversed
-        self.isAnimated = isAnimated
-        let half = CGFloat(decks.count) * (width * 4 / 3 + 7)
-        _drift = State(initialValue: Self.offset(
-            at: .now,
-            duration: duration,
-            halfHeight: half,
-            isReversed: isReversed
-        ))
+    private var animationID: String {
+        "\(isAnimated)-\(Int(width.rounded()))-\(decks.count)-\(isReversed)"
     }
 
     var body: some View {
-        // `.equatable()` — yalnız `drift` değişince şerit yeniden çizilmesin.
         PosterStrip(decks: decks, width: width, posterHeight: posterHeight)
             .equatable()
-            .offset(y: drift)
+            .drawingGroup(opaque: false)
+            .offset(y: offsetY)
             .frame(width: width, alignment: .top)
-            .onChange(of: width) { _, newWidth in
-                // GeometryReader ilk karede 0 verebiliyor; @State o anki ofseti
-                // koruyor. Genişlik oturunca duvar saatine göre yeniden tohumla.
-                guard newWidth > 1 else { return }
-                drift = Self.offset(
-                    at: .now,
-                    duration: duration,
-                    halfHeight: CGFloat(decks.count) * (newWidth * 4 / 3 + 7),
-                    isReversed: isReversed
-                )
-            }
-            .task(id: "\(isAnimated)-\(Int(width))") {
-                guard isAnimated, width > 1 else { return }
-                // ~30 fps yeterli; 60 fps Image/Halftone'u boğuyordu.
-                while !Task.isCancelled {
-                    drift = Self.offset(
-                        at: .now,
-                        duration: duration,
-                        halfHeight: halfHeight,
-                        isReversed: isReversed
-                    )
-                    try? await Task.sleep(for: .milliseconds(33))
-                }
-            }
+            .task(id: animationID) { await runMarquee() }
+    }
+
+    @MainActor
+    private func runMarquee() async {
+        guard width > 1, halfHeight > 0 else { return }
+
+        let start = Self.offset(
+            at: .now,
+            duration: duration,
+            halfHeight: halfHeight,
+            isReversed: isReversed
+        )
+
+        var reset = Transaction()
+        reset.disablesAnimations = true
+        withTransaction(reset) { offsetY = start }
+
+        guard isAnimated else { return }
+
+        // Reset’in commit olması için bir tur bekleniyor; yoksa forever
+        // animasyonu başlangıç değerini yutabiliyor.
+        await Task.yield()
+        guard !Task.isCancelled else { return }
+
+        // Şerit iki kez dizili; tam `halfHeight` yol görünmez şekilde döngüleniyor.
+        let end = isReversed ? start + halfHeight : start - halfHeight
+        withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
+            offsetY = end
+        }
     }
 
     private static func offset(
@@ -170,7 +158,7 @@ private struct PosterStrip: View, Equatable {
     var body: some View {
         VStack(spacing: 7) {
             ForEach(Array(loop.enumerated()), id: \.offset) { _, deck in
-                DeckMiniPoster(deck: deck)
+                DeckMiniPoster(deck: deck, showsHalftone: false)
                     .frame(width: width, height: posterHeight)
             }
         }
@@ -184,6 +172,9 @@ private struct PosterStrip: View, Equatable {
 /// sabit 6pt yazı duvarda okunmuyordu.
 struct DeckMiniPoster: View {
     let deck: DeckDef
+    /// Duvar kolonunda `drawingGroup` zaten rasterize ediyor; nokta dokusu
+    /// her karede pahalı ve kaymayı kasıyordu.
+    var showsHalftone: Bool = true
 
     @Environment(LocalizationManager.self) private var l10n
 
@@ -198,8 +189,10 @@ struct DeckMiniPoster: View {
             VStack(spacing: 0) {
                 ZStack {
                     deck.section.artGradient
-                    HalftoneTexture(dotSize: 0.7, spacing: 3, color: .black.opacity(0.65))
-                        .opacity(0.2)
+                    if showsHalftone {
+                        HalftoneTexture(dotSize: 0.7, spacing: 3, color: .black.opacity(0.65))
+                            .opacity(0.2)
+                    }
                     Image(deck.imageName)
                         .resizable()
                         .scaledToFit()

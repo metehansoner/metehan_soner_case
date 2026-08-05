@@ -306,10 +306,10 @@ extension AppTextStyle {
         .init(font: AppFont.ui(8.5, weight: .bold, scales: nil), tracking: 1, textCase: .uppercase)
     }
     static var creditsRole: AppTextStyle {
-        .init(font: AppFont.ui(9.5, weight: .bold, scales: nil), tracking: 4, textCase: .uppercase)
+        .init(font: AppFont.ui(12, weight: .bold, scales: nil), tracking: 3.5, textCase: .uppercase)
     }
     static var creditsName: AppTextStyle {
-        .init(font: AppFont.accent(25, weight: .black))
+        .init(font: AppFont.accent(32, weight: .black))
     }
     static var reelLabel: AppTextStyle {
         .init(font: AppFont.display(9, weight: .semibold), tracking: 1, textCase: .uppercase)

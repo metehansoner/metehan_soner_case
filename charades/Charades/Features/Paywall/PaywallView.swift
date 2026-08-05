@@ -392,9 +392,9 @@ struct PaywallView: View {
         case .modal:
             Button(action: dismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(AppColors.textSecondary)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 38, height: 38)
                     .background {
                         Circle()
                             .fill(AppColors.bgFilmBlack.opacity(0.66))
@@ -404,7 +404,8 @@ struct PaywallView: View {
                                 )
                             }
                     }
-                    .tapTarget()
+                    .frame(width: 52, height: 52)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.close"))

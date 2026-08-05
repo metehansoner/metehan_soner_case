@@ -16,8 +16,8 @@ struct WordBasketView: View {
     @State private var wordDraft = ""
 
     private var isPlayableIncludingDraft: Bool {
-        var words = setup.basketWords
-        var draft = wordDraft
+        let words = setup.basketWords
+        let draft = wordDraft
         let result = WordList.inserting(draft, into: words, limit: CustomDeckLimits.maxWords)
         let count = result.addedCount > 0 ? result.words.count : words.count
         return count >= CustomDeckLimits.minWordsToPlay
@@ -62,18 +62,9 @@ struct WordBasketView: View {
         HStack(spacing: 0) {
             // §02 §24: geri mod seçimine dönüyor ve yazılanlar korunuyor —
             // kelimeler `GameSetup`ta, bu ekranın state'inde değil.
-            Button {
-                Haptics.secondaryButton()
+            BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 router.pop()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.back"))
 
             Spacer(minLength: 0)
 
@@ -84,7 +75,7 @@ struct WordBasketView: View {
                 Image(systemName: "questionmark")
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
+                    .frame(width: BackNavButton.hitSide, height: BackNavButton.hitSide)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("howToPlay.title"))

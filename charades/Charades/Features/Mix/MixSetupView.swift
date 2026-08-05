@@ -78,18 +78,9 @@ struct MixSetupView: View {
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            Button {
-                Haptics.secondaryButton()
+            BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 router.pop()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .flipsForRightToLeftLayoutDirection(true)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentGold)
-                    .frame(width: 44, height: 44)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(l10n.t("common.back"))
 
             VStack(spacing: 2) {
                 Text(l10n.t("featured.mix"))
@@ -125,7 +116,7 @@ struct MixSetupView: View {
             Image(systemName: isSelectionSaved ? "bookmark.fill" : "bookmark")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(canSave ? AppColors.accentGold : AppColors.stateLocked)
-                .frame(width: 44, height: 44)
+                .frame(width: BackNavButton.hitSide, height: BackNavButton.hitSide)
         }
         .buttonStyle(.plain)
         .disabled(!canSave)
