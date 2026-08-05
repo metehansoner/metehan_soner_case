@@ -11,8 +11,8 @@ struct SettingsSheet: View {
     /// Replay premium bir özellik; kilitli anahtara dokunuş paywall'a gidiyor.
     /// Ayarlar sheet'i `AppRouter`ı görmüyor, kabuk kapatıp açıyor.
     var onUpgrade: () -> Void
-    /// §04 §4.3 giriş noktası 2: arşive giden **kalıcı** yol. Header'daki makara
-    /// koşullu, bu satır her zaman burada.
+    /// §04 §4.3 giriş noktası 2: arşive giden yol (header'daki makara da
+    /// her zaman açık; bu satır özet + alternatif giriş).
     var onOpenArchive: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n

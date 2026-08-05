@@ -198,7 +198,7 @@ struct RootView: View {
         }
         if mode.usesTeams {
             router.closeSetup()
-            router.push(.teamSetup)
+            router.push(.teamSetup(resumesModeSelect: true))
             return
         }
         if mode == .mix {
@@ -617,7 +617,7 @@ struct RootView: View {
         } else if arguments.contains("-MixSetup") {
             router.push(.mix)
         } else if arguments.contains("-TeamSetup") {
-            router.push(.teamSetup)
+            router.push(.teamSetup(resumesModeSelect: false))
         } else if let id = value(after: "-DeckDetail") {
             router.openDeckDetail(id)
         } else if arguments.contains("-ModeSelect") {
@@ -647,8 +647,14 @@ struct RootView: View {
             CustomDeckEditorView(deckID: id.flatMap(UUID.init(uuidString:)))
         case .wordBasket:
             WordBasketView { router.setupStep = .mode }
-        case .teamSetup:
-            TeamSetupView { router.setupStep = .mode }
+        case .teamSetup(let resumesModeSelect):
+            TeamSetupView(resumesModeSelect: resumesModeSelect) {
+                if resumesModeSelect {
+                    router.setupStep = .mode
+                } else {
+                    router.pop()
+                }
+            }
         case .archive:
             ArchiveView()
         case .archivePlayer(let id):

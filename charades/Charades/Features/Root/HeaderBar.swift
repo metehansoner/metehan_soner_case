@@ -3,23 +3,21 @@ import SwiftUI
 /// Ana ekran header'ı — 02-ekran-akisi.md §1 ve §4 (ekran 4).
 ///
 /// Tab bar yok; ayarlar bu satırdaki dişliden sheet olarak açılıyor. Logo
-/// boyutu sabit — kaydırınca küçülmez. VIP ve dişli her zaman erişilebilir.
+/// boyutu sabit — kaydırınca küçülmez. VIP, takım, arşiv ve dişli her zaman
+/// erişilebilir; arşivde kayıt yokken de makara görünür (boş arşive gider).
 struct HeaderBar: View {
-    /// §1: makara ikonu **yalnızca** arşivde en az bir kayıt varken görünür.
-    /// Boş bir arşive giden kalıcı buton header'ı gereksiz kalabalıklaştırıyor.
     var archiveCount: Int
     var isPremium: Bool
 
     var onTapVIP: () -> Void
+    var onTapTeams: () -> Void
     var onTapArchive: () -> Void
     var onTapSettings: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
 
-    /// Logo ortada duruyor, butonlar onun üstünde: makara ikonu belirince sağ
-    /// küme genişliyor ve uzun dillerde plaka butonların altına giriyor. Geniş
-    /// tarafın payı iki yana birden veriliyor ki logo ortada kalsın.
-    private var sideInset: CGFloat { archiveCount > 0 ? 98 : 44 }
+    /// Sol VIP+takım, sağ arşiv+dişli — iki yan da iki buton (~98).
+    private let sideInset: CGFloat = 98
 
     var body: some View {
         VStack(spacing: 6) {
@@ -35,16 +33,20 @@ struct HeaderBar: View {
                         action: onTapVIP
                     )
 
+                    HeaderCircleIconButton(
+                        systemName: "person.3.fill",
+                        accessibilityLabel: l10n.t("header.teams"),
+                        action: onTapTeams
+                    )
+
                     Spacer(minLength: 0)
 
-                    if archiveCount > 0 {
-                        HeaderCircleIconButton(
-                            systemName: "film.stack",
-                            badge: archiveCount,
-                            accessibilityLabel: l10n.t("header.archive"),
-                            action: onTapArchive
-                        )
-                    }
+                    HeaderCircleIconButton(
+                        systemName: "film.stack",
+                        badge: archiveCount,
+                        accessibilityLabel: l10n.t("header.archive"),
+                        action: onTapArchive
+                    )
 
                     HeaderCircleIconButton(
                         systemName: "gearshape.fill",
@@ -107,14 +109,17 @@ struct HeaderBar: View {
     }
 }
 
-/// §1: 40pt daire, `surfaceCardRaised` zemin, 1px `accentGold` kenar,
-/// ikon `accentBrass`.
+/// 40pt daire, aynı glyph kutusu — SF Symbol genişliği butondan butona
+/// oynamasın diye ikon sabit 20×20 alanda ortalanıyor.
 struct HeaderCircleIconButton: View {
     var systemName: String
     var tint: Color = AppColors.accentBrass
     var badge: Int?
     var accessibilityLabel: String
     var action: () -> Void
+
+    private let circle: CGFloat = 40
+    private let glyph: CGFloat = 20
 
     var body: some View {
         Button {
@@ -123,9 +128,10 @@ struct HeaderCircleIconButton: View {
             action()
         } label: {
             Image(systemName: systemName)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(tint)
-                .frame(width: 40, height: 40)
+                .frame(width: glyph, height: glyph)
+                .frame(width: circle, height: circle)
                 .background {
                     Circle()
                         .fill(AppColors.surfaceCardRaised)

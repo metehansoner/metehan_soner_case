@@ -26,7 +26,7 @@ struct DecksHomeView: View {
     @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
 
     @State private var filter: DeckFilter = .all
-    /// §04 §4.3 giriş noktası 1: header'daki makara koşullu, sayısı da rozette.
+    /// §04 §4.3 giriş noktası 1: header'daki makara; sayısı rozette (0 iken yok).
     @State private var archiveCount = 0
 
     private var dailyFreeDeckID: String? { DeckCatalog.dailyFreeDeckID() }
@@ -100,10 +100,10 @@ struct DecksHomeView: View {
     private var topBar: some View {
         VStack(spacing: 12) {
             HeaderBar(
-                // §1: makara ikonu **yalnızca** arşivde kayıt varken görünüyor.
                 archiveCount: archiveCount,
                 isPremium: subscriptions.isPremium,
                 onTapVIP: { router.openPaywall(.vipButton) },
+                onTapTeams: { router.push(.teamSetup(resumesModeSelect: false)) },
                 onTapArchive: {
                     Analytics.replayArchiveOpen(entry: .header, reelCount: archiveCount)
                     router.push(.archive)

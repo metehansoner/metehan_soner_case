@@ -12,7 +12,9 @@ enum AppRoute: Hashable {
     case customList
     case customEditor(String?)
     case wordBasket
-    case teamSetup
+    /// `resumesModeSelect`: Mod Seçimi'nden gelindiyse bitince sheet yeniden
+    /// açılır. Ana ekran kısayolundan gelindiyse yalnızca pop.
+    case teamSetup(resumesModeSelect: Bool)
     case archive
     case archivePlayer(String)
 }

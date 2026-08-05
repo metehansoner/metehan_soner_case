@@ -42,9 +42,10 @@ final class GameSetup {
     /// deste orada duramaz — ayrı kanal.
     var customDeckID: UUID?
 
-    /// Takım Kurulumu (ekran 11). Yalnızca `teams` modunda kullanılıyor ama
-    /// burada duruyor: maç sonundaki `TEKRAR OYNA` kurulum ekranına dönüyor
-    /// (§02 §3) ve takımların o dönüşte hâlâ dolu olması gerekiyor.
+    /// Takım kadrosu. Ana ekran kısayolu ve Takım Savaşı kurulumu aynı listeyi
+    /// paylaşıyor: oturum boyu durur, uygulama kapanınca `GameSetup` ile gider.
+    /// Maç sonundaki `TEKRAR OYNA` kurulum ekranına dönünce (§02 §3) isimler
+    /// hâlâ dolu kalsın diye burada tutuyoruz.
     var teams: [Team] = Team.defaultRoster
 
     /// §09 §5: takım başına kaç tur — ayarın yeri Takım Kurulumu ekranı.

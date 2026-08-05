@@ -2,8 +2,9 @@ import SwiftUI
 
 /// Ekran 11 — Takım Kurulumu (§ `02` §4, § `04` §1, § `09` §5).
 ///
-/// Yalnızca Takım Savaşı modunda, Mod Seçimi'nden sonra açılıyor. Üç şey
-/// topluyor: takımlar, oyuncu adları ve tur sayısı.
+/// İki giriş: Takım Savaşı mod seçiminden sonra (`resumesModeSelect`) ve ana
+/// ekran header kısayolu. Kadro `GameSetup`ta oturum boyu durur; uygulama
+/// kapanınca sıfırlanır (§ `07` §3).
 ///
 /// Ad alanlarının hiçbiri zorunlu değil (§ `09` §5). Takım adı boşsa numarayla
 /// anılıyor, oyuncu adı yoksa perde arası ve jenerik takım adıyla yetiniyor —
@@ -11,6 +12,9 @@ import SwiftUI
 /// girilirse perde arasında "telefonu Ayşe alsın", jenerikte "EN İYİ
 /// CANLANDIRMA — AYŞE" mümkün oluyor.
 struct TeamSetupView: View {
+    /// Mod Seçimi zincirinden gelindiyse `Devam` sheet'i yeniden açar; ana
+    /// ekran kısayolundan gelindiyse `Bitti` ile home'a döner.
+    var resumesModeSelect = true
     var onContinue: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -57,7 +61,7 @@ struct TeamSetupView: View {
                 .scrollIndicators(.hidden)
                 .scrollDismissesKeyboard(.interactively)
 
-                Button(l10n.t("teams.continue")) {
+                Button(l10n.t(resumesModeSelect ? "teams.continue" : "common.done")) {
                     Haptics.primaryButton()
                     focus = nil
                     setup.tidyTeams()
