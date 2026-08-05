@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Tur sayısını azalt",
   "teams.continue": "Devam",
   "teams.roundOf": "{current}. Tur / {total}",
+  "teams.turnOf": "{current}. Sıra / {total}",
   "teams.intermission.title": "Perde Arası",
   "teams.intermission.body": "Büfeye gitmeye vaktin var",
   "teams.suddenDeath.title": "Ani Ölüm",

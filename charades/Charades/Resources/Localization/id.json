@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Lebih sedikit ronde",
   "teams.continue": "Lanjut",
   "teams.roundOf": "Ronde {current} / {total}",
+  "teams.turnOf": "Giliran {current} / {total}",
   "teams.intermission.title": "Istirahat",
   "teams.intermission.body": "Masih sempat mampir ke kios camilan",
   "teams.suddenDeath.title": "Adu Penentuan",

@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Menos rondas",
   "teams.continue": "Continuar",
   "teams.roundOf": "Ronda {current} / {total}",
+  "teams.turnOf": "Turno {current} / {total}",
   "teams.intermission.title": "Intermedio",
   "teams.intermission.body": "Hay tiempo para una vuelta al puesto de palomitas",
   "teams.suddenDeath.title": "Muerte súbita",

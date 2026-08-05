@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Manje rundi",
   "teams.continue": "Nastavi",
   "teams.roundOf": "Runda {current} / {total}",
+  "teams.turnOf": "Potez {current} / {total}",
   "teams.intermission.title": "Pauza",
   "teams.intermission.body": "Ima vremena za skok do bifea",
   "teams.suddenDeath.title": "Zlatni gol",

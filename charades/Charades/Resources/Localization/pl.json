@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Mniej rund",
   "teams.continue": "Dalej",
   "teams.roundOf": "Runda {current} / {total}",
+  "teams.turnOf": "Tura {current} / {total}",
   "teams.intermission.title": "Przerwa",
   "teams.intermission.body": "Jest czas na skok do bufetu",
   "teams.suddenDeath.title": "Nagła śmierć",

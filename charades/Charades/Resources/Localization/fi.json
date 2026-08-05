@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Vähemmän kierroksia",
   "teams.continue": "Jatka",
   "teams.roundOf": "Kierros {current} / {total}",
+  "teams.turnOf": "Vuoro {current} / {total}",
   "teams.intermission.title": "Väliaika",
   "teams.intermission.body": "Ehdit käydä välipalabaarissa",
   "teams.suddenDeath.title": "Äkkikuolema",

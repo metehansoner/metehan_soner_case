@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Minder rondes",
   "teams.continue": "Doorgaan",
   "teams.roundOf": "Ronde {current} / {total}",
+  "teams.turnOf": "Beurt {current} / {total}",
   "teams.intermission.title": "Pauze",
   "teams.intermission.body": "Er is tijd voor een rondje langs de snackbar",
   "teams.suddenDeath.title": "Sudden death",

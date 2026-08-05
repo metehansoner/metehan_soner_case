@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "جولات أقل",
   "teams.continue": "متابعة",
   "teams.roundOf": "الجولة {current} / {total}",
+  "teams.turnOf": "الدور {current} / {total}",
   "teams.intermission.title": "استراحة",
   "teams.intermission.body": "هناك وقت لزيارة كشك الوجبات",
   "teams.suddenDeath.title": "الموت المفاجئ",

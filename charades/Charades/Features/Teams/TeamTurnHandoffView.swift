@@ -105,8 +105,11 @@ struct TeamTurnHandoffView: View {
             if !isSuddenDeath {
                 Text(
                     l10n.t(
-                        "teams.roundOf",
-                        ["current": "\(match.currentRound)", "total": "\(match.roundsPerTeam)"]
+                        "teams.turnOf",
+                        [
+                            "current": "\(match.matchTurnNumber)",
+                            "total": "\(match.matchTurnTotal)",
+                        ]
                     )
                 )
                 .font(AppFont.ui(9, weight: .semibold))

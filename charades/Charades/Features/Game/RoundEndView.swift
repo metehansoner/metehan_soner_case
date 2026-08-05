@@ -141,8 +141,11 @@ struct RoundEndView: View {
                 match.isSuddenDeath
                     ? l10n.t("teams.suddenDeath.title")
                     : l10n.t(
-                        "teams.roundOf",
-                        ["current": "\(match.currentRound)", "total": "\(match.roundsPerTeam)"]
+                        "teams.turnOf",
+                        [
+                            "current": "\(match.matchTurnNumber)",
+                            "total": "\(match.matchTurnTotal)",
+                        ]
                     )
             )
             .font(AppFont.ui(9, weight: .semibold))

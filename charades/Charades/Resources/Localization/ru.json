@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Меньше раундов",
   "teams.continue": "Продолжить",
   "teams.roundOf": "Раунд {current} / {total}",
+  "teams.turnOf": "Ход {current} / {total}",
   "teams.intermission.title": "Антракт",
   "teams.intermission.body": "Есть время сходить за попкорном",
   "teams.suddenDeath.title": "Внезапная смерть",

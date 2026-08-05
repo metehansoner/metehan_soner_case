@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Menys rondes",
   "teams.continue": "Continua",
   "teams.roundOf": "Ronda {current} / {total}",
+  "teams.turnOf": "Torn {current} / {total}",
   "teams.intermission.title": "Entreacte",
   "teams.intermission.body": "Hi ha temps per passar pel bar",
   "teams.suddenDeath.title": "Mort sobtada",

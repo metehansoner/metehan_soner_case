@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Менше раундів",
   "teams.continue": "Далі",
   "teams.roundOf": "Раунд {current} / {total}",
+  "teams.turnOf": "Хід {current} / {total}",
   "teams.intermission.title": "Антракт",
   "teams.intermission.body": "Є час забігти до буфету",
   "teams.suddenDeath.title": "Раптова смерть",

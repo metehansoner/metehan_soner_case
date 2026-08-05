@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Moins de manches",
   "teams.continue": "Continuer",
   "teams.roundOf": "Manche {current} / {total}",
+  "teams.turnOf": "Tour {current} / {total}",
   "teams.intermission.title": "Entracte",
   "teams.intermission.body": "Il y a le temps pour un tour au stand de confiseries",
   "teams.suddenDeath.title": "Mort subite",

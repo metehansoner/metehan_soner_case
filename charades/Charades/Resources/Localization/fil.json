@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Bawasan ang ronda",
   "teams.continue": "Magpatuloy",
   "teams.roundOf": "Ronda {current} / {total}",
+  "teams.turnOf": "Turno {current} / {total}",
   "teams.intermission.title": "Intermisyon",
   "teams.intermission.body": "May oras pa para dumaan sa tindahan ng meryenda",
   "teams.suddenDeath.title": "Sudden Death",

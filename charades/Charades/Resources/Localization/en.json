@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Fewer rounds",
   "teams.continue": "Continue",
   "teams.roundOf": "Round {current} / {total}",
+  "teams.turnOf": "Turn {current} / {total}",
   "teams.intermission.title": "Intermission",
   "teams.intermission.body": "There's time for a trip to the snack bar",
   "teams.suddenDeath.title": "Sudden Death",

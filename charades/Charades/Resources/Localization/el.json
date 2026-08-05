@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Λιγότεροι γύροι",
   "teams.continue": "Συνέχεια",
   "teams.roundOf": "Γύρος {current} / {total}",
+  "teams.turnOf": "Σειρά {current} / {total}",
   "teams.intermission.title": "Διάλειμμα",
   "teams.intermission.body": "Προλαβαίνεις μια βόλτα στο κυλικείο",
   "teams.suddenDeath.title": "Αιφνίδιος θάνατος",

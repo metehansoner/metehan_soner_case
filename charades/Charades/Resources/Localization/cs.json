@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Méně kol",
   "teams.continue": "Pokračovat",
   "teams.roundOf": "Kolo {current} / {total}",
+  "teams.turnOf": "Tah {current} / {total}",
   "teams.intermission.title": "Přestávka",
   "teams.intermission.body": "Je čas skočit si k bufetu",
   "teams.suddenDeath.title": "Náhlá smrt",

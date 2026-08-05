@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Lebih sedikit pusingan",
   "teams.continue": "Teruskan",
   "teams.roundOf": "Pusingan {current} / {total}",
+  "teams.turnOf": "Giliran {current} / {total}",
   "teams.intermission.title": "Rehat",
   "teams.intermission.body": "Ada masa untuk singgah ke gerai snek",
   "teams.suddenDeath.title": "Pusingan Penentu",

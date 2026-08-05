@@ -566,6 +566,7 @@
   "teams.rounds.decrease": "Mai puține runde",
   "teams.continue": "Continuă",
   "teams.roundOf": "Runda {current} / {total}",
+  "teams.turnOf": "Tura {current} / {total}",
   "teams.intermission.title": "Pauză",
   "teams.intermission.body": "E timp de o tură pe la bufet",
   "teams.suddenDeath.title": "Moarte subită",

@@ -83,6 +83,18 @@ final class TeamMatch {
     /// Perde arası "3 / 6" göstergesi için oynanmış normal tur sayısı.
     var completedTurns: Int { results.filter { !$0.isSuddenDeath }.count }
 
+    /// Tur sonu / perde arasinda maç sırası — "1 / 2" (takım×tur).
+    /// `currentRound / roundsPerTeam` yanıltıcıydı: 1 tur ayarında ilk takım
+    /// bitince "1 / 1" görünüp maç bitmiş sanılıyordu.
+    var matchTurnNumber: Int {
+        if isSuddenDeath { return min(cursor + 1, max(suddenDeathTeams.count, 1)) }
+        return min(completedTurns + 1, max(totalTurns, 1))
+    }
+
+    var matchTurnTotal: Int {
+        isSuddenDeath ? max(suddenDeathTeams.count, 1) : max(totalTurns, 1)
+    }
+
     // MARK: Sıra
 
     /// Tur sonu ekranından çıkılırken çağrılıyor — skor orada düzeltmelerle

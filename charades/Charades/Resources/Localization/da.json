@@ -556,6 +556,7 @@
   "teams.rounds.decrease": "Færre runder",
   "teams.continue": "Fortsæt",
   "teams.roundOf": "Runde {current} / {total}",
+  "teams.turnOf": "Tur {current} / {total}",
   "teams.intermission.title": "Pause",
   "teams.intermission.body": "Der er tid til en tur forbi kiosken",
   "teams.suddenDeath.title": "Sudden death",
