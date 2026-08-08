@@ -132,7 +132,7 @@ struct HowToPage {
         /// zaten kodda (§ `01` §4), dört kopyası açıyla diziliyor.
         case posterFan
         case illustration(String)
-        /// Telefonun iki yöne eğildiği yeşil/kırmızı diyagram.
+        /// Yatay telefonun öne/arkaya eğildiği yeşil/kırmızı diyagram.
         case tiltDiagram
     }
 
@@ -189,63 +189,7 @@ private struct HowToPlayPage: View {
                 .resizable()
                 .scaledToFit()
         case .tiltDiagram:
-            TiltDiagramArt()
-        }
-    }
-}
-
-// MARK: - Çizilen görseller
-
-/// Sayfa 4: telefonun öne (DOĞRU, yeşil) ve arkaya (PAS, kırmızı) eğilişi.
-/// Ok yönleri dilden ve RTL'den bağımsız (§ `04` §2, § `06` §2).
-private struct TiltDiagramArt: View {
-    @Environment(LocalizationManager.self) private var l10n
-
-    var body: some View {
-        HStack(spacing: 38) {
-            tilt(
-                angle: -22,
-                color: AppColors.stateCorrect,
-                systemImage: "arrow.down",
-                label: l10n.t("game.stamp.correct")
-            )
-            tilt(
-                angle: 22,
-                color: AppColors.stateSkip,
-                systemImage: "arrow.up",
-                label: l10n.t("game.stamp.skip")
-            )
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func tilt(angle: Double, color: Color, systemImage: String, label: String) -> some View {
-        VStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 11)
-                .strokeBorder(color, lineWidth: 2.5)
-                .background {
-                    RoundedRectangle(cornerRadius: 11).fill(AppColors.surfaceCard.opacity(0.85))
-                }
-                .overlay(alignment: .top) {
-                    Capsule()
-                        .fill(color.opacity(0.5))
-                        .frame(width: 22, height: 3.5)
-                        .padding(.top, 7)
-                }
-                .overlay {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(color)
-                }
-                .frame(width: 62, height: 104)
-                .rotationEffect(.degrees(angle))
-                .shadow(color: color.opacity(0.35), radius: 12)
-
-            Text(label)
-                .font(AppFont.display(13, weight: .semibold))
-                .appTracking(2)
-                .textCase(.uppercase)
-                .foregroundStyle(color)
+            TiltAnswerDiagram()
         }
     }
 }

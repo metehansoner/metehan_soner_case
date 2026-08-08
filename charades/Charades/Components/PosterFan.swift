@@ -16,7 +16,7 @@ struct PosterFan: View {
                 let angle = Self.angles[index]
                 FanPoster(deckID: id)
                     .rotationEffect(.degrees(angle), anchor: .bottom)
-                    .offset(x: CGFloat(angle) * 4.2, y: abs(angle) * 1.05)
+                    .offset(x: CGFloat(angle) * 4.8, y: abs(angle) * 1.15)
                     .zIndex(Double(index))
             }
         }
@@ -50,11 +50,11 @@ private struct FanPoster: View {
                         Image(imageName)
                             .resizable()
                             .scaledToFit()
-                            .padding(9)
+                            .padding(10)
                     }
 
                     Text(l10n.t(titleKey))
-                        .font(AppFont.accent(10, weight: .black))
+                        .font(AppFont.accent(11, weight: .black))
                         .lineSpacing(-1)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -75,7 +75,7 @@ private struct FanPoster: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(4)
             }
-            .frame(width: 102, height: 138)
-            .shadow(color: .black.opacity(0.5), radius: 6, y: 4)
+            .frame(width: 118, height: 160)
+            .shadow(color: .black.opacity(0.5), radius: 7, y: 5)
     }
 }

@@ -75,19 +75,11 @@ enum NotificationService {
         guard isEnabled else { return }
 
         let schedulesDailyFree = wantsDailyDeck && !isPremium
-        if schedulesDailyFree {
-            for request in await MainActor.run({ dailyFreeDeckRequests() }) {
-                try? await center.add(request)
-            }
-        }
-
-        // 18:00'de bedava deste zaten varsa engagement'ı o saate koyma —
-        // aynı anda iki bildirim düşmesin. 20:00 herkese engagement.
-        for request in await MainActor.run({
-            engagementRequests(skipEveningHour: schedulesDailyFree)
-        }) {
-            try? await center.add(request)
-        }
+        // UNNotificationRequest Sendable değil; üretim + ekleme MainActor'da kalsın.
+        await enqueueLocalNotifications(
+            center: center,
+            schedulesDailyFree: schedulesDailyFree
+        )
 
         #if DEBUG
         let pending = await center.pendingNotificationRequests()
@@ -141,6 +133,25 @@ enum NotificationService {
         let ids = pending.map(\.identifier).filter { $0.hasPrefix(prefix) }
         guard !ids.isEmpty else { return }
         center.removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
+    /// 18:00 bedava deste + engagement. `UNNotificationRequest` Sendable
+    /// olmadığı için üretimi ve `add` MainActor'da kalıyor.
+    @MainActor
+    private static func enqueueLocalNotifications(
+        center: UNUserNotificationCenter,
+        schedulesDailyFree: Bool
+    ) async {
+        if schedulesDailyFree {
+            for request in dailyFreeDeckRequests() {
+                try? await center.add(request)
+            }
+        }
+        // 18:00'de bedava deste zaten varsa engagement'ı o saate koyma —
+        // aynı anda iki bildirim düşmesin. 20:00 herkese engagement.
+        for request in engagementRequests(skipEveningHour: schedulesDailyFree) {
+            try? await center.add(request)
+        }
     }
 
     // MARK: - Günlük bedava deste (18:00 yerel)

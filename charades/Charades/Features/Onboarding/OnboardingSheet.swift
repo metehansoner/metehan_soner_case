@@ -230,56 +230,37 @@ private struct OnboardingStepView: View {
 
 // MARK: - Eğme / dokunma diyagramı
 
-/// Adım 3: solda PAS, sağda DOĞRU, ortada telefon. Yön ve renk eşlemesi
-/// § `04` §2'den: öne eğ = DOĞRU (yeşil), arkaya eğ = PAS (kırmızı);
-/// dokunmatikte ekranın sağ yarısı DOĞRU, sol yarısı PAS.
-///
-/// Bölgeler dilden ve RTL'den bağımsız: sol/sağ fiziksel bir eşleme, çevrilmiyor.
+/// Adım 3: eğmede yatay telefon diyagramı; dokunmada sol/sağ bölgeler.
+/// Öne eğ = DOĞRU (yeşil), arkaya eğ = PAS (kırmızı) — § `04` §2.
+/// Dokunmatikte sağ yarı DOĞRU, sol yarı PAS. Sol/sağ çevrilmiyor.
 private struct AnswerZonesArt: View {
     var showsPhone: Bool
 
     @Environment(LocalizationManager.self) private var l10n
 
     var body: some View {
-        HStack(spacing: 14) {
-            zone(
-                color: AppColors.stateSkip,
-                // Ok, cevabın nasıl verildiğini gösteriyor: eğmede telefonun
-                // gittiği yön, dokunmada ekranın hangi yarısı.
-                systemImage: showsPhone ? "arrow.up" : "arrow.left",
-                label: l10n.t("game.stamp.skip"),
-                hint: l10n.t(showsPhone ? "onboarding.zone.tiltBack" : "onboarding.zone.tapLeft")
-            )
-
+        Group {
             if showsPhone {
-                phone
+                TiltAnswerDiagram(showsHints: true)
+            } else {
+                HStack(spacing: 14) {
+                    zone(
+                        color: AppColors.stateSkip,
+                        systemImage: "arrow.left",
+                        label: l10n.t("game.stamp.skip"),
+                        hint: l10n.t("onboarding.zone.tapLeft")
+                    )
+                    zone(
+                        color: AppColors.stateCorrect,
+                        systemImage: "arrow.right",
+                        label: l10n.t("game.stamp.correct"),
+                        hint: l10n.t("onboarding.zone.tapRight")
+                    )
+                }
+                .frame(maxWidth: .infinity)
             }
-
-            zone(
-                color: AppColors.stateCorrect,
-                systemImage: showsPhone ? "arrow.down" : "arrow.right",
-                label: l10n.t("game.stamp.correct"),
-                hint: l10n.t(showsPhone ? "onboarding.zone.tiltForward" : "onboarding.zone.tapRight")
-            )
         }
-        .frame(maxWidth: .infinity)
         .environment(\.layoutDirection, .leftToRight)
-    }
-
-    private var phone: some View {
-        RoundedRectangle(cornerRadius: 9)
-            .fill(AppColors.bgVelvetDeep.opacity(0.9))
-            .overlay {
-                RoundedRectangle(cornerRadius: 9)
-                    .strokeBorder(AppColors.accentGold, lineWidth: 2)
-            }
-            .overlay {
-                Image(systemName: "iphone.gen3")
-                    .font(.system(size: 19, weight: .light))
-                    .foregroundStyle(AppColors.accentGold)
-            }
-            .frame(width: 44, height: 82)
-            .shadow(color: AppColors.accentAmber.opacity(0.3), radius: 9)
     }
 
     private func zone(color: Color, systemImage: String, label: String, hint: String) -> some View {
