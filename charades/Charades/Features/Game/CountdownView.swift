@@ -96,8 +96,8 @@ struct CountdownView: View {
     }
 
     private var reelLabel: String {
-        // Marka + makara no — mockup'taki `Charades · Reel 07`.
-        "Charades · Reel \(String(format: "%02d", reel))"
+        // Marka + makara no — mockup'taki `Charady · Reel 07`.
+        "Charady · Reel \(String(format: "%02d", reel))"
     }
 
     // MARK: Dial
