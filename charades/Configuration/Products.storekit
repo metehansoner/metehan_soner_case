@@ -105,7 +105,7 @@
               "locale" : "tr_TR"
             }
           ],
-          "productID" : "com.metes.charades.premium.weekly",
+          "productID" : "com.metes.charady.premium.weekly",
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "Weekly Premium",
           "type" : "RecurringSubscription"
@@ -133,7 +133,7 @@
               "locale" : "tr_TR"
             }
           ],
-          "productID" : "com.metes.charades.premium.monthly",
+          "productID" : "com.metes.charady.premium.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly Premium",
           "type" : "RecurringSubscription"
@@ -161,7 +161,7 @@
               "locale" : "tr_TR"
             }
           ],
-          "productID" : "com.metes.charades.premium.yearly",
+          "productID" : "com.metes.charady.premium.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly Premium",
           "type" : "RecurringSubscription"

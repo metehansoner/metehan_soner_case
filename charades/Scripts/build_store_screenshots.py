@@ -48,7 +48,7 @@ L10N = ROOT / "Charades" / "Resources" / "Localization"
 OUT = ROOT / "Store" / "screenshots"
 RAW = pathlib.Path("/tmp/charades_store_raw")
 APP = pathlib.Path("/tmp/charades_dd/Build/Products/Debug-iphonesimulator/Charades.app")
-BUNDLE_ID = "com.metes.charades"
+BUNDLE_ID = "com.metes.charady"
 
 # § `01` §1 renk tablosu.
 BG_VELVET_MID = (0x47, 0x16, 0x1F)

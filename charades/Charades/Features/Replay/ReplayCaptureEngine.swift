@@ -41,7 +41,7 @@ nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
     AVCaptureFileOutputRecordingDelegate, @unchecked Sendable {
 
     /// Bütün oturum işleri bu kuyrukta; `queue` dışında hiçbir alan okunmuyor.
-    private let queue = DispatchQueue(label: "com.charades.replay.capture")
+    private let queue = DispatchQueue(label: "com.charady.replay.capture")
     private let session = AVCaptureSession()
     private let output = AVCaptureMovieFileOutput()
 

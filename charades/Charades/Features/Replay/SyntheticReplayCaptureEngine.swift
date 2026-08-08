@@ -14,7 +14,7 @@ nonisolated final class SyntheticReplayCaptureEngine: ReplayCaptureEngine, @unch
     private static let size = CGSize(width: 1280, height: 720)
     private static let fps: Int32 = 15
 
-    private let queue = DispatchQueue(label: "com.charades.replay.synthetic")
+    private let queue = DispatchQueue(label: "com.charady.replay.synthetic")
     private var writer: AVAssetWriter?
     private var input: AVAssetWriterInput?
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?

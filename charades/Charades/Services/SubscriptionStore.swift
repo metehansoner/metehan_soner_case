@@ -29,7 +29,7 @@ final class SubscriptionStore {
         case weekly, monthly, yearly
 
         var id: String { rawValue }
-        var productID: String { "com.metes.charades.premium.\(rawValue)" }
+        var productID: String { "com.metes.charady.premium.\(rawValue)" }
 
         var packageType: PackageType {
             switch self {
