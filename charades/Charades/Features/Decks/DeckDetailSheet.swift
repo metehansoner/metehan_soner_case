@@ -58,22 +58,15 @@ struct DeckDetailSheet: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
                     .padding(.bottom, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(AppColors.surfaceCard)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background {
-                AppColors.surfaceCard
-                    .ignoresSafeArea(edges: .bottom)
-            }
         }
-        // iPad’de large; telefonda %70. Zemin SheetScaffold + SheetEdgeFill
-        // ile ekranın altına yapışık kalmalı.
+        // iPad’de fraction sheet’ler garip boşluk bırakıyor; large oturuyor.
+        // Telefonda %70 — OYNA altta, arka ekran görünmez.
         .presentationDetents(
             AppLayout.isRegularWidth(horizontalSizeClass) ? [.large] : [.fraction(0.7)]
         )
         .presentationContentInteraction(.scrolls)
-        .presentationBackground(AppColors.surfaceCard)
         .task(id: deck.id) { loadSampleWords() }
     }
 
