@@ -17,7 +17,6 @@
 		56E91B92301CF96F004A35B9 /* Charades.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Charades.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56E91BAB301CFE98004A35B9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		56E91BC2301D0100004A35B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		56E91BD0301D0200004A35B9 /* Configuration/Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration/Products.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -48,7 +47,6 @@
 				56E91B94301CF96F004A35B9 /* Charades */,
 				56E91BC2301D0100004A35B9 /* Info.plist */,
 				56E91BAB301CFE98004A35B9 /* GoogleService-Info.plist */,
-				56E91BD0301D0200004A35B9 /* Configuration/Products.storekit */,
 				56E91B93301CF96F004A35B9 /* Products */,
 			);
 			sourceTree = "<group>";
