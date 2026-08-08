@@ -13,44 +13,45 @@ struct NowShowingStrip: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 11) {
+            HStack(spacing: 14) {
                 poster
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(l10n.t("nowShowing.badge"))
-                        .font(AppFont.ui(8, weight: .bold))
+                        .font(AppFont.ui(9.5, weight: .bold))
                         .appTracking(1.6)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.accentAmber)
 
                     Text(l10n.t(deck.titleKey))
-                        .font(AppFont.accent(14, weight: .black))
+                        .font(AppFont.accent(18, weight: .black))
                         .foregroundStyle(AppColors.textCream)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 countdown
             }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background {
-                RoundedRectangle(cornerRadius: 11)
+                RoundedRectangle(cornerRadius: 14)
                     .fill(
                         LinearGradient(
                             colors: [
-                                AppColors.surfaceCardRaised.opacity(0.96),
-                                AppColors.surfaceCard.opacity(0.82),
+                                AppColors.surfaceCardRaised.opacity(0.98),
+                                AppColors.surfaceCard.opacity(0.88),
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .overlay {
-                        RoundedRectangle(cornerRadius: 11)
-                            .strokeBorder(AppColors.accentAmber.opacity(0.42), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(AppColors.accentAmber.opacity(0.55), lineWidth: 1.4)
                     }
-                    .shadow(color: AppColors.accentAmber.opacity(0.1), radius: 10)
+                    .shadow(color: AppColors.accentAmber.opacity(0.22), radius: 14, y: 4)
             }
         }
         .buttonStyle(.plain)
@@ -61,30 +62,31 @@ struct NowShowingStrip: View {
         Image(deck.imageName)
             .resizable()
             .scaledToFit()
-            .padding(4)
-            .frame(width: 32, height: 42)
+            .padding(7)
+            .frame(width: 58, height: 76)
             .background {
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(deck.section.artGradient)
                     .overlay {
-                        RoundedRectangle(cornerRadius: 4)
-                            .strokeBorder(AppColors.accentGold, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(AppColors.accentGold.opacity(0.85), lineWidth: 1.2)
                     }
             }
+            .shadow(color: .black.opacity(0.35), radius: 5, y: 2)
     }
 
     /// Saniye başı yenilenen tek öğe bu; şeridin geri kalanı yeniden çizilmiyor.
     private var countdown: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            VStack(alignment: .trailing, spacing: 0) {
+            VStack(alignment: .trailing, spacing: 2) {
                 Text(Self.remainingText(at: context.date))
-                    .font(AppFont.display(14, weight: .semibold))
+                    .font(AppFont.display(17, weight: .semibold))
                     .appTracking(0.6)
                     .monospacedDigit()
                     .foregroundStyle(AppColors.accentGold)
 
                 Text(l10n.t("nowShowing.remaining"))
-                    .font(AppFont.ui(7, weight: .medium))
+                    .font(AppFont.ui(8, weight: .medium))
                     .appTracking(1.3)
                     .textCase(.uppercase)
                     .foregroundStyle(AppColors.textMuted)
