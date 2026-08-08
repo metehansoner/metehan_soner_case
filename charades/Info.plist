@@ -52,8 +52,6 @@
 	<string>Charady saves the replay you choose to your photo library. It never reads your existing photos.</string>
 	<key>PrivacyURL</key>
 	<string>https://teamo-couple.web.app/charady-privacy.html</string>
-	<key>RevenueCatAPIKey</key>
-	<string>$(REVENUECAT_API_KEY)</string>
 	<key>SupportEmail</key>
 	<string>teaomo.touch@gmail.com</string>
 	<key>TermsURL</key>

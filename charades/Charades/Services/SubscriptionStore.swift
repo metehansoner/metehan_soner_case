@@ -230,9 +230,8 @@ final class SubscriptionStore {
 
     // MARK: - Kurulum
 
-    /// API anahtarı `Info.plist` üzerinden geliyor; anahtar yoksa DEBUG'da
-    /// StoreKit Configuration devreye giriyor. Release'te anahtar yoksa
-    /// uygulama ücretsiz modda çalışmaya devam ediyor.
+    /// API anahtarı kodda; yoksa DEBUG'da StoreKit Configuration / örnek
+    /// teklifler devreye giriyor. Release'te anahtar yoksa ücretsiz mod.
     func configure() {
         if !Purchases.isConfigured, let apiKey = Self.apiKey {
             #if DEBUG
@@ -261,13 +260,16 @@ final class SubscriptionStore {
         UIApplication.shared.open(url)
     }
 
+    /// RevenueCat Apple public SDK key (`appl_…`). Dashboard → API keys.
+    private static let revenueCatAPIKey = "appl_wHsHujwsIMLOKzSDxYNvRXDYBTr"
+
+    /// Paywall fiyatları RevenueCat Current offering'den geliyor.
+    var isRevenueCatConfigured: Bool { Purchases.isConfigured }
+
     private static var apiKey: String? {
-        guard
-            let value = Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String,
-            !value.isEmpty,
-            !value.hasPrefix("$")  // xcconfig doldurulmamış
-        else { return nil }
-        return value
+        let trimmed = revenueCatAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.hasPrefix("appl_") else { return nil }
+        return trimmed
     }
 
     private func observeCustomerInfo() {
@@ -309,35 +311,50 @@ final class SubscriptionStore {
 
     // MARK: - Teklifler
 
+    /// Paywall her açılışta çağırır. Önce RevenueCat Current offering;
+    /// anahtar yoksa DEBUG'da StoreKit Configuration / örnek teklifler.
     func refresh() async {
         isLoadingOffers = true
         defer { isLoadingOffers = false }
 
         if Purchases.isConfigured {
-            // customerInfo çekilemezse önceki durum korunuyor: hata yutuluyor,
-            // `entitlementActive` olduğu gibi kalıyor.
             if let info = try? await Purchases.shared.customerInfo() {
                 apply(info)
             }
 
             do {
                 let offerings = try await Purchases.shared.offerings()
-                // §03 §4: offering "Current" olan, kodda hardcode yok.
                 if let current = offerings.current {
                     storeKitProducts = [:]
                     offers = Self.resolveOffers(in: current)
                     didFailToLoadOffers = offers.isEmpty
                     if !offers.isEmpty { return }
                 }
+                // Current boşsa diğer offering'lere bak (dashboard henüz Current
+                // işaretlenmemiş olabilir).
+                for offering in offerings.all.values {
+                    let resolved = Self.resolveOffers(in: offering)
+                    guard !resolved.isEmpty else { continue }
+                    storeKitProducts = [:]
+                    offers = resolved
+                    didFailToLoadOffers = false
+                    return
+                }
             } catch {
-                // Ağ / RC hatası: DEBUG'da StoreKit yedeğine düş.
+                #if DEBUG
+                print("[abonelik] RevenueCat offerings hatası: \(error.localizedDescription)")
+                #endif
             }
+
+            // RC bağlı ama paket gelmedi — mock'a düşme; paywall offline göstersin.
+            if offers.isEmpty {
+                didFailToLoadOffers = true
+            }
+            return
         }
 
         #if DEBUG
         if await refreshFromStoreKit() { return }
-        // Scheme'de StoreKit dosyası yoksa (simctl launch vb.) yerleşim yine
-        // test edilebilsin diye örnek teklifler geliyor.
         debugLoadSampleOffers()
         if !offers.isEmpty { return }
         #endif
@@ -390,14 +407,30 @@ final class SubscriptionStore {
     }
     #endif
 
-    /// §03 §4: paket çözümleme önce `PackageType`, tutmazsa product ID ile.
-    /// Dashboard'da paketler özel tanımlanmışsa ikinci yol kurtarıyor.
+    /// §03 §4: paket çözümleme — PackageType → product ID → identifier adı.
     private static func resolveOffers(in offering: Offering) -> [PlanOffer] {
         let packages = offering.availablePackages
         let resolved = Plan.allCases.compactMap { plan -> (Plan, Package)? in
-            let match = packages.first { $0.packageType == plan.packageType }
-                ?? packages.first { $0.storeProduct.productIdentifier == plan.productID }
-            return match.map { (plan, $0) }
+            if let match = packages.first(where: { $0.packageType == plan.packageType }) {
+                return (plan, match)
+            }
+            if let match = packages.first(where: { $0.storeProduct.productIdentifier == plan.productID }) {
+                return (plan, match)
+            }
+            let aliases: [String] = {
+                switch plan {
+                case .weekly: ["weekly", "$rc_weekly"]
+                case .monthly: ["monthly", "$rc_monthly"]
+                case .yearly: ["yearly", "annual", "$rc_annual"]
+                }
+            }()
+            if let match = packages.first(where: { pkg in
+                let id = pkg.identifier.lowercased()
+                return aliases.contains { id == $0 || id.hasSuffix($0) }
+            }) {
+                return (plan, match)
+            }
+            return nil
         }
 
         let weeklyAnnualCost = resolved
@@ -412,7 +445,6 @@ final class SubscriptionStore {
                 price: product.localizedPriceString,
                 pricePerWeek: plan == .weekly ? nil : product.localizedPricePerWeek,
                 trialDays: trialDays(of: product),
-                // §03 §2 madde 4 tablosu: tasarruf bandı yalnızca yıllıkta.
                 savingsPercent: plan == .yearly
                     ? savingsPercent(of: product, comparedTo: weeklyAnnualCost)
                     : nil

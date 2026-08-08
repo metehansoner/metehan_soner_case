@@ -81,7 +81,10 @@ struct PaywallView: View {
             settings.paywallSeen = true
             shownAt = .now
             Analytics.paywallView(variant: variant.analyticsName, context: context.id)
-            if store.offers.isEmpty { await store.refresh() }
+            await store.refresh()
+            selectDefaultPlan()
+        }
+        .onChange(of: store.offers.map(\.id)) { _, _ in
             selectDefaultPlan()
         }
         .task {
