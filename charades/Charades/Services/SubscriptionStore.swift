@@ -3,20 +3,13 @@ import Observation
 import RevenueCat
 import UIKit
 
-/// Abonelik durumunun tek kaynağı — 03-onboarding-paywall.md §4.
-///
-/// Fiyatlar ve satın alma **yalnızca RevenueCat** üzerinden. Savunmacı
-/// davranışlar: entitlement adı dashboard'da değişse bile aktif entitlement
-/// varsa premium; `customerInfo` çekilemezse önceki durum korunuyor.
-///
-/// `debugPremiumOverride` / `-MockOffers` yalnızca DEBUG.
+
 @MainActor
 @Observable
 final class SubscriptionStore {
     static let shared = SubscriptionStore()
 
-    /// §03 §4: üç ürün, tek entitlement. Sıra paywall'daki kart sırası
-    /// (§03 §2 madde 4: haftalık en üstte, deneme orada).
+
     enum Plan: String, CaseIterable, Identifiable, Sendable {
         case weekly, monthly, yearly
 
@@ -32,20 +25,19 @@ final class SubscriptionStore {
         }
     }
 
-    /// Bir plan kartının store'dan gelen bütün metni. Tutarların hiçbiri
-    /// hesaplanmıyor, `StoreProduct`'ın yerelleştirilmiş biçimleri kullanılıyor.
+
     struct PlanOffer: Identifiable, Sendable {
         let plan: Plan
-        /// RevenueCat paketi; `-MockOffers` örnek tekliflerinde de dolu.
+
         let package: Package?
-        /// Kartın büyük rakamı: kendi döneminin tam tutarı (§03 §2 madde 4).
+
         let price: String
-        /// Alt satırdaki haftalık karşılık; haftalık planda gösterilmiyor.
+
         let pricePerWeek: String?
-        /// §03 §4: deneme yalnızca haftalıkta ve daha önce kullanılmadıysa gelir.
+
         let trialDays: Int?
-        /// §09 §11 madde 8: tasarruf yüzdesi koda yazılamaz, bölgeye göre
-        /// değişiyor. Haftalık planın yıllık maliyetiyle karşılaştırılıyor.
+
+
         let savingsPercent: Int?
 
         var id: String { plan.id }
@@ -55,8 +47,8 @@ final class SubscriptionStore {
     enum PurchaseOutcome: Equatable {
         case purchased
         case cancelled
-        /// Taşınan değer ekrana çıkmıyor, §03 §5'teki `error_code` parametresi:
-        /// yerelleştirilmiş açıklama funnel'da gruplanamıyor.
+
+
         case failed(String)
     }
 
@@ -70,8 +62,7 @@ final class SubscriptionStore {
         static let debugPremium = "debug.premiumOverride"
     }
 
-    /// Son bilinen entitlement durumu. Ağ yokken buna düşülüyor — offline'da
-    /// aboneliği iptal edilmiş gibi davranmak ödeme yapan kullanıcıyı kilitler.
+
     private var entitlementActive: Bool {
         didSet {
             defaults.set(entitlementActive, forKey: Key.cachedPremium)
@@ -79,23 +70,20 @@ final class SubscriptionStore {
         }
     }
 
-    /// §09 §7: deneme bittikten sonraki yumuşak bilgi kartı yalnızca **düşen**
-    /// kullanıcıya gösteriliyor. Hiç abone olmamış kullanıcıya "bilet sona erdi"
-    /// demek anlamsız.
+
     private(set) var hasEverSubscribed: Bool {
         didSet { defaults.set(hasEverSubscribed, forKey: Key.everSubscribed) }
     }
 
-    /// Abonelik düşmüş: bir zamanlar aktifti, şimdi değil.
+
     var didLapse: Bool { hasEverSubscribed && !isPremium }
 
-    /// §06 §1: altın bilet kartındaki "Yenileme: 12 Ağustos 2026". Ağ yokken de
-    /// gösterilebilsin diye entitlement durumuyla birlikte önbelleğe alınıyor.
+
     private(set) var renewalDate: Date? {
         didSet { defaults.set(renewalDate, forKey: Key.renewalDate) }
     }
 
-    /// §06 §1 kimlik kartı: RevenueCat, uygulamanın kendi kimliğini kullanıyor.
+
     var appUserID: String { AppSettingsStore.shared.userID }
 
     #if DEBUG
@@ -103,22 +91,19 @@ final class SubscriptionStore {
         didSet { defaults.set(debugPremiumOverride, forKey: Key.debugPremium) }
     }
 
-    /// Altın bilet kartındaki yenileme satırı gerçek bir entitlement olmadan
-    /// görülemiyor; `-Premium` bunu da kuruyor.
+
     func debugSetRenewalDate(inDays days: Int = 30) {
         renewalDate = Calendar.current.date(byAdding: .day, value: days, to: .now)
     }
 
-    /// Abonelik düşüşü ekranlarını sandbox hesabı olmadan görebilmek için.
+
     func debugSimulateLapse() {
         debugPremiumOverride = false
         entitlementActive = false
         hasEverSubscribed = true
     }
 
-    /// RevenueCat anahtarı yokken paywall yerleşimini doğrulayabilmek için sahte
-    /// bir offering kuruyor. Tutarlar uydurma; gerçek `resolveOffers` yolundan
-    /// geçtiği için deneme ve tasarruf hesabı da birlikte sınanıyor.
+
     func debugLoadSampleOffers() {
         let locale = Locale(identifier: "en_US")
         func product(
@@ -197,7 +182,7 @@ final class SubscriptionStore {
 
     private(set) var offers: [PlanOffer] = []
     private(set) var isLoadingOffers = false
-    /// §09 §7: temiz kurulum + ağ yok. Paywall bu bayrakla offline satırını gösterir.
+
     private(set) var didFailToLoadOffers = false
     private(set) var isPurchasing = false
     private(set) var isRestoring = false
@@ -213,9 +198,7 @@ final class SubscriptionStore {
         #endif
     }
 
-    // MARK: - Kurulum
 
-    /// API anahtarı kodda; yoksa ücretsiz mod. DEBUG'da `-MockOffers` örnek kart açar.
     func configure() {
         if !Purchases.isConfigured, let apiKey = Self.apiKey {
             #if DEBUG
@@ -224,8 +207,7 @@ final class SubscriptionStore {
             Purchases.logLevel = .error
             #endif
 
-            // §06 §1: destek yazışmasındaki UserID ile RevenueCat kaydı aynı kimliği
-            // taşısın diye anonim id yerine uygulamanınki veriliyor.
+
             Purchases.configure(withAPIKey: apiKey, appUserID: appUserID)
             observeCustomerInfo()
         }
@@ -233,18 +215,16 @@ final class SubscriptionStore {
         Task { await refresh() }
     }
 
-    /// §06 §1 satır 12: premium kullanıcı sistem abonelik sayfasına, ücretsiz
-    /// kullanıcı paywall'a gidiyor. Yönlendirme çağıranın işi; burada yalnızca
-    /// App Store sayfası açılıyor.
+
     func openManageSubscriptions() {
         guard let url = URL(string: "https://apps.apple.com/account/subscriptions") else { return }
         UIApplication.shared.open(url)
     }
 
-    /// RevenueCat Apple public SDK key (`appl_…`). Dashboard → API keys.
+
     private static let revenueCatAPIKey = "appl_wHsHujwsIMLOKzSDxYNvRXDYBTr"
 
-    /// Paywall fiyatları RevenueCat Current offering'den geliyor.
+
     var isRevenueCatConfigured: Bool { Purchases.isConfigured }
 
     private static var apiKey: String? {
@@ -263,28 +243,25 @@ final class SubscriptionStore {
         }
     }
 
-    /// §03 §4: entitlement adı dashboard'da değişse bile **herhangi bir** aktif
-    /// entitlement premium sayılıyor. Ödeme yapan kullanıcıyı asla kilitlemiyoruz.
+
     private func apply(_ info: CustomerInfo) {
         let entitlement = info.entitlements[Self.entitlementID] ?? info.entitlements.active.values.first
         let active = entitlement?.isActive == true || !info.entitlements.active.isEmpty
         entitlementActive = active
         renewalDate = active ? (entitlement?.expirationDate ?? info.latestExpirationDate) : nil
-        // §06 §3: premium olan kullanıcıya "bugün bedava" bildirimi anlamsız,
-        // düşen kullanıcıya yeniden anlamlı — iki yönde de yeniden planlanıyor.
+
+
         NotificationService.scheduleChanged()
     }
 
-    // MARK: - Teklifler
 
-    /// Paywall her açılışta çağırır — RevenueCat Current offering.
     func refresh() async {
         isLoadingOffers = true
         defer { isLoadingOffers = false }
 
         guard Purchases.isConfigured else {
             #if DEBUG
-            // Anahtar yoksa UI yerleşimini doğrulamak için örnek kartlar.
+
             debugLoadSampleOffers()
             if !offers.isEmpty { return }
             #endif
@@ -321,7 +298,7 @@ final class SubscriptionStore {
         }
     }
 
-    /// §03 §4: paket çözümleme — PackageType → product ID → identifier adı.
+
     private static func resolveOffers(in offering: Offering) -> [PlanOffer] {
         let packages = offering.availablePackages
         let resolved = Plan.allCases.compactMap { plan -> (Plan, Package)? in
@@ -366,8 +343,7 @@ final class SubscriptionStore {
         }
     }
 
-    /// Daha önce deneme kullanmış kullanıcıda `introductoryDiscount` gelmiyor;
-    /// CTA ve alt metin otomatik olarak denemesiz hâle düşüyor (§03 §4).
+
     private static func trialDays(of product: StoreProduct) -> Int? {
         guard let intro = product.introductoryDiscount, intro.price == 0 else { return nil }
         let period = intro.subscriptionPeriod
@@ -381,8 +357,7 @@ final class SubscriptionStore {
         return days > 0 ? days : nil
     }
 
-    /// Yıllık planın haftalığa göre kazandırdığı yüzde. Store fiyatlarından
-    /// hesaplanıyor; bölge fiyatları farklı olduğu için sabit yüzde yanlış olur.
+
     private static func savingsPercent(
         of product: StoreProduct,
         comparedTo weeklyAnnualCost: Decimal?
@@ -398,7 +373,6 @@ final class SubscriptionStore {
         return (1...99).contains(percent) ? percent : nil
     }
 
-    // MARK: - Satın alma
 
     func purchase(_ offer: PlanOffer) async -> PurchaseOutcome {
         guard !isPurchasing else { return .cancelled }
@@ -425,8 +399,7 @@ final class SubscriptionStore {
         return "ns_\((error as NSError).code)"
     }
 
-    /// §09 §7: temiz kurulumda "önceki durum" olmadığı için geri yükleme
-    /// paywall'da kalıcı bir buton — gerçek abonenin tek çıkış yolu.
+
     @discardableResult
     func restore() async -> Bool {
         guard !isRestoring else { return false }

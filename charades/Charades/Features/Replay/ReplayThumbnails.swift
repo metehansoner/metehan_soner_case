@@ -1,15 +1,10 @@
 import AVFoundation
 import UIKit
 
-/// Arşiv kartının görseli — §04 §4.3: "videonun ortasından alınan kare".
-///
-/// Kare her açılışta yeniden üretilmiyor, diske yazılıyor: 20 kayıtlık bir
-/// arşivde 20 `AVAssetImageGenerator` kurulumu listeyi gözle görülür geciktiriyor
-/// ve kart yerine boşluk gösteriyor. Küçük resim türetilmiş veri, kaydın kendisi
-/// değil; silinirse yeniden üretiliyor.
+
 enum ReplayThumbnails {
 
-    /// Kart 132pt genişlikte, 3x ekranda 396px. 480 bu ölçünün üstünde kalıyor.
+
     private static let maxPixelWidth: CGFloat = 480
 
     private static let cache = NSCache<NSString, UIImage>()
@@ -26,7 +21,7 @@ enum ReplayThumbnails {
         return image
     }
 
-    /// Diskte varsa onu, yoksa videodan üretip yazdıktan sonra döndürüyor.
+
     static func image(for reel: ReplayReel) async -> UIImage? {
         if let image = cached(id: reel.id) { return image }
 
@@ -53,8 +48,8 @@ enum ReplayThumbnails {
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: maxPixelWidth, height: maxPixelWidth)
-        // Kesin kare aramak kısa kayıtlarda saniyeler sürebiliyor; yarım saniyelik
-        // tolerans kartın içeriğini değiştirmiyor.
+
+
         generator.requestedTimeToleranceBefore = CMTime(seconds: 0.5, preferredTimescale: 600)
         generator.requestedTimeToleranceAfter = CMTime(seconds: 0.5, preferredTimescale: 600)
 

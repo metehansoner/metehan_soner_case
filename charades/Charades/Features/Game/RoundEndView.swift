@@ -1,18 +1,13 @@
 import SwiftUI
 
-/// Ekran 17 — 02-ekran-akisi.md §4.
-///
-/// **Landscape**, çünkü süre 0'a inince otomatik geliniyor ve telefon o an
-/// birinin alnında yatay duruyor (§09 §1). Portrait tasarlanmış bir bilet
-/// listesi yatay tutulan telefonda okunamaz — skor iki kolona yerleşiyor:
-/// solda doğrular, sağda paslar.
+
 struct RoundEndView: View {
     let game: LiveGame
     var onPlayAgain: () -> Void
-    /// Takım Savaşı'nda birincil buton turu değil **sırayı** ilerletiyor.
+
     var onNextTeam: () -> Void = {}
     var onExit: () -> Void
-    /// §02 ekran 18: oynatıcı tur sonundan da arşivden de aynı ekrana açılıyor.
+
     var onWatchReplay: () -> Void = {}
 
     @Environment(LocalizationManager.self) private var l10n
@@ -25,8 +20,7 @@ struct RoundEndView: View {
             header
             columns
 
-            // §02 §24: Kelime Sepeti'yle oynanan tur bitti; kaydetme isteği tam
-            // burada soruluyor, sepet ekranında değil.
+
             if game.mode == .ownWords, !game.customCards.isEmpty {
                 SaveBasketBanner(words: game.customCards.map { $0.text(for: l10n.localeCode) })
                     .padding(.top, 10)
@@ -46,10 +40,10 @@ struct RoundEndView: View {
             }
             .ignoresSafeArea()
         }
-        // §08 B4: sinemaskop bantları yalnızca iki yerde — burada ve maç
-        // sonunda. Süre bitti, sahne kapandı: bantlar o kapanışın kendisi.
+
+
         .overlay { LetterboxBars() }
-        // §04 §3: kazara çıkış maçın tamamını siliyor, onay zorunlu.
+
         .confirmationDialog(
             l10n.t("pause.exit.confirm.title.match"),
             isPresented: $isConfirmingQuit,
@@ -62,7 +56,6 @@ struct RoundEndView: View {
         }
     }
 
-    // MARK: Başlık
 
     private var header: some View {
         VStack(spacing: 2) {
@@ -87,8 +80,7 @@ struct RoundEndView: View {
                     .foregroundStyle(Color(hex: 0x7A6A52))
             }
 
-            // §09 §9: Hız Turu'nun tekrar oynama gerekçesi rekor kırmak;
-            // kalıcı skor olmadan o gerekçe ekranda hiç görünmüyordu.
+
             if game.isNewRapidRecord {
                 Text(l10n.t("round.newRecord"))
                     .font(AppFont.display(11, weight: .bold))
@@ -103,7 +95,7 @@ struct RoundEndView: View {
                     .padding(.top, 4)
             }
 
-            // §02 ekran 17: ipucu satırı olmazsa düzeltme özelliği hiç keşfedilmiyor.
+
             Text(l10n.t("round.fixHint"))
                 .font(AppFont.ui(9))
                 .appTracking(1.2)
@@ -117,9 +109,7 @@ struct RoundEndView: View {
         .padding(.horizontal, 30)
     }
 
-    /// Skorun kime ait olduğu: takım rengi + ad, altında turun maçtaki yeri.
-    /// Takım modunda tur sonu ekranı maçın içinde defalarca açılıyor; hangi
-    /// takımın skoru olduğu yazmazsa masada tartışma çıkıyor.
+
     private func teamCaption(_ match: TeamMatch) -> some View {
         VStack(spacing: 3) {
             HStack(spacing: 7) {
@@ -156,7 +146,6 @@ struct RoundEndView: View {
         .padding(.bottom, 2)
     }
 
-    // MARK: İki kolon
 
     private var columns: some View {
         HStack(spacing: 0) {
@@ -175,7 +164,7 @@ struct RoundEndView: View {
                 answers: game.skippedAnswers
             )
         }
-        // Landscape'te Dynamic Island sol kenarda duruyor; sol boşluk daha geniş.
+
         .padding(.leading, 62)
         .padding(.trailing, 30)
     }
@@ -246,12 +235,7 @@ struct RoundEndView: View {
         .animation(.easeOut(duration: 0.2), value: game.answers)
     }
 
-    // MARK: Butonlar
 
-    /// §02 ekran 17: alt butonlar moda göre değişiyor. Klasik'te sıradaki takım
-    /// diye bir şey yok. `REPLAY'İ İZLE` yalnızca o turda kayıt alındıysa
-    /// görünüyor (ayarlarda replay kapalıysa buton hiç yok, boş kalan yeri
-    /// diğerleri paylaşıyor).
     private var footer: some View {
         HStack(spacing: 11) {
             if match == nil {
@@ -291,9 +275,7 @@ struct RoundEndView: View {
         .animation(.easeOut(duration: 0.2), value: game.reel != nil)
     }
 
-    /// Dosya tur bitiminde kapanıyor; buton kayıt gerçekten oynatılabilir
-    /// olduğunda beliriyor. Kesintiye uğrayıp kullanılamayan kayıt buton da
-    /// göstermiyor — açılmayan bir buton, olmayan butondan kötü.
+
     @ViewBuilder
     private var replayButton: some View {
         if game.reel != nil {

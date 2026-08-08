@@ -1,28 +1,19 @@
 import AVFoundation
 import Foundation
 
-/// Kayıt sırasında dışarıdan gelen üç haber. `ReplayRecorder` bunları ana
-/// aktöre taşıyor; motor hangi kuyrukta çalıştığını bilmek zorunda değil.
-/// Proje varsayılan olarak `MainActor` izolasyonunda (`SWIFT_DEFAULT_ACTOR_ISOLATION`);
-/// kayıt kuyruğundan okunan her tip açıkça `nonisolated` olmak zorunda.
+
 nonisolated struct ReplayCaptureEvents: Sendable {
     let didStart: @Sendable () -> Void
-    /// §09 §2: gelen çağrı / kamera başka bir istemciye geçti. Tur devam ediyor,
-    /// o turun replay'i "kısmi" işaretleniyor.
+
+
     let wasInterrupted: @Sendable () -> Void
     let didFinish: @Sendable (Bool) -> Void
 }
 
-/// Kayıt donanımını durum makinesinden ayıran ince katman.
-///
-/// İki sebeple protokol: `AVCaptureSession` ana aktörde çalıştırılamıyor
-/// (`startRunning` blokluyor, oturum kurulumu saniyeler alabiliyor) ve
-/// simülatörde ön kamera yok. Akışın kalanı — damgalar, tur sonu, dosya
-/// yaşam döngüsü — tek kod yolunda kalsın diye ikisi aynı arayüzü uyguluyor.
+
 nonisolated protocol ReplayCaptureEngine: AnyObject, Sendable {
-    /// Video saatini gerçekten duraklatabiliyor mu. iOS 17'de
-    /// `pauseRecording()` yok; o durumda kayıt duraklat overlay'i boyunca
-    /// dönmeye devam ediyor ve damgalar yine video saatiyle tutarlı kalıyor.
+
+
     var pausesCleanly: Bool { get }
 
     func start(to url: URL, rotationAngle: CGFloat, events: ReplayCaptureEvents)
@@ -32,15 +23,11 @@ nonisolated protocol ReplayCaptureEngine: AnyObject, Sendable {
     func shutdown()
 }
 
-/// §04 §4.1: ön kamera, 720p, 30 fps, **ses yok**.
-///
-/// Ses girdisi bilinçli olarak eklenmiyor: mikrofon izni istemek zorunda
-/// kalmadan aynı viral değeri veriyor ve `SoundService`in ambient oturumuna
-/// dokunmuyor (`automaticallyConfiguresApplicationAudioSession = false`).
+
 nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
     AVCaptureFileOutputRecordingDelegate, @unchecked Sendable {
 
-    /// Bütün oturum işleri bu kuyrukta; `queue` dışında hiçbir alan okunmuyor.
+
     private let queue = DispatchQueue(label: "com.charady.replay.capture")
     private let session = AVCaptureSession()
     private let output = AVCaptureMovieFileOutput()
@@ -98,15 +85,13 @@ nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
         }
     }
 
-    /// Tur bittikten sonra oturum kapanıyor: açık kamera hem pil hem de
-    /// durum çubuğundaki gizlilik göstergesi demek.
+
     func shutdown() {
         queue.async {
             if self.session.isRunning { self.session.stopRunning() }
         }
     }
 
-    // MARK: Oturum kurulumu
 
     private func configureIfNeeded() -> Bool {
         if isConfigured { return true }
@@ -118,8 +103,8 @@ nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
 
         session.beginConfiguration()
         session.sessionPreset = .hd1280x720
-        // Ambient ses oturumunu kimse değiştirmesin: projektör döngüsü kayıt
-        // başlarken susuyordu (§04 §5).
+
+
         session.automaticallyConfiguresApplicationAudioSession = false
 
         guard session.canAddInput(input), session.canAddOutput(output) else {
@@ -142,8 +127,7 @@ nonisolated final class AVReplayCaptureEngine: NSObject, ReplayCaptureEngine,
         return true
     }
 
-    /// §09 §2: kesinti haberi kaydın kendi hatasından önce geliyor; "kısmi"
-    /// işareti buradan konuyor.
+
     private func observeInterruptions() {
         let center = NotificationCenter.default
         for name in [AVCaptureSession.wasInterruptedNotification, AVCaptureSession.runtimeErrorNotification] {
@@ -172,9 +156,8 @@ extension AVReplayCaptureEngine {
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
-        // Hata varken bile dosya oynatılabilir olabiliyor (kesintide o ana kadarki
-        // örnekler yazılmış oluyor). Karar dosyanın kendisine bakılarak veriliyor:
-        // §09 §2'nin "bozuk dosya bırakılmaz" ilkesi boş dosyayı da kapsıyor.
+
+
         let size = (try? outputFileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         let isUsable = size > 0
         queue.async {

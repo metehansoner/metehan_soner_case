@@ -1,8 +1,6 @@
 import Foundation
 
-// MARK: - Kelime havuzu şeması
 
-/// `Resources/Decks/{id}.json` dosyasının şeması.
 struct DeckFile: Codable, Sendable {
     let id: String
     let version: Int
@@ -10,9 +8,7 @@ struct DeckFile: Codable, Sendable {
     let cards: [Card]
 }
 
-/// §06 §4: ayarlardaki `HEPSİ` / `KOLAY` / `ZOR` segmenti. Kartın `d` alanına
-/// bakıyor; `d == 0` (custom) her zaman geçiyor. Orta zorluk (`2`) iki uçta da
-/// sayılıyor — aksi hâlde filtrelenmiş havuz §09 §4'ün uyardığı boyuta düşüyor.
+
 enum CardDifficultyFilter: String, CaseIterable, Sendable {
     case all
     case easy
@@ -30,28 +26,24 @@ enum CardDifficultyFilter: String, CaseIterable, Sendable {
     }
 }
 
-// MARK: - CardBank
 
-/// §05 §5: deste seçildiğinde lazy yüklenir, son 5 deste bellekte tutulur.
-/// Ana ekranda hiçbir kelime dosyası okunmaz.
 @MainActor
 final class CardBank {
     static let shared = CardBank()
 
-    /// §05 §5: `NSCache` ile son 5 deste. Bellek baskısında sistem kendi boşaltıyor.
+
     private let cache: NSCache<NSString, CachedDeck> = {
         let cache = NSCache<NSString, CachedDeck>()
         cache.countLimit = 5
         return cache
     }()
 
-    /// Bulunamayan dosyayı her çağrıda tekrar aramamak için.
+
     private var missingIDs: Set<String> = []
 
     private init() {}
 
-    /// Deste dosyası bundle'da var mı — katalogda tanımlı ama içeriği henüz
-    /// üretilmemiş desteler için (§10 §4, içerik ayrı bir yol).
+
     func hasContent(_ deckID: String) -> Bool {
         deckFile(deckID) != nil
     }
@@ -76,8 +68,7 @@ final class CardBank {
         return difficulty == .all ? file.cards : file.cards.filter(difficulty.accepts)
     }
 
-    /// §05 §6: Mix'te desteler ayrı kuyruklar hâlinde kalıyor, birleştirilmiyor.
-    /// Seçim sırası korunuyor; içeriği olmayan deste listeden düşüyor.
+
     func cardsByDeck(
         in deckIDs: [String],
         difficulty: CardDifficultyFilter = .all
@@ -99,10 +90,8 @@ final class CardBank {
 
         do {
             let file = try JSONDecoder().decode(DeckFile.self, from: data)
-            // Dosya adı ile içindeki id ayrışırsa yanlış destenin kelimeleri
-            // sessizce gelir — `Imposter`'da `hollywood` kategorisinde tam olarak
-            // bu olmuş (§05 §5). Doğrulama script'i CI'da yakalıyor, burada da
-            // çalışma zamanında reddediyoruz.
+
+
             guard file.id == deckID else {
                 assertionFailure("Deste dosyası uyuşmuyor: \(deckID).json içinde id = \(file.id)")
                 return nil
@@ -114,7 +103,7 @@ final class CardBank {
         }
     }
 
-    /// `NSCache` referans tip istiyor.
+
     private final class CachedDeck {
         let file: DeckFile
         init(file: DeckFile) { self.file = file }

@@ -1,14 +1,6 @@
 import SwiftUI
 
-/// Ekran 2 — Onboarding, 03-onboarding-paywall.md §1.
-///
-/// Ana ekranın üzerinde **bottom sheet**: arkadaki deste ızgarası bulanık değil,
-/// net görünüyor. Kullanıcı anlatımı okurken 92 desteyi görüyor — "buradan çıkıp
-/// bunlara bakayım" hissi ekranın kendi işi değil, arkasının işi.
-///
-/// Üç adım, beş değil (§ `03` §1): eski 2–5 Nasıl Oynanır slider'ının kopyasıydı.
-/// Onboarding ikna ediyor, o slider talimat veriyor. Eğme sayfası birleştirilmedi
-/// çünkü oyunun tek mekaniği o.
+
 struct OnboardingSheet: View {
     var onFinish: () -> Void
 
@@ -19,7 +11,7 @@ struct OnboardingSheet: View {
 
     @State private var index = 0
 
-    /// §03 §1 sheet'i ekranın %55'i. Erişilebilirlik / iPad'de yükseliyor.
+
     private var detent: PresentationDetent {
         if AppLayout.isRegularWidth(horizontalSizeClass) { return .large }
         return typeSize.isAccessibilitySize ? .fraction(0.9) : .fraction(0.55)
@@ -50,14 +42,14 @@ struct OnboardingSheet: View {
             OnboardingBackdrop()
         }
         .animation(.easeOut(duration: 0.2), value: index)
-        // §03 §1: kapatılamaz. Tek çıkış `ATLA` ya da son adımın CTA'sı.
+
         .interactiveDismissDisabled()
         .presentationDetents([detent])
         .presentationCornerRadius(28)
         .presentationBackground(.clear)
         .onAppear { index = min(settings.onboardingStep, steps.count - 1) }
-        // §03 §5: adım görünümü hem ileri gidişte hem şeritten geri dönüşte
-        // sayılıyor; funnel'ın sorduğu şey "kaç kişi bu adımı gördü".
+
+
         .onChange(of: index, initial: true) { _, new in
             settings.storeOnboardingStep(new)
             Analytics.onboardingStepView(step: new + 1)
@@ -66,15 +58,14 @@ struct OnboardingSheet: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            // Geri dönüş yalnızca şeritten: okunmuş bir adıma dönmek isteyen
-            // kullanıcı için ayrı bir buton eklemek üstteki satırı kalabalıklaştırıyor.
+
+
             FilmStripProgress(total: steps.count, current: index) { index = $0 }
                 .frame(width: 89)
 
             Spacer(minLength: 0)
 
-            // §03 §1: `ATLA` son sayfa hariç. Son sayfada kaldırmak yerine
-            // soluklaşıyor — satırın hizası bozulmuyor, kaçış yolu da bitmiş oluyor.
+
             Button(l10n.t("onboarding.skip")) {
                 Analytics.onboardingSkip(step: index + 1)
                 finish()
@@ -97,8 +88,8 @@ struct OnboardingSheet: View {
             index += 1
             return
         }
-        // `ATLA` da son adımın CTA'sı da onboarding'i bitiriyor ama funnel'da
-        // ikisi aynı şey değil: biri okundu, diğeri atlandı.
+
+
         Analytics.onboardingComplete()
         finish()
     }
@@ -108,13 +99,11 @@ struct OnboardingSheet: View {
         onFinish()
     }
 
-    /// §03 §1'deki üç adım. Adım 3, cihazda hareket sensörü yoksa dokunmatik
-    /// anlatımına düşüyor — o kullanıcıda eğme diye bir şey hiç olmayacak
-    /// (§ `04` §2 dokunmatik yedek).
+
     private var steps: [OnboardingStep] {
         var tilts = MotionService.shared.isAvailable && !settings.prefersTouchAnswers
         #if DEBUG
-        // Simülatörde hareket sensörü yok; eğme hâli başka türlü görülemiyor.
+
         if ProcessInfo.processInfo.arguments.contains("-TiltOnboarding") { tilts = true }
         #endif
         return [
@@ -145,15 +134,14 @@ struct OnboardingSheet: View {
     }
 }
 
-// MARK: - Adım
 
 private struct OnboardingStep {
     enum Artwork {
         case posterFan
         case illustration(String)
-        /// Ortada telefon, iki yanında PAS / DOĞRU bölgesi.
+
         case tiltZones
-        /// Aynı diyagram, telefonun iki yarısı olarak (§ `04` §2).
+
         case tapZones
     }
 
@@ -161,8 +149,8 @@ private struct OnboardingStep {
     let bodyKey: String
     let ctaKey: String
     let artwork: Artwork
-    /// Deste ve kart sayısı katalogdan geliyor; içerik büyüdükçe metin kendi
-    /// kendine güncelleniyor (§ `05` §8'deki 92 deste hedefi henüz dolmadı).
+
+
     var bodyArguments: [String: String] = [:]
 }
 
@@ -174,18 +162,15 @@ private struct OnboardingStepView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Erişilebilirlik puntolarında görsel tamamen çekiliyor: yükselen
-            // sheet'te bile afiş yelpazesi metnin yerini alıyor ve cümle yarıda
-            // kalıyordu. Görsel bezeme (`accessibilityHidden`), cümle bilgi.
+
+
             if !typeSize.isAccessibilitySize {
                 artwork
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 6)
             }
 
-            // Sheet yüksekliği §03 §1'de sabit (%55). Büyük puntolarda metin
-            // önce görseli sıkıştırıyor, yine sığmazsa kayıyor — kırpılmış
-            // yarım cümle yerine tam metin.
+
             ScrollView {
                 VStack(spacing: 9) {
                     Text(l10n.t(step.titleKey))
@@ -201,7 +186,7 @@ private struct OnboardingStepView: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollBounceBehavior(.basedOnSize)
-            // Yer paylaşımında metin önce gelir: görsel bezeme, cümle bilgi.
+
             .layoutPriority(1)
             .padding(.top, 12)
         }
@@ -226,10 +211,7 @@ private struct OnboardingStepView: View {
     }
 }
 
-// MARK: - Zemin
 
-/// `SheetScaffold` başlık ve kapatma çarpısı dayatıyor; onboarding'in ikisi de
-/// yok. Ortak olan yalnızca kadife gradient, o da burada tekrarlanıyor.
 private struct OnboardingBackdrop: View {
     var body: some View {
         LinearGradient(

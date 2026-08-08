@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Plan kartı — 03-onboarding-paywall.md §2 madde 4, `paywall.html` `.plan`.
-///
-/// Bilet koçanı görünümü: ortada perfore çizgi, iki yanda tırtık çentiği.
-/// Büyük rakam her zaman **kendi döneminin tam tutarı**, haftalık karşılık
-/// altta — üç kart aynı dille konuşmazsa karşılaştırma imkânsız hâle geliyor.
+
 struct PlanCard: View {
     let offer: SubscriptionStore.PlanOffer
     let isSelected: Bool
@@ -13,9 +9,7 @@ struct PlanCard: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    /// Kurdele normalde kartın sağ üst köşesine biniyor. Erişilebilirlik
-    /// puntolarında o köşe fiyatın yeri: kurdele büyüyünce üstünü kapatıyordu.
-    /// O boyutlarda şerit metnin altına, akışın içine giriyor.
+
     private var bandIsInline: Bool { typeSize.isAccessibilitySize }
 
     var body: some View {
@@ -77,8 +71,7 @@ struct PlanCard: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// §03 §4: deneme metni store'dan geliyor. Denemesi olmayan planda haftalık
-    /// karşılık yazıyor, haftalık planda alt satır boş kalıyor.
+
     private var subtitle: String? {
         if let days = offer.trialDays {
             return l10n.t("paywall.plan.trialSub", count: days)
@@ -106,7 +99,7 @@ struct PlanCard: View {
                     lineWidth: isSelected ? 2 : 1
                 )
             }
-            // Seçili kartın ampulleri yanıyor (§2 madde 4).
+
             .overlay {
                 if isSelected {
                     BulbFrame(countPerEdge: 6, diameter: 3, color: AppColors.accentAmber)
@@ -130,7 +123,7 @@ struct PlanCard: View {
             }
     }
 
-    /// Bilet tırtığı — kartın iki yanında zemin rengiyle oyulmuş yarım daireler.
+
     private var notches: some View {
         HStack {
             notch
@@ -147,7 +140,7 @@ struct PlanCard: View {
             .frame(width: 13, height: 13)
     }
 
-    /// Kurdelenin metni; hem çizim hem erişilebilirlik etiketi bunu okuyor.
+
     private var bandText: String? {
         if let days = offer.trialDays { return l10n.t("paywall.band.trial", count: days) }
         if let percent = offer.savingsPercent {
@@ -186,8 +179,8 @@ struct PlanCard: View {
             offer.price,
             l10n.t("paywall.plan.\(offer.plan.rawValue).unit"),
             subtitle,
-            // Kurdele görsel bir katman ama tek bilgi kaynağı: `%85 tasarruf`
-            // başka hiçbir yerde yazmıyor.
+
+
             bandText,
         ]
         .compactMap { $0 }

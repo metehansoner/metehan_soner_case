@@ -3,12 +3,7 @@ import AVFoundation
 import CoreGraphics
 import Foundation
 
-/// Simülatörde ön kamera yok; kayıt akışının kalanı (damgalar, tur sonu butonu,
-/// oynatıcı, paylaşım, dosya yaşam döngüsü) o yüzden hiç görülemiyordu.
-///
-/// Bu motor gerçek kameranın yerine 720p sentetik bir görüntü yazıyor: aynı
-/// dosya, aynı süre, aynı geri çağrılar. Yalnızca `-FakeReplay` argümanıyla ve
-/// yalnızca kamera bulunamadığında devreye giriyor — cihazda asla çalışmıyor.
+
 nonisolated final class SyntheticReplayCaptureEngine: ReplayCaptureEngine, @unchecked Sendable {
 
     private static let size = CGSize(width: 1280, height: 720)
@@ -79,8 +74,8 @@ nonisolated final class SyntheticReplayCaptureEngine: ReplayCaptureEngine, @unch
             input.markAsFinished()
             let events = self.events
             self.events = nil
-            // `AVAssetWriter` Sendable değil ama durumu yalnızca kapanış
-            // closure'ında okunabiliyor ve bu kayıt zaten tek kuyrukta yürüyor.
+
+
             nonisolated(unsafe) let finished = writer
             writer.finishWriting {
                 events?.didFinish(finished.status == .completed)
@@ -116,8 +111,7 @@ nonisolated final class SyntheticReplayCaptureEngine: ReplayCaptureEngine, @unch
         frame += 1
     }
 
-    /// Sahte kare: hareketli bir huzme ve zamanla dönen bir renk. İçeriğin ne
-    /// olduğu önemsiz, oynatıcının gerçekten oynadığını görebilmek yeterli.
+
     private func draw(into pixelBuffer: CVPixelBuffer) {
         CVPixelBufferLockBaseAddress(pixelBuffer, [])
         defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, []) }

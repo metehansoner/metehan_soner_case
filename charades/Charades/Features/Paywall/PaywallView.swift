@@ -1,13 +1,6 @@
 import SwiftUI
 
-/// Paywall — 03-onboarding-paywall.md §2, `paywall.html`.
-///
-/// Yapı kararı: **önce malı göster, sonra para iste.** Ekranın üst yarısı
-/// içerik duvarı, alt yarısı ödeme. Fayda listesi yok; 92 gerçek kapak sekiz
-/// maddelik bir listeden daha ikna edici.
-///
-/// Varyant A (onboarding sonu) ve B (kilitli içeriğe dokunuş) aynı gövdeyi
-/// paylaşıyor, yalnızca üst bölge ve kaçış yolu değişiyor.
+
 struct PaywallView: View {
     let context: PaywallContext
     var variant: PaywallVariant
@@ -21,10 +14,10 @@ struct PaywallView: View {
 
     @State private var selectedPlan: SubscriptionStore.Plan = .weekly
     @State private var status: Status?
-    /// §03 §2 varyant B: kapatma `X` 1,5 saniye gecikmeyle görünüyor.
+
     @State private var canDismiss = false
-    /// §03 §5 `paywall_dismiss.seconds_shown`. Yarım saniyede kapatılan paywall
-    /// ile 20 saniye okunan aynı satıra düşerse ölçüm hiçbir şey söylemiyor.
+
+
     @State private var shownAt = Date.now
 
     private enum Status: Equatable {
@@ -33,14 +26,12 @@ struct PaywallView: View {
         case purchaseFailed
     }
 
-    /// Erişilebilirlik puntolarında veya kısa/yüksek iPad penceresinde
-    /// sabit flex layout sığmıyor; o zaman scroll.
+
     private var prefersScrollLayout: Bool {
         typeSize.isAccessibilitySize || AppLayout.isRegularWidth(horizontalSizeClass)
     }
 
-    /// HTML Varyant A: afiş duvarı + `TAM BİLET` plaketi.
-    /// VIP / tur sonu da aynı vitrini kullanıyor — modal kaçış (`X`) kalıyor.
+
     private var usesShowcaseChrome: Bool {
         variant == .onboarding
             || context == .vipButton
@@ -71,8 +62,8 @@ struct PaywallView: View {
                 .readableWidth()
                 .frame(width: geometry.size.width, height: geometry.size.height)
             }
-            // `paywall.html` `.content { inset:0 }` — afiş duvarı status bar
-            // altına kadar uzar; aksi hâlde kayma üstte sert kesilir.
+
+
             .ignoresSafeArea(edges: .top)
 
             topChrome
@@ -97,7 +88,7 @@ struct PaywallView: View {
         }
     }
 
-    /// Sol geri yükle + sağ kaçış — safe area içinde, içeriğin üstünde.
+
     private var topChrome: some View {
         HStack(alignment: .top) {
             restoreControl
@@ -108,8 +99,7 @@ struct PaywallView: View {
         .safeAreaPadding(.top, 8)
     }
 
-    /// `paywall.html` `.content`: afiş → gövde ortalanmış (`flex:1` +
-    /// `justify-content:center`) → CTA alta.
+
     private func column(fillsHeight: Bool, headerHeight: CGFloat) -> some View {
         VStack(spacing: 0) {
             header(height: headerHeight)
@@ -136,11 +126,10 @@ struct PaywallView: View {
         guard usesShowcaseChrome else {
             return min(274, max(180, screenHeight * 0.28))
         }
-        // iPad / kısa pencerede 340pt duvar CTA'yı eziyordu.
+
         return min(340, max(160, screenHeight * 0.32))
     }
 
-    // MARK: Üst bölge
 
     @ViewBuilder
     private func header(height: CGFloat) -> some View {
@@ -153,8 +142,7 @@ struct PaywallView: View {
         }
     }
 
-    /// §03 §2 varyant B: duvar %30 opaklığa çekiliyor, dokunulan destenin
-    /// kapağı büyük geliyor.
+
     private var contextHero: some View {
         ZStack(alignment: .bottom) {
             PosterWall(decks: DeckCatalog.v1, opacity: 0.3)
@@ -199,9 +187,7 @@ struct PaywallView: View {
         .fixedSize()
     }
 
-    // MARK: Gövde
 
-    /// Plaket + başlık + planlar. CTA ayrı — HTML'de `.cta-wrap` alta yapışık.
     private var offerCopy: some View {
         VStack(spacing: 0) {
             if usesShowcaseChrome {
@@ -216,12 +202,12 @@ struct PaywallView: View {
             plans.padding(.top, 18)
         }
         .padding(.horizontal, 20)
-        // Collage ile gövde -6pt örtüşüyor (`paywall.html` `.pw-body`).
+
         .padding(.top, usesShowcaseChrome ? -6 : 10)
         .frame(maxWidth: .infinity)
     }
 
-    /// §03 §2 madde 2: pirinç plakete basılı `TAM BİLET`, ampulleri yanar.
+
     private var plaque: some View {
         Text(l10n.t("paywall.plaque"))
             .font(AppFont.display(22, weight: .bold))
@@ -269,9 +255,7 @@ struct PaywallView: View {
         .lineSpacing(2)
     }
 
-    /// §03 §2 varyant B: başlık bağlamı taşıyor. Deste/mod adı altın ve italik
-    /// vurgulanıyor; dizgideki yeri dilden dile değiştiği için metin içinde
-    /// aranıp biçimlendiriliyor.
+
     private var contextHeadline: some View {
         Text(highlighted(contextTitleTemplate, emphasis: contextName))
             .font(AppFont.accent(22, weight: .bold))
@@ -293,7 +277,6 @@ struct PaywallView: View {
         .lineSpacing(3)
     }
 
-    // MARK: Planlar
 
     @ViewBuilder
     private var plans: some View {
@@ -303,8 +286,8 @@ struct PaywallView: View {
             VStack(spacing: 15) {
                 ForEach(store.offers) { offer in
                     PlanCard(offer: offer, isSelected: offer.plan == selectedPlan) {
-                        // Varsayılan plan teklifler gelince programatik
-                        // oturuyor; funnel'da seçim sayılan tek şey dokunuş.
+
+
                         Analytics.paywallPlanSelect(plan: offer.plan.rawValue)
                         selectedPlan = offer.plan
                     }
@@ -313,9 +296,7 @@ struct PaywallView: View {
         }
     }
 
-    /// §09 §7 son satır: temiz kurulum + ağ yok + gerçek abone. Planlar
-    /// gelmediğinde kullanıcıyı boş ekranla bırakmıyoruz; geri yükleme yolu
-    /// sol üstte her zaman duruyor.
+
     private var unavailableNotice: some View {
         VStack(spacing: 10) {
             if store.isLoadingOffers {
@@ -335,7 +316,6 @@ struct PaywallView: View {
         .padding(.vertical, 34)
     }
 
-    // MARK: CTA + alt satır
 
     private var callToAction: some View {
         VStack(spacing: 0) {
@@ -386,7 +366,7 @@ struct PaywallView: View {
         .buttonStyle(.plain)
     }
 
-    /// Geri yükleme — üst şeridin solu.
+
     private var restoreControl: some View {
         Button {
             Task { await restore() }
@@ -419,8 +399,7 @@ struct PaywallView: View {
         }
     }
 
-    /// §03 §2: `ATLA` onboarding varyantında görünür — kaçış yolu gizlenmiyor.
-    /// Modalda yerini 1,5 saniye gecikmeli `X` alıyor.
+
     @ViewBuilder
     private var escapeControl: some View {
         switch variant {
@@ -470,10 +449,7 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: Eylemler
 
-    /// Satın alma başarıyla bitince paywall kapanıyor ama bu bir `dismiss`
-    /// değil: funnel'da "vazgeçti" ile "aldı" aynı satıra düşmemeli.
     private func dismiss() {
         Analytics.paywallDismiss(
             variant: variant.analyticsName,
@@ -495,8 +471,8 @@ struct PaywallView: View {
             SoundService.ticketStamp()
             onClose()
         case .cancelled:
-            // İptal bir hata değil; App Store sayfasını açıp kapatmak
-            // `purchase_fail` sayılırsa hata oranı okunamaz hâle geliyor.
+
+
             break
         case .failed(let code):
             Analytics.paywallPurchaseFail(plan: plan, errorCode: code)
@@ -516,21 +492,18 @@ struct PaywallView: View {
         }
     }
 
-    /// §03 §2 madde 4: haftalık en üstte ve seçili, çünkü deneme yalnızca onda
-    /// var — en kolay "evet" diyeceği kapı o.
+
     private func selectDefaultPlan() {
         guard !store.offers.contains(where: { $0.plan == selectedPlan }) else { return }
         selectedPlan = store.offers.first?.plan ?? .weekly
     }
 
-    // MARK: Türetilen metinler
 
     private var selectedOffer: SubscriptionStore.PlanOffer? {
         store.offers.first { $0.plan == selectedPlan }
     }
 
-    /// §03 §4: deneme kontrolü plan değiştikçe canlı güncelleniyor. Yıllık
-    /// seçiliyken "ücretsiz dene" yazmak App Store reddi sebebi.
+
     private var ctaTitle: String {
         l10n.t(selectedOffer?.hasTrial == true ? "paywall.cta.trial" : "paywall.cta.buy")
     }
@@ -611,8 +584,7 @@ struct PaywallView: View {
         value.formatted(.number)
     }
 
-    /// Şablonun içindeki deste/mod adını altın ve italik yapıyor. Adın cümledeki
-    /// yeri her dilde farklı olduğu için indeks değil arama kullanılıyor.
+
     private func highlighted(_ text: String, emphasis: String?) -> AttributedString {
         var attributed = AttributedString(text)
         guard let emphasis, !emphasis.isEmpty,

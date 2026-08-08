@@ -1,13 +1,9 @@
 import CoreGraphics
 import SwiftUI
 
-/// Film grain — 01-tasarim-sistemi.md §3.
-///
-/// Üç deterministik gürültü karesi 12 fps'te döndürülüyor. Kareler bir kez
-/// üretilip saklanıyor; her karede prosedürel çizim 60 fps'te pil yakardı ve
-/// §3'e göre retro his için 12 fps zaten daha doğru.
+
 struct GrainOverlay: View {
-    /// §3: modern retro yorumunda %5.
+
     var intensity: Double = 0.05
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -25,14 +21,13 @@ struct GrainOverlay: View {
         }
     }
 
-    /// §7: Reduce Transparency ve "Film efektleri" kapalıyken devre dışı.
-    /// Isınmada da kapanıyor — §08 §5, kapının tamamı `FilmEffects` içinde.
+
     private var isEnabled: Bool {
         !reduceTransparency && FilmEffects.decorationsEnabled
     }
 }
 
-/// Scanline — §3. Varsayılan kapalı, ayarlardan açılıyor; yalnızca oyun ekranında.
+
 struct ScanlineOverlay: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -67,8 +62,7 @@ private enum NoiseTiles {
         return ((tick % frames.count) + frames.count) % frames.count
     }
 
-    /// Tekrarlanabilir olması önemli: aynı karе her açılışta aynı çıkmalı,
-    /// aksi hâlde grain ekran görüntüleri arasında zıplar.
+
     private static func make(seed: UInt64, side: Int = 96) -> CGImage? {
         var state = seed
         func nextByte() -> UInt8 {

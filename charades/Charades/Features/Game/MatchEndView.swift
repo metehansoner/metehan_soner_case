@@ -1,18 +1,9 @@
 import SwiftUI
 
-/// Ekran 19 — Maç Sonu · Jenerik Akışı (§ `02` §4, § `08` B1).
-///
-/// Skorlar tablo olarak değil **film jeneriği** olarak akıyor. Ödüller
-/// dekorasyon değil: "en iyi canlandırma" ve "gişe rekoru" takım modunda zaten
-/// tutulan gerçek veriden geliyor (§ `08` B1), o yüzden masada konuşulan bir
-/// şey oluyor.
-///
-/// **Portrait** (§ `09` §1): yön yalnızca burada geri dönüyor ve dönüşün açık
-/// bir mikro animasyonu var — ekran 13'ün tersi. Maç bittiği için kimse acele
-/// etmiyor, bu geçiş rahatsız etmiyor.
+
 struct MatchEndView: View {
     let match: TeamMatch
-    /// §04 §4.3: jenerikteki `ARŞİVE GİT` yalnızca o maçtan kayıt kaldıysa.
+
     var hasReels: Bool
     var onRematch: () -> Void
     var onArchive: () -> Void
@@ -29,7 +20,7 @@ struct MatchEndView: View {
     @State private var showsRotateHint = true
     @State private var hintUpright = false
 
-    /// § `08` B1: yukarı doğru yavaş akış.
+
     private let rollDuration: TimeInterval = 17
 
     var body: some View {
@@ -47,24 +38,22 @@ struct MatchEndView: View {
                     .transition(.opacity)
             }
 
-            // §08 B4: jeneriğin açılış vurgusu. Bantlar kalıcı değil, girip
-            // çekiliyor — jenerik akışının okunacağı alanı daraltmıyorlar.
+
             LetterboxBars()
         }
         .statusBarHidden()
         .task {
-            // Yön geometrisi oturana kadar duran kısa bir yönlendirme.
+
             try? await Task.sleep(for: .milliseconds(1800))
             withAnimation(.easeOut(duration: 0.4)) { showsRotateHint = false }
         }
     }
 
-    // MARK: Jenerik
 
     @ViewBuilder
     private var credits: some View {
-        // § `08` notlar: Reduce Motion'da jenerik statik listeye dönüyor,
-        // hiçbir bilgi kaybolmuyor — akış bilgi taşımayan bir katman.
+
+
         if isRolling, !reduceMotion {
             GeometryReader { geometry in
                 column
@@ -73,7 +62,7 @@ struct MatchEndView: View {
                     .onAppear { startRoll(from: geometry.size.height) }
                     .onChange(of: contentHeight) { _, _ in startRoll(from: geometry.size.height) }
             }
-            // § `08` B1: jeneriği beklemek zorunlu değil, dokunuşla sonuna atlanır.
+
             .contentShape(Rectangle())
             .onTapGesture { skipRoll() }
         } else {
@@ -103,8 +92,7 @@ struct MatchEndView: View {
                 )
             }
 
-            // § `09` §5: beraberliği bozan tur. Puanlar eşit kaldığı için
-            // sıralamanın sebebi ancak bu satırda görünüyor.
+
             if let winner = suddenDeathWinner {
                 block(
                     role: l10n.t("teams.suddenDeath.title"),
@@ -180,7 +168,7 @@ struct MatchEndView: View {
     }
 
     private func roleKey(_ index: Int) -> String {
-        // § `09` §5: 3–4. takımın rolü de tanımlı.
+
         switch index {
         case 0: "teams.role.lead"
         case 1: "teams.role.support"
@@ -189,7 +177,6 @@ struct MatchEndView: View {
         }
     }
 
-    // MARK: Akış
 
     private func startRoll(from containerHeight: CGFloat) {
         guard isRolling, !hasStartedRoll, contentHeight > 0 else { return }
@@ -198,8 +185,8 @@ struct MatchEndView: View {
         withAnimation(.linear(duration: rollDuration)) {
             rollOffset = -contentHeight
         }
-        // Akış bitince liste okunabilir hâlde duruyor; jenerik ekranda hiçbir
-        // şey kalmayan bir boşlukla bitmiyor.
+
+
         rollEnd = Task {
             try? await Task.sleep(for: .seconds(rollDuration))
             guard !Task.isCancelled else { return }
@@ -214,7 +201,7 @@ struct MatchEndView: View {
         withAnimation(.easeOut(duration: 0.25)) { isRolling = false }
     }
 
-    /// § `08` B1: üstte ve altta karartma — yazı ekrana girip çıkarken eriyor.
+
     private var fadeMask: some View {
         LinearGradient(
             stops: [
@@ -229,7 +216,6 @@ struct MatchEndView: View {
         .ignoresSafeArea()
     }
 
-    // MARK: Butonlar
 
     private var exitButton: some View {
         Button {
@@ -253,7 +239,7 @@ struct MatchEndView: View {
         .padding(.leading, 10)
     }
 
-    /// § `08` B1: `TEKRAR OYNA` ve `PAYLAŞ` sabit duruyor, jeneriği beklemiyor.
+
     private var actionBar: some View {
         VStack(spacing: 10) {
             if hasReels {
@@ -339,9 +325,7 @@ struct MatchEndView: View {
         return ([l10n.t("teams.share.header")] + lines).joined(separator: "\n")
     }
 
-    // MARK: Yön geçişi — § `09` §1
 
-    /// Ekran 13'ün tersi: yatayken duran telefon dikeye dönüyor.
     private var rotateHint: some View {
         VStack(spacing: 16) {
             RoundedRectangle(cornerRadius: 14)
@@ -373,8 +357,8 @@ struct MatchEndView: View {
 }
 
 private extension View {
-    /// Jeneriğin ne kadar yol alacağı içerik yüksekliğine bağlı; içerik dile
-    /// göre uzayıp kısaldığı için ölçülüyor, sabit bir değer tutmuyor.
+
+
     func measuringHeight(_ height: Binding<CGFloat>) -> some View {
         background {
             GeometryReader { proxy in

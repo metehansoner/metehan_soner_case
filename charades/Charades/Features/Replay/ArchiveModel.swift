@@ -1,17 +1,12 @@
 import Observation
 import SwiftUI
 
-/// Film Arşivi'nin durumu — §04 §4.3.
-///
-/// Kayıtlar SwiftData'da değil dosya sisteminde yaşıyor (§ `07` §3: video
-/// metadata'sı için ayrı bir veritabanı ikinci bir doğruluk kaynağı olurdu),
-/// bu yüzden liste `@Query` ile değil elle yükleniyor.
+
 @MainActor
 @Observable
 final class ArchiveModel {
 
-    /// Bir maç = bir film. Tek turluk modlarda film tek sahnelik oluyor ama
-    /// gruplama kuralı değişmiyor.
+
     struct Film: Identifiable {
         let id: String
         let title: String
@@ -23,7 +18,7 @@ final class ArchiveModel {
     private(set) var totalBytes: Int64 = 0
     private(set) var reelCount = 0
 
-    /// `DÜZENLE` ile açılan çoklu seçim; kapalıyken dokunuş oynatıcıyı açıyor.
+
     var isSelecting = false {
         didSet { if !isSelecting { selection.removeAll() } }
     }
@@ -51,13 +46,12 @@ final class ArchiveModel {
             )
         }
 
-        // Silinen kayıt seçili kalmasın.
+
         let ids = Set(reels.map(\.id))
         selection.formIntersection(ids)
     }
 
-    /// Başlık kayıt anında değil **okuma anında** çözülüyor: kayıt Türkçe alınıp
-    /// arşive İngilizce bakılabiliyor (§06 §2).
+
     private static func title(for reel: ReplayReel, l10n: LocalizationManager) -> String {
         if reel.deckIDs.count == 1, let deck = DeckCatalog.deck(reel.deckIDs[0]) {
             return l10n.t(deck.titleKey)
@@ -66,7 +60,6 @@ final class ArchiveModel {
         return l10n.t("mode.\(reel.modeID).title")
     }
 
-    // MARK: Eylemler
 
     func toggleSelection(_ id: String) {
         if selection.contains(id) {
@@ -91,7 +84,7 @@ final class ArchiveModel {
         load(l10n: l10n)
     }
 
-    /// §04 §4.2: sabitlenen kayıt FIFO'dan ve otomatik silmeden muaf.
+
     func togglePin(id: String, l10n: LocalizationManager) {
         guard var reel = ReplayStore.reel(id: id) else { return }
         reel.isPinned.toggle()
@@ -101,8 +94,8 @@ final class ArchiveModel {
     }
 
     func clearAll(l10n: LocalizationManager) {
-        // Toplu temizlik kullanıcının kararı ama tek tek silmekle aynı sinyal
-        // değil; her kayıt için event basmak "silme" oranını şişiriyor.
+
+
         Analytics.replayDelete()
         ReplayStore.deleteAll()
         isSelecting = false
@@ -113,7 +106,6 @@ final class ArchiveModel {
         films.flatMap(\.scenes).filter { selection.contains($0.id) }
     }
 
-    // MARK: Biçimlendirme
 
     static func sizeText(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()

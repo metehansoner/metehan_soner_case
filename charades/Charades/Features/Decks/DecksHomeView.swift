@@ -1,14 +1,10 @@
 import SwiftData
 import SwiftUI
 
-/// Ana ekran (ekran 4) — 02-ekran-akisi.md §4.
-///
-/// Kök ekran bu; tab bar yok. Header ve filtre satırı üstte sabit. Alt bölge
-/// bağlama göre çalışan bir aksiyon alanı: seçim varsa PlayBar, yoksa tüm
-/// dikey alan ızgaraya kalıyor.
+
 struct DecksHomeView: View {
-    /// Oyun `NavigationStack`in yerine render edildiği için turu `RootView`
-    /// başlatıyor (§02 §5); buradan yalnızca "başlatılabilir" sinyali gidiyor.
+
+
     var onPlay: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -19,26 +15,24 @@ struct DecksHomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    /// §05 §6: kaydedilmiş karışımlar `BENİM DESTELERİM` bölümünde görünüyor.
+
     @Query(sort: \SavedMix.sortIndex) private var savedMixes: [SavedMix]
 
-    /// §05 §7: custom desteler de aynı bölümde — kullanıcının kendi yaptığı
-    /// deste, katalog destesiyle aynı ızgarada oynanabilir olmalı.
+
     @Query(sort: \CustomDeck.sortIndex) private var customDecks: [CustomDeck]
 
-    /// Editörün boş taslağı `@Query`'ye düşer; geri dönüşte flaş olmasın diye
-    /// yalnızca içerikli desteler listeleniyor.
+
     private var listedCustomDecks: [CustomDeck] {
         customDecks.filter(\.hasListableContent)
     }
 
     @State private var filter: DeckFilter = .all
-    /// §04 §4.3 giriş noktası 1: header'daki makara; sayısı rozette (0 iken yok).
+
     @State private var archiveCount = 0
 
     private var dailyFreeDeckID: String? { DeckCatalog.dailyFreeDeckID() }
 
-    /// §09 §7: yalnızca aboneliği düşen kullanıcıya ve yalnızca bir kez.
+
     private var showsLapseNotice: Bool {
         subscriptions.didLapse && !settings.lapseNoticeShown
     }
@@ -97,17 +91,16 @@ struct DecksHomeView: View {
                 bottomBar.readableWidth(AppLayout.gridWidth)
             }
         }
-        // Premium'a dönülünce bilgi kartı sıfırlanıyor; ikinci bir düşüşte
-        // kullanıcı yine bir kez bilgilendiriliyor.
+
+
         .onChange(of: subscriptions.isPremium, initial: true) { _, isPremium in
             settings.syncLapseNotice(isPremium: isPremium)
         }
-        // Arşivden dönüşte kayıt silinmiş olabiliyor; tur sonrası dönüşte de
-        // yeni bir makara eklenmiş oluyor.
+
+
         .task(id: router.path) { archiveCount = ReplayStore.reelCount() }
     }
 
-    // MARK: Üst sabit alan
 
     private var topBar: some View {
         VStack(spacing: 12) {
@@ -149,27 +142,23 @@ struct DecksHomeView: View {
         }
     }
 
-    /// §10 §4: katalogda tanımlı ama kelime dosyası henüz üretilmemiş deste
-    /// kilitli değil **içeriksiz**. `CardBank` boş havuzla tur başlatmıyor,
-    /// o yüzden buton da açılmıyor.
+
     private var isPlayEnabled: Bool {
         setup.selectedDeckIDs.allSatisfy { DeckCatalog.contentReadyIDs.contains($0) }
     }
 
-    /// §05 §1: `Canlandır` seçiliyken `describe` desteler soluklaşıyor —
-    /// "Periyodik Tablo" vücut diliyle canlandırılamıyor ve kullanıcı kötü turun
-    /// suçunu uygulamaya atıyor.
+
     private func isOffMode(_ deck: DeckDef) -> Bool {
         !deck.isRecommended(inActOutMode: setup.mode == .actOut)
     }
 
     private func play() {
-        // §09 §9: 2+ deste Mix demek ve Mix premium.
+
         if setup.isMix, !subscriptions.isPremium {
             router.openPaywall(.mix)
             return
         }
-        // Ana ızgarada kilit görünmez; PlayBar'dan çıkışta premium desteyi yakala.
+
         if !subscriptions.isPremium,
            let lockedID = setup.selectedDeckIDs.first(where: {
                DeckCatalog.deck($0)?.isLocked(
@@ -185,17 +174,15 @@ struct DecksHomeView: View {
         if setup.isMix {
             setup.mode = .mix
         } else if setup.mode == .mix || !setup.mode.needsDeckSelection {
-            // Tek deste seçiliyken Mix ya da Kendi Kelimelerin kalamaz;
-            // önceki turdan taşınan mod burada düşüyor.
+
+
             setup.mode = .classic
         }
         Haptics.primaryButton()
         onPlay()
     }
 
-    /// §05 §6: kayıtlı karışımın tek amacı hızlı tekrar oynamak — Mod Seçimi
-    /// atlanıyor, mod zaten Mix. Karışımdaki desteler katalogdan düşüp ikinin
-    /// altına indiyse oynanamaz; kullanıcı kurulumda tamamlıyor.
+
     private func playSavedMix(_ mix: SavedMix) {
         setup.select(all: mix.deckIDs)
         setup.mode = .mix
@@ -223,8 +210,7 @@ struct DecksHomeView: View {
         router.push(.wordBasket)
     }
 
-    /// Destesi yoksa editöre kısayol (§02 boş durum); varsa yönetim listesi.
-    /// Listeye uğrayıp hemen "Yeni Deste +" görmek çift kapı gibi duruyordu.
+
     private func openCustomDecks() {
         let empties = customDecks.filter { !$0.hasListableContent }
         if !empties.isEmpty {
@@ -239,16 +225,15 @@ struct DecksHomeView: View {
         }
     }
 
-    /// Izgaradaki custom deste **oynamak** için; düzenleme uzun basışta ve
-    /// `BENİM DESTELERİM` listesinde (§05 §7'nin iki kapısı).
+
     private func playCustomDeck(_ deck: CustomDeck) {
         guard subscriptions.isPremium else {
             Haptics.lockedWall()
             router.openPaywall(.customDeck)
             return
         }
-        // Kelimesi yetmeyen taslak oynanamaz; dokunuş editöre götürüyor ki
-        // kullanıcı eksiği tamamlayabilsin.
+
+
         guard deck.canPlay else {
             Haptics.stepperLimit()
             router.push(.customEditor(deck.uuid.uuidString))
@@ -256,8 +241,8 @@ struct DecksHomeView: View {
         }
         Haptics.primaryButton()
         setup.select(custom: deck.uuid)
-        // Mod hâlâ önceki turdan Mix ya da Kendi Kelimelerin olabilir; ikisi de
-        // custom desteyle bağdaşmıyor, Mod Seçimi baştan soruyor.
+
+
         setup.mode = .classic
         router.beginSetup()
     }
@@ -268,7 +253,6 @@ struct DecksHomeView: View {
         router.push(.mix)
     }
 
-    // MARK: İçerik
 
     private var sectionRow: some View {
         HStack {
@@ -287,7 +271,7 @@ struct DecksHomeView: View {
         .padding(.bottom, 10)
     }
 
-    /// §4: 2 kolon / 3 kolon anahtarı. İkon o an geçerli düzeni gösteriyor.
+
     private var gridToggle: some View {
         Button {
             settings.gridColumns = settings.gridColumns == 2 ? 3 : 2
@@ -323,8 +307,8 @@ struct DecksHomeView: View {
             ),
             spacing: 12
         ) {
-            // Karışımlar yalnızca `BENİM DESTELERİM`de: bir filtre seçiliyken
-            // ızgara o filtrenin sonucunu göstermeli, karışımın bölümü yok.
+
+
             if filter == .all {
                 ForEach(listedCustomDecks, id: \.uuid) { deck in
                     Button { playCustomDeck(deck) } label: {
@@ -344,8 +328,8 @@ struct DecksHomeView: View {
 
                 ForEach(savedMixes) { mix in
                     Button { playSavedMix(mix) } label: {
-                        // §09 §7: abonelik düşerse kayıtlı karışımlar silinmiyor,
-                        // görünür ve salt-okunur kalıyor.
+
+
                         SavedMixCard(mix: mix, isLocked: !subscriptions.isPremium)
                     }
                     .buttonStyle(.plain)
@@ -377,12 +361,11 @@ struct DecksHomeView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                // Uzun basış seçimi doğrudan değiştiriyor; kısa dokunuş her
-                // zaman detaya gidiyor. İki deste seçip Mix'e girmek isteyen
-                // kullanıcı için detay sheet'inden geçmek gereksiz adım.
+
+
                 .onLongPressGesture(minimumDuration: 0.3) {
-                    // Ana ızgarada kilit görünmez; premium kontrolü detay /
-                    // OYNA anında. Burada yalnızca karışım tavanı bakılır.
+
+
                     guard setup.canToggleInMix(deck.id) else {
                         Haptics.stepperLimit()
                         return
@@ -402,7 +385,7 @@ struct DecksHomeView: View {
         .animation(.easeOut(duration: 0.2), value: settings.gridColumns)
     }
 
-    /// §6: filtre sonucu boş → film şeridi ikonu + açıklama.
+
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "film.stack")
@@ -419,7 +402,6 @@ struct DecksHomeView: View {
         .padding(.vertical, 64)
     }
 
-    // MARK: Filtreleme
 
     private var visibleDecks: [DeckDef] {
         let decks = DeckCatalog.visibleDecks()
@@ -427,7 +409,7 @@ struct DecksHomeView: View {
         case .all:
             return DeckCatalog.homeOrderedDecks(isPremium: subscriptions.isPremium)
         case .popular:
-            // Sıra Remote Config'ten geliyor; katalog sırası değil o sıra geçerli.
+
             let ranking = Dictionary(
                 uniqueKeysWithValues: DeckCatalog.popularDeckIDs.enumerated().map { ($1, $0) }
             )

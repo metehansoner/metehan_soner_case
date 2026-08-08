@@ -1,10 +1,6 @@
 import CoreText
 import Foundation
 
-// 01-tasarim-sistemi.md §2 "Doğrulama testi": her desteklenen locale için o
-// dilin karakter kümesinden örnek bir dize alınıp seçilen fontta gerçekten
-// çizilebildiği doğrulanıyor. Yunanca gliflerin yokluğu bir kez gözden kaçtı
-// (§2'deki düzeltme notu); bu kontrol aynı hatanın tekrarını CI'da yakalıyor.
 
 struct Families {
     let display: String
@@ -12,7 +8,7 @@ struct Families {
     let ui: String
 }
 
-// AppFont.families tablosunun birebir kopyası.
+
 func families(for locale: String) -> Families {
     switch locale {
     case "ar": Families(display: "Rubik", accent: "Rubik", ui: "Rubik")
@@ -21,7 +17,7 @@ func families(for locale: String) -> Families {
     }
 }
 
-// AppFont.postScriptCandidates'ın ilk (tercih edilen) adayları.
+
 let preferredNames: [String: [String]] = [
     "Oswald": ["Oswald-Bold", "Oswald-SemiBold"],
     "Playfair Display": ["PlayfairDisplayRoman-Black", "PlayfairDisplayItalic-BoldItalic"],
@@ -31,9 +27,7 @@ let preferredNames: [String: [String]] = [
     "EB Garamond": ["EBGaramond-Bold", "EBGaramondItalic-BoldItalic"],
 ]
 
-/// Her dilin kendi yazı sisteminden örnek: mod adı, bir sayı ve tipografik
-/// ayraç. Ayraç ve rakam bilerek içeride — subset'lenmiş Yunanca fontlar
-/// bunları da taşımak zorunda, yoksa satır ortasında aile değişiyor.
+
 let samples: [String: String] = [
     "en": "Act It Out · 12",
     "tr": "Sessiz Sinema · 12 şğüöçİI",
@@ -80,14 +74,14 @@ for file in (try? FileManager.default.contentsOfDirectory(atPath: fontsDirectory
 
 var failures: [String] = []
 
-// 1) Beklenen PostScript adları bundle'da var mı?
+
 for (family, names) in preferredNames.sorted(by: { $0.key < $1.key }) {
     for name in names where registered[name] == nil {
         failures.append("\(family): \(name) bundle'da yok")
     }
 }
 
-// 2) Her locale'in örnek dizesi seçilen fontta çizilebiliyor mu?
+
 for (locale, sample) in samples.sorted(by: { $0.key < $1.key }) {
     let roles = families(for: locale)
     for (role, family) in [("display", roles.display), ("accent", roles.accent), ("ui", roles.ui)] {

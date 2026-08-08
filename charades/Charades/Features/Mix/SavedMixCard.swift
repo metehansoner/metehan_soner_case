@@ -1,13 +1,9 @@
 import SwiftUI
 
-/// Kaydedilmiş karışımın ana ekran kartı — 05-desteler-ve-kategoriler.md §6.
-///
-/// `BENİM DESTELERİM` ızgarasında deste kartlarıyla aynı 3:4 ölçüde duruyor;
-/// ayrıştıran tek şey kapak: tek afiş yerine seçili destelerin kolajı ve
-/// köşedeki `MIX` etiketi.
+
 struct SavedMixCard: View {
     let mix: SavedMix
-    /// §09 §7: abonelik düşünce karışım silinmiyor, salt-okunur oluyor.
+
     var isLocked = false
 
     @Environment(LocalizationManager.self) private var l10n
@@ -86,7 +82,7 @@ struct SavedMixCard: View {
         return "\(decks) · \(l10n.t("playbar.cards", count: mix.cardCount))"
     }
 
-    /// Kilitli deste kartıyla aynı dil (§01 §4): asma kilit + `BİLET GEREKLİ`.
+
     private var lockLayer: some View {
         VStack(spacing: 6) {
             Image(systemName: "lock.fill")
@@ -117,11 +113,7 @@ struct SavedMixCard: View {
     }
 }
 
-/// Karışım kapağı: seçili destelerin bölüm renklerinden kolaj.
-///
-/// Deste kapak görselleri (P2'de `deck_*`) burada kullanılmıyor — dört afişi
-/// küçültüp yan yana koymak okunmaz bir bulamaç veriyor. Bölümlerin baskın
-/// tonları aynı bilgiyi kart boyutunda taşıyor.
+
 struct MixCollage: View {
     let decks: [DeckDef]
 

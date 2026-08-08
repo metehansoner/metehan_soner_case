@@ -1,19 +1,9 @@
 import SwiftUI
 
-/// Ekran 11 — Takım Kurulumu (§ `02` §4, § `04` §1, § `09` §5).
-///
-/// İki giriş: Takım Savaşı mod seçiminden sonra (`resumesModeSelect`) ve ana
-/// ekran header kısayolu. Kadro `GameSetup`ta oturum boyu durur; uygulama
-/// kapanınca sıfırlanır (§ `07` §3).
-///
-/// Ad alanlarının hiçbiri zorunlu değil (§ `09` §5). Takım adı boşsa numarayla
-/// anılıyor, oyuncu adı yoksa perde arası ve jenerik takım adıyla yetiniyor —
-/// masadaki grup "hadi başlayalım" diyorsa tek dokunuşla geçiliyor. Adlar
-/// girilirse perde arasında "telefonu Ayşe alsın", jenerikte "EN İYİ
-/// CANLANDIRMA — AYŞE" mümkün oluyor.
+
 struct TeamSetupView: View {
-    /// Mod Seçimi zincirinden gelindiyse `Devam` sheet'i yeniden açar; ana
-    /// ekran kısayolundan gelindiyse `Bitti` ile home'a döner.
+
+
     var resumesModeSelect = true
     var onContinue: () -> Void
 
@@ -74,7 +64,6 @@ struct TeamSetupView: View {
         }
     }
 
-    // MARK: Başlık
 
     private var navBar: some View {
         HStack(spacing: 0) {
@@ -101,15 +90,13 @@ struct TeamSetupView: View {
         .padding(.bottom, 6)
     }
 
-    /// İki sayaç tek dizede birleşmiyor: tekil/çoğul ayrımı her dilde ayrı
-    /// anahtar istiyor (`playbar.summary` deseni).
+
     private var summary: String {
         let teams = l10n.t("teams.setup.teamCount", count: setup.teams.count)
         let rounds = l10n.t("teams.setup.roundCount", count: setup.roundsPerTeam)
         return "\(teams) · \(rounds)"
     }
 
-    // MARK: Takım kartı
 
     private func teamCard(index: Int, team: Team) -> some View {
         let binding = teamBinding(team.id)
@@ -175,7 +162,6 @@ struct TeamSetupView: View {
         .accessibilityLabel(l10n.t("teams.edit"))
     }
 
-    // MARK: Oyuncu chip'i
 
     private func playerChip(team: Team, binding: Binding<Team>, slot: Int) -> some View {
         HStack(spacing: 4) {
@@ -203,8 +189,8 @@ struct TeamSetupView: View {
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 16, height: 16)
-                    // Oyuncu chip'i satır yüksekliğini belirliyor; 44 kapsülü
-                    // şişiriyor, 34 dokunulabilir sınırın altında kalmıyor.
+
+
                     .tapTarget(34)
             }
             .buttonStyle(.plain)
@@ -246,7 +232,6 @@ struct TeamSetupView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: Takım ekle
 
     private var addTeamButton: some View {
         Button {
@@ -274,10 +259,7 @@ struct TeamSetupView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: Tur sayısı
 
-    /// § `09` §5: bu ayarın hangi ekranda olduğu hiçbir yerde yazmıyordu —
-    /// yeri burası, takım başına 1–5 tur.
     private var roundsRow: some View {
         HStack(spacing: 12) {
             Image(systemName: "clock")
@@ -313,7 +295,7 @@ struct TeamSetupView: View {
 
     private func roundsStep(systemImage: String, delta: Int) -> some View {
         Button {
-            // Açık klavye ilk dokunuşu yutmasın diye önce odak düşüyor.
+
             focus = nil
             let next = setup.roundsPerTeam + delta
             guard Team.roundsRange.contains(next) else {
@@ -341,7 +323,6 @@ struct TeamSetupView: View {
         .accessibilityLabel(l10n.t(delta > 0 ? "teams.rounds.increase" : "teams.rounds.decrease"))
     }
 
-    // MARK: Ortak
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 14)
@@ -352,8 +333,7 @@ struct TeamSetupView: View {
             }
     }
 
-    /// Index yerine kimlik üzerinden: takım silindiğinde açıkta kalan bir
-    /// index'e yazmak listeyi bozuyor.
+
     private func teamBinding(_ id: UUID) -> Binding<Team> {
         Binding(
             get: { setup.teams.first { $0.id == id } ?? Team(id: id) },

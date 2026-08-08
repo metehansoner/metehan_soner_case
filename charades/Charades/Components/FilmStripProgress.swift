@@ -1,12 +1,6 @@
 import SwiftUI
 
-/// Film şeridi ilerleme göstergesi — 01-tasarim-sistemi.md §6.2:
-/// sayfa sayısına göre uzuyor, o yüzden statik görsel değil komponent.
-/// Onboarding ve Nasıl Oynanır slider'ının sayfa göstergesi bu.
-///
-/// Üç durum var (§02 §4): geçilen kareler altın, o anki amber, gelecekler soluk.
-/// `onSelect` verilirse geçilmiş kareler tıklanabiliyor (§03 §1) — ileri atlamak
-/// yok, yalnızca okunmuş bir adıma dönüş.
+
 struct FilmStripProgress: View {
     var total: Int
     var current: Int
@@ -44,8 +38,8 @@ struct FilmStripProgress: View {
         if let onSelect, isDone {
             Button { onSelect(index) } label: {
                 cell
-                    // 7pt'lik kareye dokunmak imkânsız. Padding hedefi büyütüyor,
-                    // negatifi yerleşimi geri alıyor — şerit görsel olarak aynı.
+
+
                     .padding(.vertical, 14)
                     .contentShape(Rectangle())
                     .padding(.vertical, -14)
@@ -63,8 +57,7 @@ struct FilmStripProgress: View {
     }
 }
 
-/// §3 "Film şeridi (sprocket)": kenarda tekrarlayan yuvarlatılmış kare deliği.
-/// Deste kartı kenarı, oyun kartının üst/alt bandı ve tur sonu ekranı kullanıyor.
+
 struct SprocketStrip: View {
     var axis: Axis = .horizontal
     var holeSize: CGFloat = 7

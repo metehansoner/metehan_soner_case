@@ -1,11 +1,6 @@
 import SwiftUI
 
-/// §09 §9: modal paywall oturum başına en fazla 3 kez açılıyor. Kota dolduktan
-/// sonra kilitli içeriğe dokunuş bu kısa uyarıyı gösteriyor — dördüncü kez aynı
-/// ekranı açmak ikna etmiyor, sinirlendiriyor.
-///
-/// §01 §4.1'in kuralı gereği haptik yok: uyarı kullanıcının başlattığı bir
-/// eylemin sonucu değil, engellenmesinin bildirimi.
+
 struct LockedNotice: View {
     let text: String?
     let onDismiss: () -> Void

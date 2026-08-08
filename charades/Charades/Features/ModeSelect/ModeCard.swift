@@ -1,11 +1,6 @@
 import SwiftUI
 
-/// Mod Seçimi kartı — `ornek-ekranlar.html` `.mode` kuralları (ekran 10).
-///
-/// Kilit göstergesi § `09` §9: 5 premium modun sağ üstünde bilet ikonu + soluk
-/// zemin, kilitli deste kartıyla **aynı dil** (§ `01` §4). İki farklı kilit
-/// görseli kullanmak, kullanıcının "bu neden kapalı" sorusunu her ekranda
-/// yeniden sormasına yol açıyor.
+
 struct ModeCard: View {
     let mode: GameMode
     var isSelected: Bool
@@ -60,8 +55,8 @@ struct ModeCard: View {
                     }
                     .shadow(color: AppColors.accentAmber.opacity(isSelected ? 0.18 : 0), radius: 9, y: 4)
             }
-            // Kilitli kart soluk ama okunur: § `01` §4 kilitli desteyle aynı
-            // oran. Tamamen soldurmak "bozuk" hissi veriyor.
+
+
             .opacity(isLocked ? 0.72 : 1)
             .contentShape(RoundedRectangle(cornerRadius: 13))
         }

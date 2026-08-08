@@ -1,15 +1,9 @@
 import SwiftUI
 
-/// Custom destenin ana ekran ızgarasındaki afişi.
-///
-/// `DeckCard` anatomisini birebir tekrarlıyor (afiş + başlık şeridi + altın
-/// çerçeve) ama kendi tipini kullanıyor: `DeckDef` katalog kimliği, `titleKey`
-/// ve bölüm rengi istiyor, custom destede üçü de yok. Ortak gövdeyi
-/// soyutlamak yerine kopyalamak, iki kart tipinin ayrı ayrı evrilmesine izin
-/// veriyor — custom kartın dil etiketi ve `TASLAK` şeridi katalogda yok.
+
 struct CustomDeckCard: View {
     let deck: CustomDeck
-    /// §09 §9: ücretsiz kullanıcı yazabiliyor ama oynayamıyor.
+
     var isLocked: Bool
 
     @Environment(LocalizationManager.self) private var l10n
@@ -95,8 +89,7 @@ struct CustomDeckCard: View {
         return name.isEmpty ? l10n.t("customDeck.defaultName") : name
     }
 
-    /// §05 §7: custom kelimeler çevrilmiyor; kart hangi dilde yazıldığını
-    /// söylüyor ki kullanıcı dili değiştirince şaşırmasın.
+
     private var languageTag: some View {
         Text(deck.languageCode.uppercased())
             .font(AppFont.ui(6.5, weight: .bold))

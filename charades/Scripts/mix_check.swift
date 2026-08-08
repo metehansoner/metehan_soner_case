@@ -1,10 +1,3 @@
-// Mix karıştırma algoritmasını cihazsız doğrular
-// (05-desteler-ve-kategoriler.md §6, 09-kesinti-ve-sinir-durumlari.md §4).
-//
-// Buradaki iddia gözle görülmüyor: 300 kartlık deste 60 kartlıkla
-// karıştırıldığında küçük destenin kelimeleri de gelmeli. Ekranda test etmek
-// için yüzlerce kart çevirmek gerekir, o yüzden havuz doğrudan sürülüyor.
-
 import Foundation
 
 var failures = 0
@@ -39,7 +32,7 @@ do {
 
 print("Büyük ve küçük deste birlikte")
 do {
-    // Naif yaklaşım (birleştir + karıştır) burada ~%17 verirdi.
+
     var pool = WordPool(byDeck: [deck("big", 300), deck("small", 60)])
     let drawn = (0..<100).compactMap { _ in pool.next() }
     let smallShare = Double(drawn.filter { deckName(of: $0) == "small" }.count) / 100
@@ -59,7 +52,7 @@ do {
     let drawn = (0..<200).compactMap { _ in pool.next() }
     let smallCount = drawn.filter { deckName(of: $0) == "small" }.count
 
-    // Tükenen deste turdan düşüyor; erken başa sarıp tekrar üretmiyor.
+
     check("küçük deste en fazla kart sayısı kadar geldi", smallCount == 10)
     check("tekrar yok", Set(drawn.map(\.k)).count == 200)
     check("büyük deste hâlâ dolu", !pool.didWrap)

@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// §04 §4.5 — kamera izninden **önce** gelen bilgi ekranı.
-///
-/// Bu özellik masadaki başka insanların yüzünü kaydediyor; tek kullanıcıdan izin
-/// almak yeterli değil. Onay kutusu yok, sadece bilgilendirme — ama bu satır
-/// etik olarak gerekli ve App Review'da da olumlu karşılanıyor.
+
 struct ReplayPrivacySheet: View {
     var onContinue: () -> Void
     var onCancel: () -> Void
@@ -47,12 +43,12 @@ struct ReplayPrivacySheet: View {
             .padding(.top, 6)
             .padding(.bottom, 22)
         }
-        // Sabit yükseklik yerine oran: gövde metni uzun dillerde (de, ar) iki
-        // satır daha büyüyor ve sabit detent metni tek satıra sıkıştırıyor.
+
+
         .presentationDetents([.fraction(0.58)])
     }
 
-    /// Objektif: ortada mercek, çevresinde film şeridi halkası.
+
     private var lens: some View {
         ZStack {
             Circle()

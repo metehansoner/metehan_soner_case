@@ -1,30 +1,21 @@
 import Foundation
 import Observation
 
-/// Bir Takım Savaşı maçının tamamı — 04-oyun-modlari.md §1, 09-kesinti-ve-sinir-durumlari.md §5.
-///
-/// `LiveGame` tek bir **turu** yönetiyor; takımların sırası, biriken puan ve
-/// beraberliğin çözümü burada. İkisi ayrı çünkü tur, maçın içinde defalarca
-/// baştan kuruluyor (`restartRound`) ama maç bir kez yaşıyor.
-///
-/// Takım adları buraya **çözülmüş** geliyor (`Team.resolvingName`): jenerik ve
-/// perde arası boş ad görmüyor, model de lokalizasyona bağlanmıyor.
+
 @MainActor
 @Observable
 final class TeamMatch {
 
-    /// § `09` §5: ani ölüm 30 saniyelik tek tur.
+
     static let suddenDeathDuration = 30
 
-    /// Oynanmış tek tur. Jenerikteki ödüller (§ `08` B1) bu kayıtlardan
-    /// üretiliyor — "en iyi canlandırma" uydurma değil, kimin sırasında kaç
-    /// doğru olduğu zaten burada duruyor.
+
     struct TurnResult: Identifiable, Equatable {
         let id = UUID()
         let teamIndex: Int
-        /// Telefonu tutan kişi; ad girilmemişse `nil`.
+
         let player: String?
-        /// 1-tabanlı tur numarası. Ani ölüm turunda 0.
+
         let round: Int
         let correct: Int
         let skipped: Int
@@ -37,20 +28,19 @@ final class TeamMatch {
         case matchEnd
     }
 
-    /// Jenerikteki rol sırası (§ `09` §5): `BAŞ ROL` · `YARDIMCI ROL` ·
-    /// `KONUK OYUNCU` · `FİGÜRAN`.
+
     struct Standing: Identifiable {
         let id: Int
         let team: Team
         let points: Int
-        /// Ani ölüm oynandıysa o turdaki doğru sayısı.
+
         let suddenDeathCorrect: Int?
-        /// 0 = `BAŞ ROL`. Tam eşit takımlar **aynı** rolü paylaşıyor.
+
         let roleIndex: Int
     }
 
     struct Award: Equatable {
-        /// Oyuncu adı; girilmemişse takım adı (§ `09` §5).
+
         let subject: String
         let value: Int
     }
@@ -62,11 +52,11 @@ final class TeamMatch {
 
     private(set) var currentTeamIndex = 0
     private(set) var currentPlayer: String?
-    /// 1-tabanlı; ani ölümde 0.
+
     private(set) var currentRound = 1
     private(set) var isSuddenDeath = false
 
-    /// Sıradaki turun, içinde bulunulan aşamadaki index'i.
+
     private var cursor = 0
     private var suddenDeathTeams: [Int] = []
 
@@ -80,12 +70,10 @@ final class TeamMatch {
 
     var currentTeam: Team { teams[currentTeamIndex] }
 
-    /// Perde arası "3 / 6" göstergesi için oynanmış normal tur sayısı.
+
     var completedTurns: Int { results.filter { !$0.isSuddenDeath }.count }
 
-    /// Tur sonu / perde arasinda maç sırası — "1 / 2" (takım×tur).
-    /// `currentRound / roundsPerTeam` yanıltıcıydı: 1 tur ayarında ilk takım
-    /// bitince "1 / 1" görünüp maç bitmiş sanılıyordu.
+
     var matchTurnNumber: Int {
         if isSuddenDeath { return min(cursor + 1, max(suddenDeathTeams.count, 1)) }
         return min(completedTurns + 1, max(totalTurns, 1))
@@ -95,10 +83,7 @@ final class TeamMatch {
         isSuddenDeath ? max(suddenDeathTeams.count, 1) : max(totalTurns, 1)
     }
 
-    // MARK: Sıra
 
-    /// Tur sonu ekranından çıkılırken çağrılıyor — skor orada düzeltmelerle
-    /// hâlâ değişebildiği için maça **o an** yazılıyor.
     func finishTurn(correct: Int, skipped: Int, points: Int) -> Next {
         results.append(
             TurnResult(
@@ -124,9 +109,7 @@ final class TeamMatch {
             return begin(teamIndex: cursor % teams.count)
         }
 
-        // § `09` §5: her takım eşit tur oynadığı için beraberlik istatistiksel
-        // olarak sık. Tepede eşitlik varsa ani ölüm turu; bu kural olmadan
-        // masadaki tartışmayı uygulama çözemiyor.
+
         let tied = leaders()
         guard tied.count > 1 else { return .matchEnd }
         isSuddenDeath = true
@@ -143,11 +126,7 @@ final class TeamMatch {
         return .turn(teamIndex: teamIndex, player: currentPlayer)
     }
 
-    // MARK: Skor
 
-    /// Ani ölüm turu **toplama girmiyor**: § `09` §5'te kazananı belirleyen o
-    /// turdaki doğru sayısı, puan değil. Jenerikte iki takım da berabere
-    /// kaldıkları puanla görünüyor, sıralamayı ani ölüm satırı açıklıyor.
     func points(for teamIndex: Int) -> Int {
         results
             .filter { $0.teamIndex == teamIndex && !$0.isSuddenDeath }
@@ -185,18 +164,17 @@ final class TeamMatch {
             }
     }
 
-    /// § `09` §5: ani ölüm de bozamazsa paylaşımlı zafer — iki takım da `BAŞ ROL`.
+
     var isSharedVictory: Bool {
         standings.filter { $0.roleIndex == 0 }.count > 1
     }
 
-    // MARK: Jenerik ödülleri — § `08` B1
 
     var bestPerformer: Award? { bestSubject { $0.correct } }
 
     var mostSkips: Award? { bestSubject { $0.skipped } }
 
-    /// "Gişe rekoru": tek turda çıkarılan en yüksek doğru.
+
     var boxOffice: (correct: Int, team: String, round: Int)? {
         guard let best = results.filter({ $0.correct > 0 }).max(by: { $0.correct < $1.correct }),
               let first = results.first(where: { $0.correct == best.correct })

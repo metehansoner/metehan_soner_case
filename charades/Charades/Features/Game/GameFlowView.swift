@@ -1,14 +1,6 @@
 import SwiftUI
 
-/// Oyun akışı — 04-oyun-modlari.md §3, yön katmanı 09-kesinti-ve-sinir-durumlari.md §1.
-///
-/// Landscape fazlar `ForcedLandscapeContainer` ile çiziliyor: pencere portrait
-/// kalır, içerik 90° döner. Böylece Control Center yön kilidi açık olsa bile
-/// oyun yatay düzenini korur; sistem `requestGeometryUpdate` başarısına
-/// bağımlı değiliz.
-///
-/// `RootView` bu view'ı `NavigationStack`in **yerine** render ediyor (§02 §5):
-/// tur sırasında geri butonu ve swipe-back yok, çıkışın tek yolu duraklat.
+
 struct GameFlowView: View {
     let game: LiveGame
     var onHowToPlay: () -> Void
@@ -19,16 +11,11 @@ struct GameFlowView: View {
     @Environment(SubscriptionStore.self) private var subscriptions
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// §03 §2 varyant C. Tam ekran paywall oyun akışının içinden açılıyor:
-    /// tur sonu `NavigationStack`in yerine render edildiği için (§02 §5)
-    /// kabuktaki paywall sheet'ine buradan ulaşılamıyor.
+
     @State private var showsSoftPaywall = false
     @State private var showsFullPaywall = false
 
-    /// §02 ekran 18: oynatıcı tur sonu ekranının **üstünde** açılıyor, onun
-    /// yerine geçmiyor. Tur sonundaki düzeltmeler oynatıcı kapanınca yerinde
-    /// duruyor ve `roundEnd` zaten landscape (§09 §1) — kayıt fazının yön
-    /// sözleşmesi kendiliğinden sağlanıyor.
+
     @State private var showsReplay = false
 
     var body: some View {
@@ -51,8 +38,8 @@ struct GameFlowView: View {
             }
         }
         .animation(.easeInOut(duration: 0.22), value: game.phase)
-        // Soft paywall landscape fazda (tur sonu) açılıyor; dönüşün dışında
-        // kalsaydı alındaki telefonda yan okunurdu.
+
+
         .forcedLandscape(game.prefersLandscape)
         .animation(
             reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.34, dampingFraction: 0.85),
@@ -75,7 +62,7 @@ struct GameFlowView: View {
         }
         .fullScreenCover(isPresented: $showsFullPaywall) {
             PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
-                // Portrait paywall: forced-landscape kısa kenarda CTA/X kesiliyordu.
+
                 .environment(LocalizationManager.shared)
                 .environment(AppSettingsStore.shared)
                 .environment(SubscriptionStore.shared)
@@ -84,7 +71,7 @@ struct GameFlowView: View {
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
         .onAppear {
-            // Pencere hep portrait; landscape yalnızca view dönüşü.
+
             OrientationLock.shared.lockPortrait()
             syncBrightness()
         }
@@ -95,15 +82,15 @@ struct GameFlowView: View {
         }
         .onDisappear { ScreenBrightness.restore() }
         #if DEBUG
-        // Simülatörde dokunuş yok; oynatıcı `-AutoScore` gibi kendiliğinden
-        // açılabilsin diye.
+
+
         .onChange(of: game.reel != nil) { _, hasReel in
             guard hasReel, ProcessInfo.processInfo.arguments.contains("-AutoReplay") else { return }
             showsReplay = true
         }
         #endif
-        // §09 §2: arka plan, gelen çağrı ve ekran kilidi aynı yol — otomatik
-        // duraklat. Genel ilke: hiçbir kesinti tur sonuçlarını yok etmiyor.
+
+
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 game.handleSceneActive()
@@ -127,8 +114,8 @@ struct GameFlowView: View {
                     isFull: game.isSlateFull,
                     onFinish: game.finishSlate
                 )
-                // §07 §5: aynı fazda ikinci kez girilen view kimliksiz kalırsa
-                // (`YENİDEN`) `task` yeniden çalışmıyor ve klaket donuyor.
+
+
                 .id("\(game.sceneNumber)-\(game.takeNumber)")
                 .transition(.opacity)
 
@@ -145,13 +132,13 @@ struct GameFlowView: View {
 
             case .paused:
                 ZStack {
-                    // Oyun kartı altta duruyor: duraklat bir overlay, ayrı ekran
-                    // değil. Kullanıcı nerede kaldığını görüyor.
+
+
                     GameCardView(game: game)
                     PauseOverlay(
                         reason: game.pauseReason,
-                        // §09 §3: takım modunda çıkış turu değil **maçı** iptal
-                        // ediyor; onay metni buna göre ayrışıyor.
+
+
                         cancelsMatch: game.match != nil,
                         onResume: game.resume,
                         onRestart: game.restartRound,
@@ -180,8 +167,8 @@ struct GameFlowView: View {
                         secondsLeft: game.handoffCountdown,
                         onReady: game.beginTeamTurn
                     )
-                    // §07 §5: associated value'lu fazda view kimliği zorlanıyor,
-                    // yoksa takım değişiminde geçiş animasyonu takılıyor.
+
+
                     .id(match.results.count)
                     .transition(.opacity)
                 }
@@ -201,9 +188,7 @@ struct GameFlowView: View {
         }
     }
 
-    /// §09 §2: düşük güç modu, ısınma ve dolu disk kaydı sessizce iptal
-    /// ediyordu. Sebep bir kez, oyunu kesmeden söyleniyor — telefon o an
-    /// birinin alnında, modal açılamaz.
+
     @ViewBuilder
     private var replayNotice: some View {
         if let key = ReplayRecorder.shared.noticeKey {
@@ -229,9 +214,7 @@ struct GameFlowView: View {
         }
     }
 
-    /// Klaketin `DESTE` satırı ve başlık kartının büyük yazısı. Arşiv film
-    /// başlığıyla aynı kural (§04 §4.3): tek deste adıyla, çoklu seçim `MIX`,
-    /// deste olmayan modlar (Kelime Sepeti) mod adıyla anılıyor.
+
     private var deckTitle: String {
         if game.deckIDs.count == 1, let deck = DeckCatalog.deck(game.deckIDs[0]) {
             return l10n.t(deck.titleKey)
@@ -243,9 +226,8 @@ struct GameFlowView: View {
     private var playing: some View {
         GameCardView(game: game)
             .pauseGesture(
-                // Eğ modunda ekran yarıları cevap vermiyor; iki parmakla
-                // duraklatma yine de kapalı — sürükleme her iki modda da çalışıyor
-                // ve dokunmatikte yarılarla çakışıyordu (§09 §3).
+
+
                 allowsTwoFingerTap: false,
                 onGestureBegan: game.lockTriggersForPauseGesture,
                 onPause: { game.pause(reason: .user) }
@@ -253,18 +235,14 @@ struct GameFlowView: View {
             .transition(.opacity)
     }
 
-    /// §03 §2 varyant C koşulu: `!isPremium && !softPaywallSeen && roundsCompleted >= 1`.
-    /// Tur sonuna girerken `recordRoundPlayed()` çalıştığı için sayaç burada
-    /// zaten en az 1.
+
     private func offerSoftPaywall() {
         guard settings.shouldShowSoftPaywall(isPremium: subscriptions.isPremium) else { return }
         settings.markSoftPaywallSeen()
         showsSoftPaywall = true
     }
 
-    /// §04 §1: yalnızca `Canlandır` oynanırken ve yalnızca oyun kartında.
-    /// Duraklat, tur sonu ve geri sayım normal parlaklıkta — o ekranlarda
-    /// telefona bakan kişi zaten herkes.
+
     private func syncBrightness() {
         if game.phase == .playing, !game.mode.screenVisibleToGuesser {
             ScreenBrightness.dim()

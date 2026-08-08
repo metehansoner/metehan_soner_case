@@ -3,16 +3,14 @@ import StoreKit
 import SwiftUI
 import UserNotifications
 
-/// Ekran 20 — Ayarlar (§ `06` §1).
-///
-/// Beş grup; Oyun grubunda Nasıl Oynanır satırı da var.
+
 struct SettingsSheet: View {
     var onManageSubscription: () -> Void
-    /// Replay premium bir özellik; kilitli anahtara dokunuş paywall'a gidiyor.
-    /// Ayarlar sheet'i `AppRouter`ı görmüyor, kabuk kapatıp açıyor.
+
+
     var onUpgrade: () -> Void
-    /// §04 §4.3 giriş noktası 2: arşive giden yol (header'daki makara da
-    /// her zaman açık; bu satır özet + alternatif giriş).
+
+
     var onOpenArchive: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -70,8 +68,8 @@ struct SettingsSheet: View {
         }
         .task { await readNotificationStatus() }
         .task { archiveStats = (ReplayStore.reelCount(), ReplayStore.totalBytes()) }
-        // §06 §3: kullanıcı izni iOS Ayarlar'dan geri alırsa satır uygulamaya
-        // dönüldüğünde kendiliğinden düşsün diye her `.active` geçişinde okunuyor.
+
+
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
             cameraStatus = ReplayRecorder.cameraAuthorization
@@ -80,14 +78,13 @@ struct SettingsSheet: View {
         }
     }
 
-    // MARK: Grup 1 — Oyun
 
     private var playGroup: some View {
         @Bindable var settings = settings
 
         return SettingsGroup(title: l10n.t("settings.group.play")) {
-            // Dil satırı grubun başında: uygulamayı yanlış dilde açan kullanıcı
-            // ayarlarda başka bir şey aramıyor (§06 §1).
+
+
             SettingsRow(
                 icon: "globe",
                 title: l10n.t("settings.language"),
@@ -147,20 +144,19 @@ struct SettingsSheet: View {
         }
     }
 
-    // MARK: Grup 2 — His & ses
 
     private var feelGroup: some View {
         @Bindable var settings = settings
 
         return SettingsGroup(title: l10n.t("settings.group.feel")) {
-            // §06 §1: tek anahtar **tüm** haptikleri kapatıyor. Ayrı bir "oyun içi
-            // titreşim" anahtarı yok; kapatan kullanıcı kısmi çözüm istemiyor.
+
+
             switchRow(icon: "iphone.radiowaves.left.and.right", key: "settings.haptics", isOn: $settings.hapticsEnabled)
             SettingsDivider()
             switchRow(icon: "speaker.wave.2", key: "settings.sound", isOn: $settings.soundEnabled)
             SettingsDivider()
-            // Kapatınca yalnızca doku katmanları kalkıyor; palet ve tipografi
-            // aynı kalıyor, uygulama "temiz retro" görünüyor.
+
+
             switchRow(icon: "sparkles", key: "settings.filmEffects", isOn: $settings.filmEffectsEnabled)
             SettingsDivider()
             replayRow
@@ -169,8 +165,7 @@ struct SettingsSheet: View {
         }
     }
 
-    /// §06 §1 satır 9: kullanıcı "nereye kaydediliyor" sorusunu ayarlarda
-    /// arıyor, o yüzden satır arşiv boşken de duruyor.
+
     private var archiveRow: some View {
         SettingsRow(
             icon: "film.stack",
@@ -188,9 +183,7 @@ struct SettingsSheet: View {
             + " · " + ArchiveModel.sizeText(archiveStats.bytes)
     }
 
-    /// §06 §1 satır 8: varsayılan kapalı, premium. Açılırken önce gizlilik bilgi
-    /// ekranı, sonra kamera izni; reddedilirse anahtar kendiliğinden kapanıyor ve
-    /// altında sistem ayarlarına giden açıklama çıkıyor.
+
     private var replayRow: some View {
         SettingsRow(
             icon: "video",
@@ -214,24 +207,21 @@ struct SettingsSheet: View {
         if cameraStatus == .denied || cameraStatus == .restricted {
             return l10n.t("settings.replay.denied")
         }
-        // §09 §2: anahtar açıkken de kayıt gelmeyecekse sebebi burada yazıyor;
-        // kullanıcı bunu tur ortasındaki tek satırlık uyarıyı kaçırmışsa
-        // özelliği "bozuk" sanıyor.
+
+
         if settings.replayEnabled, let limit = DeviceConditions.recordingLimit() {
             return l10n.t(limit.noticeKey)
         }
         return nil
     }
 
-    // MARK: Grup 3 — Bildirimler
 
     private var notificationsGroup: some View {
         @Bindable var settings = settings
 
         return SettingsGroup(title: l10n.t("settings.group.notifications")) {
-            // §06 §1: bu satır izni **kopyalamıyor, gösteriyor.** İzin verilmişken
-            // kapatılabiliyor; sistem izni geri alınmıyor (öyle bir API yok),
-            // yalnızca planlanmış bildirimler iptal ediliyor.
+
+
             SettingsRow(
                 icon: "bell",
                 title: l10n.t("settings.notifications"),
@@ -249,8 +239,7 @@ struct SettingsSheet: View {
                 .opacity(notificationStatus == .denied ? 0.55 : 1)
             }
 
-            // §06 §1 satır 11: yalnızca satır 10 açıkken. Premium'da bedava
-            // deste bildirimi yok; engagement hatırlatmaları ana anahtarla geliyor.
+
             if notificationsOn, !subscriptions.isPremium {
                 SettingsDivider()
                 switchRow(icon: "ticket", key: "settings.dailyFreeDeck", isOn: $settings.dailyFreeDeckNotice)
@@ -262,7 +251,6 @@ struct SettingsSheet: View {
         notificationStatus == .authorized && settings.notificationsEnabled
     }
 
-    // MARK: Grup 4 — Hesap
 
     private var accountGroup: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -296,7 +284,6 @@ struct SettingsSheet: View {
         }
     }
 
-    // MARK: Grup 5 — Destek & yasal
 
     private var supportGroup: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -320,8 +307,8 @@ struct SettingsSheet: View {
                 SettingsRow(
                     icon: "star",
                     title: l10n.t("settings.rateUs"),
-                    // §09 §9: buradaki istem kullanıcının kendi isteği, oturum
-                    // başına tek istem kotasına girmiyor.
+
+
                     action: { requestReview() }
                 ) {
                     SettingsDisclosure()
@@ -334,7 +321,7 @@ struct SettingsSheet: View {
 
     @ViewBuilder
     private var legalLinks: some View {
-        // Adresler build ayarından geliyor; boşken satır hiç çizilmiyor.
+
         if LegalLinks.privacy != nil || LegalLinks.terms != nil {
             HStack(spacing: 14) {
                 if let privacy = LegalLinks.privacy {
@@ -350,7 +337,6 @@ struct SettingsSheet: View {
         }
     }
 
-    // MARK: Kimlik kartı
 
     private var identityCard: some View {
         VStack(spacing: 4) {
@@ -376,7 +362,6 @@ struct SettingsSheet: View {
         .accessibilityAddTraits(.isButton)
     }
 
-    // MARK: Yardımcılar
 
     private func switchRow(icon: String, key: String, isOn: Binding<Bool>) -> some View {
         SettingsRow(icon: icon, title: l10n.t(key)) {
@@ -396,9 +381,7 @@ struct SettingsSheet: View {
         notificationStatus = await NotificationService.authorizationStatus()
     }
 
-    /// §06 §1 durum tablosu: `notDetermined` sistem diyaloğunu açıyor, `denied`
-    /// iOS Ayarlar'a gidiyor (reddedilmiş izni uygulama içinden geri almanın
-    /// yolu yok), `authorized` yerel tercihi çeviriyor.
+
     private func toggleNotifications(to newValue: Bool) {
         switch notificationStatus {
         case .notDetermined:
@@ -417,8 +400,7 @@ struct SettingsSheet: View {
         }
     }
 
-    /// §06 §1 satır 8 + §04 §4.5. `notDetermined` gizlilik ekranını açıyor,
-    /// `denied` iOS Ayarlar'a gidiyor, izin varsa anahtar doğrudan dönüyor.
+
     private func toggleReplay(to newValue: Bool) {
         guard newValue else {
             settings.replayEnabled = false
@@ -451,12 +433,11 @@ struct SettingsSheet: View {
         }
     }
 
-    /// İzin iOS Ayarlar'dan geri alınmış olabilir: anahtar açık kalırsa
-    /// kullanıcı kayıt bekler, hiç kayıt olmaz.
+
     private func syncReplaySwitch() {
         #if DEBUG
-        // Sentetik motor kamera izni istemiyor; reddedilmiş sanıp anahtarı
-        // kapatmak `-FakeReplay` akışını bozuyor.
+
+
         if ProcessInfo.processInfo.arguments.contains("-FakeReplay") { return }
         #endif
         guard settings.replayEnabled, cameraStatus != .authorized else { return }

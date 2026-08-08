@@ -1,12 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// Tur sonundaki `SEPETİ KAYDET` şeridi — 02-ekran-akisi.md §24.
-///
-/// Kaydetme sepet ekranında değil burada: kullanıcı oraya oynamak için gitti,
-/// baştan "isim ver" demek akışa fren koyardı. Kaydedilmezse sepet `GameSetup`
-/// ile kaybolacak ve bu kayıp **açıkça** yazıyor — yoksa kullanıcı 20 kelimesini
-/// gittikten sonra fark ediyor.
+
 struct SaveBasketBanner: View {
     let words: [String]
 
@@ -86,8 +81,8 @@ struct SaveBasketBanner: View {
         } message: {
             Text(l10n.t("basket.save.body", count: words.count))
         }
-        // §09 §255: slot doluyken sessiz başarısızlık yok — üzerine yazılacak
-        // deste seçiliyor.
+
+
         .confirmationDialog(
             l10n.t("customDeck.slotsFull"),
             isPresented: $isPickingOverwrite,
@@ -112,11 +107,11 @@ struct SaveBasketBanner: View {
     private var subtitle: String {
         if savedName != nil { return l10n.t("basket.save.done") }
         guard isSlotAvailable else { return l10n.t("basket.save.noSlot") }
-        // §02 §24: kaybın kendisi yazıyor, "kaydetmek ister misin?" değil.
+
         return l10n.t("basket.save.warning", count: words.count)
     }
 
-    /// §02 §24: varsayılan isim doldurulmuş geliyor — `KENDİ KELİMELERİM · 24 TEMMUZ`.
+
     private var defaultName: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: l10n.localeCode)
@@ -168,8 +163,8 @@ struct SaveBasketBanner: View {
         if created {
             Analytics.customDeckCreate(wordCount: wordCount)
         }
-        // Taslak artık kalıcı bir deste; bir sonraki açılışta sepete geri
-        // dolmasın, kullanıcı aynı kelimeleri iki kayıtta görmesin.
+
+
         AppSettingsStore.shared.clearBasketDraft()
         Haptics.purchaseSucceeded()
         savedName = name

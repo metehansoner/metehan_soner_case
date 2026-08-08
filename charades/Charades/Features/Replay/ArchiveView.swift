@@ -1,11 +1,6 @@
 import SwiftUI
 
-/// Film Arşivi (ekran 22) — 04-oyun-modlari.md §4.3.
-///
-/// Arşivin sözlüğü film: her **maç** bir film, her **tur** bir sahne. Düz
-/// kronolojik liste yerine maça göre gruplama, kullanıcının aradığı şeyle
-/// örtüşüyor — "geçen cumartesi Hayvanlar oynamıştık" diye arıyor, "17:42'deki
-/// kayıt" diye değil.
+
 struct ArchiveView: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppRouter.self) private var router
@@ -35,7 +30,7 @@ struct ArchiveView: View {
             }
         }
         .task { model.load(l10n: l10n) }
-        // Oynatıcıdan dönüldüğünde kayıt silinmiş ya da sabitlenmiş olabiliyor.
+
         .onChange(of: router.path) { _, _ in model.load(l10n: l10n) }
         .overlay(alignment: .bottom) {
             LockedNotice(text: notice) { notice = nil }
@@ -56,7 +51,6 @@ struct ArchiveView: View {
         }
     }
 
-    // MARK: Başlık
 
     private var navBar: some View {
         HStack(spacing: 0) {
@@ -90,7 +84,6 @@ struct ArchiveView: View {
         .padding(.bottom, 4)
     }
 
-    // MARK: Liste
 
     private var list: some View {
         ScrollView {
@@ -114,7 +107,7 @@ struct ArchiveView: View {
         .scrollIndicators(.hidden)
     }
 
-    /// §04 §4.3 özet şeridi: kaç makara, ne kadar yer ve kotanın neresi.
+
     private var summaryStrip: some View {
         HStack(spacing: 11) {
             ReelBadge()
@@ -167,7 +160,7 @@ struct ArchiveView: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// §04 §4.3: bir kez görünüyor, kapatılınca bir daha gelmiyor.
+
     private var privacyStrip: some View {
         HStack(spacing: 9) {
             Image(systemName: "lock.shield")
@@ -253,7 +246,6 @@ struct ArchiveView: View {
         .padding(.bottom, 24)
     }
 
-    // MARK: Boş durum
 
     private var emptyState: some View {
         VStack(spacing: 16) {
@@ -294,7 +286,6 @@ struct ArchiveView: View {
         .frame(maxHeight: .infinity)
     }
 
-    // MARK: Depolama — §06 §1, ayarlar listesini şişirmemek için buraya taşındı
 
     private var storageGroup: some View {
         @Bindable var settings = settings
@@ -352,7 +343,6 @@ struct ArchiveView: View {
         }
     }
 
-    // MARK: Çoklu seçim
 
     private var selectionBar: some View {
         HStack(spacing: 10) {
@@ -423,7 +413,6 @@ struct ArchiveView: View {
         }
     }
 
-    // MARK: Eylemler
 
     private func open(_ reel: ReplayReel) {
         guard !model.isSelecting else {
@@ -432,9 +421,8 @@ struct ArchiveView: View {
             return
         }
         Haptics.secondaryButton()
-        // §03 §5: kayıt kaç gün sonra tekrar izlendi. Kimse bir günden sonra
-        // açmıyorsa arşiv ekranı yatırıma değmiyor demek — özelliği ölçülebilir
-        // tutan tek event bu.
+
+
         let age = Calendar.current.dateComponents([.day], from: reel.createdAt, to: .now).day
         Analytics.replayArchivePlay(ageDays: max(age ?? 0, 0))
         router.push(.archivePlayer(reel.id))
@@ -458,7 +446,7 @@ struct ArchiveView: View {
     }
 }
 
-/// Özet şeridindeki ve boş durumdaki film makarası.
+
 struct ReelBadge: View {
     var size: CGFloat = 22
     var lineWidth: CGFloat = 2

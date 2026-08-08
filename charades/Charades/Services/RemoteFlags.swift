@@ -1,13 +1,7 @@
 import FirebaseRemoteConfig
 import Foundation
 
-/// Remote Config anahtarları ve bundle varsayılanları — 09-kesinti-ve-sinir-durumlari.md §8.
-///
-/// İlk açılışta ağ yoksa RC cache'i boş kalıyor. `SEZON` chip'i ve "ŞİMDİ
-/// VİZYONDA" şeridi tanımsız davranmasın diye her anahtarın bundle içinde
-/// varsayılanı var (`RemoteConfigDefaults.plist`) ve uygulama açılışta onu
-/// yüklüyor. RC yalnızca **üzerine yazıyor** — `fetch` aynı `apply(_:)`
-/// fonksiyonunu kısmi bir sözlükle çağırıyor.
+
 enum RemoteFlags {
     enum Key {
         static let seasonWindows = "season_windows"
@@ -18,8 +12,7 @@ enum RemoteFlags {
         static let all = [seasonWindows, popularDecks, dailyFreeExclusions, socialProofEnabled]
     }
 
-    /// §03 §1: sosyal kanıt ekranı v1'de kapalı; `SocialProofView` derlemede
-    /// duruyor ama çağrılmıyor.
+
     private(set) nonisolated(unsafe) static var socialProofEnabled = false
 
     static func loadBundleDefaults() {
@@ -32,8 +25,7 @@ enum RemoteFlags {
         apply(values)
     }
 
-    /// Kısmi sözlükle çağrılabiliyor: RC yalnızca bazı anahtarları döndürürse
-    /// kalanlar bundle varsayılanında kalıyor.
+
     static func apply(_ values: [String: Any]) {
         if let windows = values[Key.seasonWindows] as? [String: String] {
             DeckCatalog.seasonWindowOverrides = windows.compactMapValues(parseWindow)
@@ -49,14 +41,7 @@ enum RemoteFlags {
         }
     }
 
-    // MARK: Uzaktan güncelleme
 
-    /// Açılıştan sonra, ağ varsa. Sonuç bu oturumda uygulanıyor; gelmezse
-    /// bundle varsayılanları yürürlükte kalıyor ve hiçbir ekran boş kalmıyor.
-    ///
-    /// Konsolda sezon penceresi denemek için her açılışta taze veri gerekiyor;
-    /// yayında 12 saat, çünkü sezon pencereleri ve popüler liste günlerce
-    /// değişmiyor, sık `fetch` yalnızca kota harcıyor.
     static func fetchRemote() {
         let config = RemoteConfig.remoteConfig()
         let settings = RemoteConfigSettings()
@@ -67,8 +52,7 @@ enum RemoteFlags {
         #endif
         config.configSettings = settings
 
-        // Geri çağrı Firebase'in kuyruğunda; `RemoteConfigValue` okuması da
-        // dahil her şey ana aktöre alınıyor, sözlük sınır geçmiyor.
+
         config.fetchAndActivate { status, _ in
             guard status != .error else { return }
             Task { @MainActor in applyRemoteValues() }
@@ -79,8 +63,8 @@ enum RemoteFlags {
         let config = RemoteConfig.remoteConfig()
         let values = Key.all.reduce(into: [String: Any]()) { result, key in
             let value = config[key]
-            // Yalnızca konsoldan gelen değerler: `.static` kaynak bizim bundle
-            // varsayılanımızın kopyası, onu tekrar uygulamanın anlamı yok.
+
+
             guard value.source == .remote, let decoded = decode(key: key, value: value) else {
                 return
             }
@@ -90,8 +74,7 @@ enum RemoteFlags {
         apply(values)
     }
 
-    /// RC konsolunda sözlük ve dizi diye bir tip yok; ikisi de JSON metni
-    /// olarak giriliyor ve burada çözülüyor.
+
     private static func decode(key: String, value: RemoteConfigValue) -> Any? {
         switch key {
         case Key.socialProofEnabled:
@@ -103,8 +86,7 @@ enum RemoteFlags {
         }
     }
 
-    /// Biçim: `g:AA-GG/AA-GG` miladi · `h:…` hicri · `e:-N/+N` paskalyaya göre.
-    /// Birden fazla pencere `|` ile ayrılıyor (`eid` iki bayramı kapsıyor).
+
     static func parseWindow(_ raw: String) -> DateWindow? {
         let parts = raw.split(separator: "|").compactMap(parseSingleWindow)
         switch parts.count {

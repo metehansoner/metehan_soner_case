@@ -1,13 +1,9 @@
 import SwiftUI
 
-/// Toplu ekleme — 05-desteler-ve-kategoriler.md §7.
-///
-/// Tek tek yazmak 40 kelimelik bir deste için işkence; notlar uygulamasından ya
-/// da WhatsApp'tan yapıştırılan liste tek dokunuşla giriyor. Ayraç satır sonu,
-/// virgül ya da noktalı virgül (§ `WordList.parse`).
+
 struct BulkPasteSheet: View {
-    /// Limit dolmadan kaç kelime alınabilir — kullanıcı 80 kelime yapıştırıp
-    /// yalnızca 12'sinin girdiğini sonradan fark etmesin.
+
+
     let remaining: Int
     let onAdd: (String) -> Void
 

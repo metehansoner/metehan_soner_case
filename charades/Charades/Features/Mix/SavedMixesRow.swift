@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Mix Kurulumu'ndaki kayıtlı karışımlar satırı — 05-desteler-ve-kategoriler.md §6.
-///
-/// Buradaki iş "yükle": kaydedilmiş bir karışıma dokunmak seçimi olduğu gibi
-/// geri getiriyor. Silme ve oynatma ana ekrandaki kartın işi (`SavedMixCard`);
-/// aynı eylemi iki yerde tekrarlamak sınırlı 5 slotta kafa karıştırırdı.
+
 struct SavedMixesRow: View {
     let mixes: [SavedMix]
     let appliedIDs: [String]

@@ -1,18 +1,10 @@
 import SwiftUI
 
-/// Ekran 9 — Nasıl Oynanır (§ `02` §4).
-///
-/// Onboarding 3 adıma indikten sonra **detaylı anlatımın tek sahibi bu ekran**
-/// (§ `03` §1): onboarding ikna ediyor, bu slider talimat veriyor. Pratik
-/// sonucu, slider kısaltılmıyor — yedeği yok.
-///
-/// Gösterim kuralı § `02` §4: mod başına bir kez otomatik
-/// (`AppSettingsStore.howToSeenModes`), sonrasında Deste Detayı ve Duraklat
-/// ekranındaki `?` butonundan her zaman.
+
 struct HowToPlaySlider: View {
     let mode: GameMode
-    /// Otomatik gösterimde son sayfanın butonu `HAZIRIZ` ve tur başlıyor;
-    /// `?` ile açıldığında `KAPAT` ve hiçbir şey başlamıyor.
+
+
     var startsRound: Bool
     var onClose: () -> Void
     var onFinish: () -> Void
@@ -23,7 +15,7 @@ struct HowToPlaySlider: View {
     @State private var index = 0
 
     #if DEBUG
-    /// Simülatörde sayfa kaydırılamıyor; `-HowToPage 4` doğrudan o sayfayı açıyor.
+
     private var debugStartPage: Int? {
         let arguments = ProcessInfo.processInfo.arguments
         return arguments.drop(while: { $0 != "-HowToPage" }).dropFirst().first.flatMap(Int.init)
@@ -61,8 +53,8 @@ struct HowToPlaySlider: View {
                 .padding(.bottom, 10)
             }
             .animation(.easeOut(duration: 0.2), value: index)
-            // §03 §5: hangi sayfada bırakıldığı, slider'ın uzunluğunu
-            // tartışmanın tek verisi.
+
+
             .onChange(of: index, initial: true) { _, page in
                 Analytics.howToView(mode: mode.id, page: page + 1)
             }
@@ -86,13 +78,7 @@ struct HowToPlaySlider: View {
         onFinish()
     }
 
-    /// § `02` §4'teki dört sayfa. İki kural içeriği moda göre değiştiriyor:
-    ///
-    /// 1. `Canlandır`da sayfa 2 ve 3 **yer değişiyor** ve metinler tersine
-    ///    dönüyor — o modda telefonu canlandıran tutuyor (§ `04` §1).
-    /// 2. Sayfa 4 `usesTilt == false` **veya** kullanıcı ayarlardan `DOKUN`
-    ///    seçtiyse gizleniyor (§ `09` §9): olmayan bir jesti anlatan sayfa,
-    ///    kullanıcıyı oyunun bozuk olduğuna ikna ediyor.
+
     private var pages: [HowToPage] {
         let deck = HowToPage(
             titleKey: "howToPlay.deck.title",
@@ -124,15 +110,14 @@ struct HowToPlaySlider: View {
     }
 }
 
-// MARK: - Sayfa
 
 struct HowToPage {
     enum Artwork {
-        /// Yelpaze gibi açılmış 4 afiş — üretilmiş görsel yok, kart anatomisi
-        /// zaten kodda (§ `01` §4), dört kopyası açıyla diziliyor.
+
+
         case posterFan
         case illustration(String)
-        /// Yatay telefonun öne/arkaya eğildiği yeşil/kırmızı diyagram.
+
         case tiltDiagram
     }
 

@@ -1,24 +1,16 @@
 import SwiftUI
 
-/// Ekran 14 — 02-ekran-akisi.md §4, görseli 08-sinematik-detaylar.md A1 /
-/// `sinematik-ozellikler.html` A1 · Akademi Geri Sayımı.
-///
-/// Eski film makarası lideri: krem parchment zemin, iki eşmerkezli daire,
-/// artı işareti, 1 saniyede tam tur atan 90° süpürge, ortada büyük mürekkep
-/// rakamı. Üstte `CHARADES · REEL NN`, altta `HAZIR OL`.
-///
-/// §08 §0: **atlanamayan tek animasyon.** Dokunmak kalan süreyi 1 saniyeye
-/// indiriyor, sıfırlamıyor.
+
 struct CountdownView: View {
     let value: Int
-    /// Arşiv / klaket ile aynı sahne numarası — üst şeritteki REEL.
+
     let reel: Int
     var onTap: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Son rakamda lambanın tutukluk yapması: 0 = normal, 1 = sönük.
+
     @State private var flicker: Double = 0
     @State private var numberPulse = false
 
@@ -52,12 +44,12 @@ struct CountdownView: View {
             }
             .padding(.horizontal, 24)
 
-            // Eskimiş kopyanın çizikleri — makaranın kendisi.
+
             ScratchOverlay()
                 .blendMode(.softLight)
                 .opacity(0.85)
 
-            // Projektör titremesi: krem zeminde hafif kararma.
+
             ink.opacity(flicker * 0.22)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
@@ -72,7 +64,6 @@ struct CountdownView: View {
         }
     }
 
-    // MARK: Zemin
 
     private var parchment: some View {
         ZStack {
@@ -96,11 +87,10 @@ struct CountdownView: View {
     }
 
     private var reelLabel: String {
-        // Marka + makara no — mockup'taki `Charady · Reel 07`.
+
         "Charady · Reel \(String(format: "%02d", reel))"
     }
 
-    // MARK: Dial
 
     private var dial: some View {
         ZStack {
@@ -113,7 +103,7 @@ struct CountdownView: View {
                 .strokeBorder(ink.opacity(0.55), lineWidth: 1.5)
                 .padding(34)
 
-            // Artı: daireyi biraz aşıyor (HTML `top/bottom: -26px`).
+
             Rectangle()
                 .fill(ink.opacity(0.7))
                 .frame(width: 1.5)
@@ -134,7 +124,7 @@ struct CountdownView: View {
         .frame(width: dialSize, height: dialSize)
     }
 
-    /// 90° koyu sektör, her saniyede bir tam tur (conic / trim).
+
     @ViewBuilder
     private var sweep: some View {
         if reduceMotion {
@@ -160,7 +150,6 @@ struct CountdownView: View {
         }
     }
 
-    // MARK: Zamanlama
 
     private func pulseNumber() async {
         guard !reduceMotion else {
@@ -171,7 +160,7 @@ struct CountdownView: View {
         withAnimation(.easeOut(duration: 0.18)) { numberPulse = false }
     }
 
-    /// §08 A1 "sonunda projektör titremesi". Son rakamın içinde ~180 ms.
+
     private func flickerIfLast() async {
         guard value == 1, !reduceMotion, FilmEffects.decorationsEnabled else {
             flicker = 0

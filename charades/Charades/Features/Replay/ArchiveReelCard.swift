@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Arşivdeki bir sahne kartı — §04 §4.3.
-///
-/// Görsel videonun ortasından alınan kare; üzerine bilet tipografisiyle sahne
-/// numarası, süre ve o turdaki doğru sayısı biniyor. Kare üretilene kadar kart
-/// boş kalmıyor, sprocket'lı film şeridi zemini duruyor.
+
 struct ArchiveReelCard: View {
     let reel: ReplayReel
     var isSelecting: Bool
@@ -40,10 +36,8 @@ struct ArchiveReelCard: View {
             .shadow(color: .black.opacity(0.7), radius: 7, y: 5)
         }
         .buttonStyle(.plain)
-        // Kart altı ayrı parça olarak okunuyordu (sahne no, süre, puan, alt yazı,
-        // rozet). Tek cümlede toplanıyor; bağlam menüsündeki eylemler de
-        // VoiceOver eylem listesine kopyalanıyor — uzun basma jesti sistem
-        // menüsünü açsa da rotorda görünmüyordu.
+
+
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(spokenSummary)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
@@ -66,10 +60,7 @@ struct ArchiveReelCard: View {
                 Label(l10n.t("archive.save"), systemImage: "square.and.arrow.down")
             }
 
-            // Bağlam menüsündeki `ShareLink`e olay bağlanamıyor: menü öğeleri
-            // sistem tarafından çiziliyor ve kendi eylemleri dışında jest
-            // almıyorlar. Arşivden paylaşım ölçümü oynatıcıdaki butondan
-            // geliyor (§03 §5 `replay_share.source = archive`).
+
             ShareLink(item: reel.videoURL) {
                 Label(l10n.t("replay.share"), systemImage: "square.and.arrow.up")
             }
@@ -146,8 +137,7 @@ struct ArchiveReelCard: View {
         }
     }
 
-    /// Çoklu seçimde oynatma rozetinin yerini onay işareti alıyor: aynı dokunuş
-    /// artık oynatmıyor, seçiyor.
+
     private var playBadge: some View {
         Image(systemName: isSelecting ? (isSelected ? "checkmark" : "circle") : "play.fill")
             .font(.system(size: 11, weight: .bold))
@@ -204,8 +194,7 @@ struct ArchiveReelCard: View {
         .padding(.bottom, 9)
     }
 
-    /// Sahne, süre, skor ve durum tek cümlede. Sabitlenmiş kayıtta iğne rozeti
-    /// de sesli söyleniyor; görsel olarak tek işaret o.
+
     private var spokenSummary: String {
         var parts = [
             l10n.t("replay.scene", ["no": String(format: "%02d", reel.sceneIndex)]),
@@ -217,7 +206,7 @@ struct ArchiveReelCard: View {
         return parts.joined(separator: ", ")
     }
 
-    /// Takım maçında sahnenin sahibi, tek kişilik turda kaydın durumu.
+
     private var caption: String {
         if reel.isPartial { return l10n.t("replay.partial") }
         return reel.playerName ?? ArchiveModel.dateText(reel.createdAt, localeCode: l10n.localeCode)

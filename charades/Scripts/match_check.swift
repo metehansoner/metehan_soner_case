@@ -1,10 +1,3 @@
-// Takım Savaşı maç mantığını cihazsız doğrular
-// (04-oyun-modlari.md §1, 09-kesinti-ve-sinir-durumlari.md §5).
-//
-// Beraberlik, tur sırası, oyuncu rotasyonu ve jenerik ödülleri UI'dan
-// bağımsız kurallar; ekranda doğrulamak için maçın bitmesini beklemek
-// gerekiyor ve beraberlik rastgele çıkıyor.
-
 import Foundation
 
 var failures = 0
@@ -22,7 +15,7 @@ func team(_ name: String, _ players: [String] = []) -> Team {
     Team(name: name, players: players)
 }
 
-/// Sırayla verilen (doğru, pas) çiftlerini oynatıp fazları döndürüyor.
+
 @MainActor
 func play(_ match: TeamMatch, _ turns: [(Int, Int)]) -> [TeamMatch.Next] {
     turns.map { match.finishTurn(correct: $0.0, skipped: $0.1, points: $0.0) }

@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// 01-tasarim-sistemi.md §4 "Marquee Switch": native `Toggle` yerine iki
-/// segmentli kapsül. Aktif segment `accentAmber` zemin + `textOnAmber`.
+
 struct MarqueeSwitch: View {
     @Binding var isOn: Bool
 
@@ -23,19 +22,18 @@ struct MarqueeSwitch: View {
                     Capsule().strokeBorder(AppColors.accentGold.opacity(0.35), lineWidth: 1)
                 }
         }
-        // Dar bir satırda sıkışırsa `KAPALI` iki satıra bölünüyor; anahtar
-        // doğal genişliğini isteyip yeri başlıktan alsın.
+
+
         .fixedSize()
         .contentShape(Capsule())
         .onTapGesture {
-            // Reduce Motion'da amber kapsül kaymıyor, doğrudan diğer segmentte
-            // beliriyor; durum yine görünüyor.
+
+
             withAnimation(reduceMotion ? nil : .snappy(duration: 0.18)) { isOn.toggle() }
         }
         .accessibilityElement(children: .ignore)
-        // Etiketi satırın başlığı veriyor (`SettingsRow` öğeleri birleştiriyor);
-        // anahtarın kendi işi durumu söylemek. `.isToggle` olmadan VoiceOver
-        // "düğme" deyip açık/kapalı ayrımını jest ipucuna bırakıyordu.
+
+
         .accessibilityAddTraits(.isToggle)
         .accessibilityValue(isOn ? l10n.t("common.on") : l10n.t("common.off"))
     }

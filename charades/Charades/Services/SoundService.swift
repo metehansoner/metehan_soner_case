@@ -1,14 +1,7 @@
 import AVFoundation
 import Foundation
 
-/// Retro ses paketi — 04-oyun-modlari.md §5.
-///
-/// API, `Haptics` gibi **etkileşime göre** isimlendirildi: çağrı yerinde hangi
-/// dosyanın çalacağı yeniden karar edilmiyor. Tek kapı `soundEnabled`; iOS
-/// sessiz mod anahtarına da saygı gösteriliyor çünkü kategori `.ambient`.
-///
-/// `.ambient` + `mixWithOthers`: kullanıcının müziğini kesmiyor. Parti
-/// ortamında müzik açık olur; bu önemli (§5 son paragraf).
+
 @MainActor
 enum SoundService {
     enum Cue: String, CaseIterable {
@@ -31,14 +24,12 @@ enum SoundService {
     private static var didConfigureSession = false
     private static var didPlayOpening = false
 
-    // MARK: - Etkileşim API
 
-    /// Splash / soğuk açılış. Oturum başına bir kez.
     static func curtainOpen() {
         guard !didPlayOpening else { return }
         didPlayOpening = true
         play(.curtainOpen)
-        // Ampuller perdeyle aynı anda yanıyor; ayrı bir tetik noktası yok.
+
         play(.bulbFlicker, volume: 0.7)
     }
 
@@ -49,15 +40,13 @@ enum SoundService {
     static func timeUp() { play(.timeUp) }
     static func cardSlide() { play(.cardSlide, volume: 0.7) }
 
-    /// §08 A2: klaket çubuğunun kapanışı. §04 §5'in 12 parçalık listesinde
-    /// klakete ayrı bir kayıt yok — ikisi de tahtanın tahtaya çarpması, ses
-    /// tasarımı geldiğinde de aynı dosya iki yerde kullanılacak.
+
     static func clapper() { play(.skipClack) }
     static func buttonTap() { play(.buttonTap, volume: 0.55) }
     static func winFanfare() { play(.winFanfare) }
     static func ticketStamp() { play(.ticketStamp) }
 
-    /// Oyun ekranı boyunca çok kısık döngü (§5 — opsiyonel ama bağlandı).
+
     static func startProjector() {
         guard isEnabled else { return }
         configureSessionIfNeeded()
@@ -74,7 +63,7 @@ enum SoundService {
         loopPlayer = nil
     }
 
-    /// Ayar anahtarı kapanınca veya uygulama arka plana inince.
+
     static func stopAll() {
         stopProjector()
         for player in players.values {
@@ -82,7 +71,6 @@ enum SoundService {
         }
     }
 
-    // MARK: - Altyapı
 
     private static var isEnabled: Bool { AppSettingsStore.shared.soundEnabled }
 
@@ -90,8 +78,7 @@ enum SoundService {
         guard isEnabled else { return }
         configureSessionIfNeeded()
 
-        // Aynı cue peş peşe gelebilir (geri sayım, uyarı tiki). Bitmemiş
-        // oynatıcıyı başa sarmak, ikinci bir instance üretmekten ucuz.
+
         if let existing = players[cue] {
             existing.volume = volume
             existing.currentTime = 0
@@ -117,7 +104,7 @@ enum SoundService {
         guard !didConfigureSession else { return }
         didConfigureSession = true
         let session = AVAudioSession.sharedInstance()
-        // Sessiz moda saygı + diğer uygulamaların sesini kesmeme (§5).
+
         try? session.setCategory(.ambient, options: [.mixWithOthers])
         try? session.setActive(true)
     }

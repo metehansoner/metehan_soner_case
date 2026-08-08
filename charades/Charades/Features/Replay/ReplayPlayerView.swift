@@ -1,16 +1,11 @@
 import AVFoundation
 import SwiftUI
 
-/// Ekran 18 / 23 — Replay Oynatıcı (§ `04` §4.4).
-///
-/// Tur sonunda açılan oynatıcı ile arşivden açılan **aynı ekran**; sadece giriş
-/// noktası farklı. Altyazı ve ağır çekim, replay'i "kendimizi izliyoruz"
-/// seviyesinden "bunu gruba atacağım" seviyesine taşıyan iki detay; ikisi de
-/// kayıttaki damgalardan üretiliyor, yeni bir kayıt maliyeti yok.
+
 struct ReplayPlayerView: View {
     let reel: ReplayReel
-    /// §03 §5: aynı view iki kapıdan açılıyor; `replay_save` ve `replay_share`
-    /// hangisinden geldiğini bilmezse arşivin paylaşıma katkısı ölçülemiyor.
+
+
     var source: Analytics.ReplaySource = .roundEnd
     var onDelete: () -> Void
     var onClose: () -> Void
@@ -65,13 +60,12 @@ struct ReplayPlayerView: View {
         }
     }
 
-    // MARK: Perde
 
     private var stage: some View {
         ZStack {
             videoSurface
 
-            // §08: video sprocket delikli film şeridi çerçevesi içinde oynuyor.
+
             HStack {
                 sprocket
                 Spacer()
@@ -111,8 +105,7 @@ struct ReplayPlayerView: View {
         .frame(maxHeight: .infinity)
     }
 
-    /// Eski kayıtlar yanlışlıkla dikey (90°) damgalı; landscape sahnede
-    /// -90° ile düzeltiliyor. Yeni kayıtlar zaten yatay.
+
     private var videoSurface: some View {
         GeometryReader { geometry in
             let corrects = playback.needsPortraitCaptureCorrection
@@ -138,8 +131,7 @@ struct ReplayPlayerView: View {
         .allowsHitTesting(false)
     }
 
-    /// §04 §4.4: o anda ekranda olan kelime, altında `DOĞRU`/`PAS` damgası.
-    /// Videoyu izleyen kişi neyin anlatıldığını görmezse kaydın yarısı anlamsız.
+
     @ViewBuilder
     private var subtitle: some View {
         if let cue = ReplayPlayback.cue(at: playback.time, marks: reel.marks) {
@@ -213,7 +205,7 @@ struct ReplayPlayerView: View {
                 .foregroundStyle(AppColors.surfacePoster.opacity(0.6))
 
             if reel.isPartial {
-                // §09 §2: kesintiye uğrayan kayıt sessizce kısa görünmesin.
+
                 Text(l10n.t("replay.partial"))
                     .font(AppFont.ui(8.5, weight: .bold))
                     .appTracking(1.6)
@@ -256,7 +248,6 @@ struct ReplayPlayerView: View {
         .accessibilityLabel(l10n.t("common.close"))
     }
 
-    // MARK: Kontrol paneli
 
     private var controls: some View {
         VStack(spacing: 8) {
@@ -313,8 +304,8 @@ struct ReplayPlayerView: View {
                     }
                     .simultaneousGesture(TapGesture().onEnded {
                         Haptics.primaryButton()
-                        // Paylaşım sayfasının sonucu geri gelmiyor; ölçülen şey
-                        // niyet, gönderim değil.
+
+
                         Analytics.replayShare(
                             source: source,
                             slowMotionUsed: playback.usedSlowMotion
@@ -336,7 +327,7 @@ struct ReplayPlayerView: View {
         }
     }
 
-    /// §04 §4.4: `1×` / `0.5×`. Komik anların yarısı ağır çekimde ortaya çıkıyor.
+
     private var speedSegment: some View {
         HStack(spacing: 3) {
             ForEach(ReplayPlayback.Speed.allCases, id: \.self) { speed in
@@ -373,8 +364,7 @@ struct ReplayPlayerView: View {
         }
     }
 
-    /// §04 §4.4: doğru anları yeşil, pas anları kırmızı çentik. Dokununca o ana
-    /// atlıyor — veri zaten kayıtta, burada yalnızca görselleşiyor.
+
     private var timeline: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
@@ -492,13 +482,12 @@ struct ReplayPlayerView: View {
         }
     }
 
-    // MARK: Eylemler
 
     private func togglePin() {
         guard var stored = ReplayStore.reel(id: reel.id) else { return }
         stored.isPinned.toggle()
-        // Sabitleme kotadan muafiyet talebi; kaldırma sıradan bir geri alma.
-        // İkisini aynı event'te toplamak "kaç kayıt saklanıyor" sorusunu bozuyor.
+
+
         if stored.isPinned { Analytics.replayPin() }
         ReplayStore.save(stored)
         isPinned = stored.isPinned
@@ -520,10 +509,7 @@ struct ReplayPlayerView: View {
         }
     }
 
-    // MARK: Künye
 
-    /// Kayıt kimliklerle saklanıyor, başlık **okuma anında** çözülüyor: kayıt
-    /// Türkçe alınıp arşive İngilizce bakılabiliyor (§06 §2).
     private var headline: String {
         let scene = l10n.t("replay.scene", ["no": String(format: "%02d", reel.sceneIndex)])
         return "\(sourceTitle) · \(scene)"
@@ -549,8 +535,7 @@ struct ReplayPlayerView: View {
     }
 }
 
-/// Arşivden açılan oynatıcı (ekran 23). Aynı view, farklı giriş: kayıt id ile
-/// yükleniyor ve kapanınca arşive dönüyor, oyun akışına değil (§02 §5).
+
 struct ArchivePlayerScreen: View {
     let reelID: String
 
@@ -572,16 +557,14 @@ struct ArchivePlayerScreen: View {
                 )
             }
         }
-        // §09 §1: video 16:9 yatay; pencere portrait kalır, içerik forced-landscape.
+
         .forcedLandscape()
         .onAppear { OrientationLock.shared.lockPortrait() }
         .onDisappear { OrientationLock.shared.lockPortrait() }
     }
 }
 
-/// `AVPlayerLayer`ı SwiftUI'ye taşıyan ince katman. `VideoPlayer` sistem
-/// kontrollerini zorunlu kılıyor; buradaki panel film şeridi çerçevesinin
-/// parçası, sistem çubuğu o çerçeveyi bozuyor.
+
 private struct ReplaySurface: UIViewRepresentable {
     let player: AVPlayer
 
@@ -603,8 +586,7 @@ private struct ReplaySurface: UIViewRepresentable {
     }
 }
 
-/// Oynatma durumu. Zaman gözlemcisi ve bitiş bildirimi tek yerde toplanıyor;
-/// view yalnızca okuyor.
+
 @MainActor
 @Observable
 final class ReplayPlayback {
@@ -615,18 +597,17 @@ final class ReplayPlayback {
         var label: String { self == .normal ? "1×" : "0.5×" }
     }
 
-    /// Altyazının o anki hâli: kelime ekranda dururken damga yok, cevap
-    /// verildiği anda damga biniyor.
+
     struct Cue {
         let word: String
         let isCorrect: Bool
         let showsStamp: Bool
     }
 
-    /// Damga cevaptan sonra bu kadar saniye ekranda kalıyor.
+
     private static let stampHold: TimeInterval = 1.2
 
-    /// §04 §4.4 en iyi anlar: doğru damgalarının yoğunlaştığı ~15 saniye.
+
     private static let highlightWindow: TimeInterval = 15
 
     let player = AVPlayer()
@@ -635,12 +616,11 @@ final class ReplayPlayback {
     private(set) var duration: TimeInterval = 0
     private(set) var isPlaying = false
     private(set) var speed: Speed = .normal
-    /// §03 §5 `slow_motion_used`: paylaşılan kayıtların ağır çekimle izlenmiş
-    /// olma oranı, özelliğin kalıp kalmayacağının verisi. O an ağır çekimde
-    /// olması değil, oturumda **bir kez** açılmış olması sayılıyor.
+
+
     private(set) var usedSlowMotion = false
-    /// Eski kayıtlar portrait damgalı (OrientationLock bug); oynatıcıda
-    /// düzeltiliyor. Yeni yatay kayıtlar `false`.
+
+
     private(set) var needsPortraitCaptureCorrection = false
 
     var fraction: Double { duration > 0 ? min(1, time / duration) : 0 }
@@ -658,8 +638,8 @@ final class ReplayPlayback {
 
         let item = AVPlayerItem(url: url)
         player.replaceCurrentItem(with: item)
-        // Kayıtta ses yok ama oynatıcı yine de ambient oturumu bozmasın:
-        // ana ekranda müzik dinleyen kullanıcının müziği kesilmiyor.
+
+
         player.isMuted = true
 
         timeObserver = player.addPeriodicTimeObserver(
@@ -691,7 +671,7 @@ final class ReplayPlayback {
         play()
     }
 
-    /// Tercih edilen transform sonrası dikeyse eski yanlış damga sayılıyor.
+
     private func detectPortraitCapture(_ url: URL) async {
         let asset = AVURLAsset(url: url)
         guard
@@ -724,8 +704,7 @@ final class ReplayPlayback {
         time = duration * fraction
     }
 
-    /// Doğru damgalarının en yoğun olduğu pencereye atlıyor. Ayrı bir dışa
-    /// aktarım değil, sadece oynatma konumu: kayıt tek dosya olarak kalıyor.
+
     func jumpToBestMoments(marks: [ReplayReel.Mark]) {
         let correct = marks.filter(\.isCorrect).map(\.time)
         guard !correct.isEmpty, duration > Self.highlightWindow else {
@@ -739,8 +718,7 @@ final class ReplayPlayback {
         }
         guard let start = best else { return }
 
-        // Pencere damganın biraz öncesinden başlıyor: cevap anına gelene kadar
-        // kullanıcı ne anlatıldığını görüyor.
+
         let from = max(0, min(start - 2, duration - Self.highlightWindow))
         seek(fraction: from / duration)
         play()

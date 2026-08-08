@@ -1,30 +1,17 @@
 import Observation
 import SwiftUI
 
-/// Sinematik bezemelerin ortak anahtarı — 08-sinematik-detaylar.md §5.
-///
-/// §5 üç ayrı kapı tanımlıyor ve üçü aynı soruyu soruyor: "bu süregelen efekt
-/// şimdi çizilmeli mi?" Kapıları her bileşende tekrar yazmak, birini unutmak
-/// demek — nitekim termal kontrolü hiçbir bezeme okumuyordu.
-///
-/// Ayrımın kendisi §5'ten: **bezeme** (grain, çizik, kavis işareti, toz) kapanır,
-/// **geçiş** (klaket, geri sayım, jenerik) kalır. Geçişler tema değil akışın
-/// parçası; kapatılırsa kullanıcı turun nerede başladığını göremiyor.
+
 @MainActor
 enum FilmEffects {
 
-    /// Süregelen dokular ve mikro bezemeler için tek kapı.
+
     static var decorationsEnabled: Bool {
         AppSettingsStore.shared.filmEffectsEnabled && !ThermalMonitor.shared.isThrottled
     }
 }
 
-/// §08 §5 termal koruma: `.serious` seviyesinde süregelen efektler kapanıyor.
-///
-/// Anlık okuma yetmiyor — cihaz tur ortasında ısınıyor ve `ProcessInfo` bir
-/// `@Observable` değil, o yüzden hiçbir view yeniden çizilmiyordu. Bildirim tek
-/// yerde dinleniyor, `@Observable` alan üzerinden bütün bezemeler kendiliğinden
-/// güncelleniyor.
+
 @MainActor
 @Observable
 final class ThermalMonitor {
@@ -46,17 +33,9 @@ final class ThermalMonitor {
     }
 }
 
-/// §08 A5 kavis işareti (cue mark).
-///
-/// Eski kopyalarda makara değişimini operatöre haber veren, sağ üst köşede
-/// birkaç kare görünen daire. Bizde son 10 saniye uyarısının görsel karşılığı:
-/// sayaç zaten kırmızıya dönüyor ama telefon birinin alnında ve sayaca kimse
-/// bakmıyor — köşedeki kırpışmayı **odadaki diğerleri** görüyor.
-///
-/// Süre §0'ın bütçesine giriyor: üç kırpışma, toplam ~200 ms görünürlük. Yer
-/// kaplamıyor, akışı durdurmuyor, atlanacak bir şey yok.
+
 struct CueMark: View {
-    /// Tur başına bir kez tetiklenmesi için dışarıdan geliyor.
+
     var isActive: Bool
     var diameter: CGFloat = 26
 
@@ -78,9 +57,8 @@ struct CueMark: View {
     }
 
     private func flash() async {
-        // Reduce Motion'da kırpışma yok ama işaret de kaybolmuyor: bilgi
-        // taşımayan bir katman olduğu için sessizce düşürmek yerine sabit
-        // gösterip söndürmek §5'in "hiçbir bilgi kaybolmaz" kuralına uyuyor.
+
+
         guard isActive, FilmEffects.decorationsEnabled else {
             isVisible = false
             return
@@ -102,13 +80,9 @@ struct CueMark: View {
     }
 }
 
-/// §08 A1: eskimiş makaranın çizikleri ve tozu.
-///
-/// Akademi geri sayımının üstünde duruyor. Rastgele değil **deterministik**:
-/// her açılışta aynı çizikler aynı yerde çıkıyor, aksi hâlde ekran görüntüleri
-/// arasında zıplıyor ve bir kere fark edildiğinde bug gibi duruyor.
+
 struct ScratchOverlay: View {
-    /// Çizikler 12 fps'te yer değiştiriyor — §5'in süregelen efekt kuralı.
+
     private static let frameRate: Double = 12
     private static let scratchCount = 3
     private static let dustCount = 14
@@ -135,8 +109,8 @@ struct ScratchOverlay: View {
         }
 
         for _ in 0..<Self.scratchCount {
-            // Çizik dikey: film makarada dikey hareket ediyor, sürtünme izi de
-            // hareket yönünde oluşuyor.
+
+
             let x = next() * size.width
             let top = next() * size.height * 0.5
             let length = size.height * (0.25 + next() * 0.5)
@@ -161,17 +135,13 @@ struct ScratchOverlay: View {
     }
 }
 
-/// §08 B3 afiş açılışı: kapağın üzerinden bir kez geçen spot ışığı.
-///
-/// "Vitrine yeni konmuş afiş" hissi. Tek seferlik ve 0,6 saniye — sürekli
-/// dönen bir parlama, arkasındaki kapak görselini okunmaz hâle getiriyor.
-/// Bezeme anahtarına bağlı değil: bu bir doku değil, ekranın giriş geçişi (§5).
+
 struct SpotlightSweepModifier: ViewModifier {
     var cornerRadius: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// -1 = sol dışında, 1 = sağ dışında.
+
     @State private var phase: CGFloat = -1
 
     func body(content: Content) -> some View {
@@ -193,7 +163,7 @@ struct SpotlightSweepModifier: ViewModifier {
             }
             .task {
                 guard !reduceMotion else { return }
-                // Sheet yerine oturmadan başlarsa süpürme yarısı görünmüyor.
+
                 try? await Task.sleep(for: .milliseconds(120))
                 withAnimation(.easeInOut(duration: 0.6)) { phase = 1 }
             }
@@ -206,24 +176,13 @@ extension View {
     }
 }
 
-/// §08 B4: sinemaskop bantları.
-///
-/// Yalnızca **iki** yerde — tur sonu ve maç sonu. §B4'ün kendi uyarısı: her
-/// yerde kullanılırsa etkisini kaybediyor ve ekranı daraltıyor.
-///
-/// "İçe kayar … sonra geri açılır": bantlar kalıcı değil. Kalsalardı tur sonu
-/// ekranının başlığı ve buton şeridi bant altında kalırdı — o ekranlar tam
-/// yükseklik için tasarlandı. Bantlar içeri girip bir an durup çekiliyor:
-/// sahnenin kapandığını söyleyen bir vurgu, yeni bir çerçeve değil.
-///
-/// İçerik de küçülmüyor, yalnızca üstü örtülüyor: 300 ms'lik yeniden yerleşim
-/// animasyonu metni titretiyor ve okunmaz hâle getiriyor.
+
 struct LetterboxBars: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var isIn = false
 
-    /// 2.39:1'e sıkışmak için ekranın üstünden ve altından alınacak pay.
+
     private func barHeight(for size: CGSize) -> CGFloat {
         let target = size.width / 2.39
         return max(0, (size.height - target) / 2)
@@ -246,8 +205,8 @@ struct LetterboxBars: View {
     }
 
     private func sweep() async {
-        // §5: Reduce Motion'da bant hiç girmiyor. Bilgi taşımayan tek katman
-        // bu ve giriş/çıkış hareketi ekranın en büyük hareketi olurdu.
+
+
         guard !reduceMotion else { return }
         withAnimation(.easeOut(duration: 0.3)) { isIn = true }
         try? await Task.sleep(for: .milliseconds(750))

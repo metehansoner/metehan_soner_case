@@ -1,12 +1,6 @@
 import SwiftUI
 
-/// Filtre chip satırı — 02-ekran-akisi.md §4 (ekran 4, madde 2).
-///
-/// 16 chip: 3 dinamik/genel + 13 bölüm. Sayının bölüm sayısıyla eşleşmesi
-/// `DeckFilter.section(_:)` modellemesiyle derleme zamanında garanti
-/// (`DeckSection.swift`); burada yalnızca koşullu iki chip'in kuralı var:
-/// `FAVORİLER` en az bir favori varken (§09 §9), `SEZON` yalnızca bir sezon
-/// destesinin penceresi açıkken görünüyor.
+
 struct FilterChipRow: View {
     @Binding var selection: DeckFilter
     var favoriteCount: Int
@@ -15,7 +9,7 @@ struct FilterChipRow: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Reduce Motion'da şerit kaymıyor, seçilen chip doğrudan ortada beliriyor.
+
     private var scrollAnimation: Animation? {
         reduceMotion ? nil : .easeOut(duration: 0.22)
     }
@@ -53,8 +47,8 @@ struct FilterChipRow: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 2)
             }
-            // §4: chip sayısı 16'ya çıktığı için satır sonunda gradient fade —
-            // kaydırılabilir olduğu görsel olarak belli olsun.
+
+
             .mask {
                 LinearGradient(
                     stops: [
@@ -95,7 +89,7 @@ private struct FilterChip: View {
                             )
                         }
                 }
-                // §4: aktif chip'in ampul çerçevesi.
+
                 .overlay {
                     if isActive {
                         BulbFrame(countPerEdge: 5, diameter: 2.5, color: AppColors.surfacePoster)
@@ -103,7 +97,7 @@ private struct FilterChip: View {
                             .padding(.vertical, 2.5)
                     }
                 }
-                // Kapsül 30pt görünüyor; şeridin dokunma alanı 44pt.
+
                 .tapTarget()
         }
         .buttonStyle(.plain)

@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// Sheet iskeleti — `ornek-ekranlar.html` `.sheet` / `.grabber` / `.sheet-head`.
-///
-/// Kurulum sheet'i (mod + tur ayarı) ve Nasıl Oynanır aynı sheet iskeletini
-/// paylaşıyor: adım değişince yalnızca içerik geçiş yapıyor, sheet yeniden
-/// açılmıyor.
+
 struct SheetScaffold<Content: View>: View {
     let title: String
-    /// Zincirin ilk adımında yok; sonraki adımlarda sola dönüş.
+
     var onBack: (() -> Void)?
-    /// Yoksa çarpı gizlenir — saf sheet'lerde (Ayarlar) grabber yeter.
+
     var onClose: (() -> Void)?
     @ViewBuilder var content: Content
 
@@ -68,8 +64,8 @@ struct SheetScaffold<Content: View>: View {
             .ignoresSafeArea()
         }
         .presentationCornerRadius(28)
-        // Opak zemin + alta taşırma: fraction detent'te home indicator
-        // altında arka ekranın görünmesini engeller (SwiftUI bilinen boşluk).
+
+
         .presentationBackground {
             AppColors.surfaceCard
                 .padding(.bottom, -120)
@@ -83,7 +79,7 @@ struct SheetScaffold<Content: View>: View {
             action()
         } label: {
             Image(systemName: systemImage)
-                // §06 §2: geri oku RTL'de aynalanıyor, kapatma çarpısı simetrik.
+
                 .flipsForRightToLeftLayoutDirection(true)
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(AppColors.textSecondary)
@@ -95,7 +91,7 @@ struct SheetScaffold<Content: View>: View {
                             Circle().strokeBorder(AppColors.accentGold.opacity(0.45), lineWidth: 1)
                         }
                 }
-                // Görünen daire 36pt; dokunma alanı 52pt.
+
                 .frame(width: 52, height: 52)
                 .contentShape(Circle())
         }
@@ -105,10 +101,8 @@ struct SheetScaffold<Content: View>: View {
 }
 
 extension View {
-    /// §06 §2: sheet'ler ayrı bir presentation context'inde açılıyor ve
-    /// `\.locale` ile `\.layoutDirection` mirası içeri taşınmıyor. Yeniden
-    /// verilmezse Arapça'da sheet içeriği soldan sağa kalıyor ve ALL CAPS
-    /// dönüşümü Türkçe'de "i" harfini bozuyor.
+
+
     func localizedLayout() -> some View {
         let l10n = LocalizationManager.shared
         return environment(\.locale, Locale(identifier: l10n.localeCode))

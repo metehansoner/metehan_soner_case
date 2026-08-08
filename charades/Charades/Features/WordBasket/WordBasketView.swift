@@ -1,12 +1,8 @@
 import SwiftUI
 
-/// Kelime Sepeti (ekran 24) — 02-ekran-akisi.md §24.
-///
-/// Tek işi var: kullanıcı kelimeleri yazsın ve oyuna girsin. Kaydetme burada
-/// **yok** — isim alanı koymak custom deste editörünün akışa taktığı freni geri
-/// getirirdi. Kaydetme tur sonunda soruluyor (`SaveBasketBanner`).
+
 struct WordBasketView: View {
-    /// Kurulum sheet'ine (mod + tur ayarı) dönülüyor.
+
     var onContinue: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -56,12 +52,11 @@ struct WordBasketView: View {
         .dismissKeyboardOnTap()
     }
 
-    // MARK: Başlık
 
     private var navBar: some View {
         HStack(spacing: 0) {
-            // §02 §24: geri mod seçimine dönüyor ve yazılanlar korunuyor —
-            // kelimeler `GameSetup`ta, bu ekranın state'inde değil.
+
+
             BackNavButton(accessibilityLabel: l10n.t("common.back")) {
                 router.pop()
             }
@@ -101,7 +96,6 @@ struct WordBasketView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: Alt bar
 
     private var footer: some View {
         VStack(spacing: 7) {

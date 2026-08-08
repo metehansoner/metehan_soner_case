@@ -2,42 +2,37 @@ import AVFoundation
 import Foundation
 import UIKit
 
-/// Bir turun kaydı — 04-oyun-modlari.md §4.2–4.3.
-///
-/// Arşivin sözlüğü film: her **maç** bir film, her **tur** bir sahne. Tekil
-/// turlarda da aynı yapı kullanılıyor, o zaman film tek sahnelik oluyor.
+
 struct ReplayReel: Codable, Identifiable, Equatable {
 
-    /// §04 §4.4 zaman çizelgesi işareti ve altyazısı. §09 §9: zaman referansı
-    /// **video saati**, oyun saati değil — duraklatmada kayıt da durduğu için
-    /// ikisi ayrışıyor.
+
     struct Mark: Codable, Equatable {
         let time: TimeInterval
-        /// §09 §9: tur sonu düzeltmesi damgayı da çeviriyor; yoksa kullanıcı
-        /// "doğru" diye düzelttiği kelimeyi replay'de kırmızı görüyor.
+
+
         var isCorrect: Bool
-        /// Kelimenin o turda **ekranda göründüğü** hâli. Sonradan dil
-        /// değiştirilse bile altyazı videodaki anı anlatmaya devam ediyor.
+
+
         let word: String
-        /// Dilden bağımsız kart anahtarı; düzeltmeyi eşleştirmek için.
+
         let key: String
     }
 
     let id: String
     let createdAt: Date
-    /// Aynı maçın sahnelerini arşivde gruplayan kimlik (§04 §4.3).
+
     let matchID: String
     let sceneIndex: Int
     var duration: TimeInterval
-    /// Başlık çalışma anında çözülüyor: kayıt Türkçe alınıp arşive İngilizce
-    /// bakılabiliyor, deste adının o an seçili dilde çıkması gerekiyor.
+
+
     let deckIDs: [String]
     let modeID: String
     let playerName: String?
     var marks: [Mark]
-    /// §09 §2: gelen çağrı ya da arka plan kaydı yarıda kesti, tur devam etti.
+
     var isPartial: Bool
-    /// §04 §4.2: sabitlenen kayıt FIFO ve otomatik temizlikten muaf (P15).
+
     var isPinned: Bool
 
     var correctCount: Int { marks.filter(\.isCorrect).count }
@@ -45,23 +40,14 @@ struct ReplayReel: Codable, Identifiable, Equatable {
     var videoURL: URL { ReplayStore.videoURL(for: id) }
 }
 
-/// Kayıt dosyalarının yaşam döngüsü — §04 §4.2.
-///
-/// Konum kalıcı: ilk taslaktaki `tmp` kararı değişti, çünkü kamera izni
-/// metninde "sonradan izleyebilmeniz için" derken kaydı uygulama kapanınca
-/// silmek hem verilen sözü tutmuyor hem App Review'da izin metniyle gerçek
-/// kullanımın uyuşmaması olarak işaretleniyor.
-///
-/// Kotanın olmaması bu tür özelliklerin klasik batış sebebi: birkaç hafta sonra
-/// uygulama 4 GB yer kaplıyor, kullanıcı iOS Ayarlar → Depolama'da görüyor ve
-/// uygulamayı siliyor. 20 kayıt / 500 MB sınırı bunu baştan engelliyor.
+
 enum ReplayStore {
 
-    /// §04 §4.2: hangisi önce dolarsa.
+
     static let maxReelCount = 20
     static let maxTotalBytes: Int64 = 500 * 1_000_000
 
-    /// §06 §1: arşiv ekranındaki `Otomatik silme` segmenti.
+
     enum Retention: String, CaseIterable {
         case week
         case month
@@ -90,8 +76,7 @@ enum ReplayStore {
         directory.appending(path: "\(id).json")
     }
 
-    /// Klasörü oluşturup iCloud yedeğinden çıkarıyor. §04 §4.2: video yedeği
-    /// kullanıcının iCloud kotasını yiyor ve şikâyet konusu oluyor.
+
     @discardableResult
     static func prepareDirectory() -> URL? {
         var url = directory
@@ -123,8 +108,7 @@ enum ReplayStore {
         return try? JSONDecoder().decode(ReplayReel.self, from: data)
     }
 
-    /// Video ve metadata birlikte gidiyor: yarısı kalan bir kayıt arşivde
-    /// açılamayan bir kart demek.
+
     static func delete(id: String) {
         let manager = FileManager.default
         try? manager.removeItem(at: videoURL(for: id))
@@ -145,8 +129,7 @@ enum ReplayStore {
             .sorted { $0.createdAt > $1.createdAt }
     }
 
-    /// Header'daki koşullu makara ikonu her ana ekran dönüşünde bunu soruyor;
-    /// künyeleri çözmeye gerek yok, dosya saymak yetiyor.
+
     static func reelCount() -> Int {
         let files = try? FileManager.default.contentsOfDirectory(
             at: directory,
@@ -168,9 +151,7 @@ enum ReplayStore {
         for reel in allReels() { delete(id: reel.id) }
     }
 
-    // MARK: Kota ve temizlik
 
-    /// Açılışta tek seferde: gizlilik sözü, öksüz dosyalar, yaş ve kota.
     static func runLaunchMaintenance(settings: AppSettingsStore) {
         if settings.replayWipeOnLaunch {
             deleteAll()
@@ -180,9 +161,7 @@ enum ReplayStore {
         enforcePolicy(retention: settings.replayRetention)
     }
 
-    /// Açılışta ve her yeni kayıttan sonra. Sıra §04 §4.2'deki gibi: önce yaşı
-    /// geçenler, sonra kota. Sabitlenen kayıt ikisinden de muaf — kullanıcı
-    /// "bunu saklıyorum" dediyse otomatik hiçbir kural onu silmiyor.
+
     static func enforcePolicy(retention: Retention) {
         var reels = allReels()
 
@@ -194,8 +173,7 @@ enum ReplayStore {
             reels.removeAll { !$0.isPinned && $0.createdAt < cutoff }
         }
 
-        // FIFO: en eski **sabitlenmemiş** kayıt gidiyor. `allReels` yeniden
-        // eskiye sıralı, o yüzden kuyruktan başlanıyor.
+
         var sizes = Dictionary(uniqueKeysWithValues: reels.map { ($0.id, bytes(of: $0)) })
         var total = sizes.values.reduce(0, +)
         var evicted = 0
@@ -208,22 +186,16 @@ enum ReplayStore {
             evicted += 1
         }
 
-        // §03 §5: kullanıcının silmediği ama kaybettiği kayıtlar. Sık
-        // görülüyorsa kota dar demektir; yaş temizliği bu sayıya girmiyor,
-        // orası kullanıcının kendi seçtiği politika.
+
         if evicted > 0 { Analytics.replayQuotaEvict(count: evicted) }
     }
 
     #if DEBUG
-    /// Tohum oyuncu adları. Kısa ve çoğu dilde okunur; sabit Türkçe adlar
-    /// yabancı dil denemelerinde ve mağaza karesinde yamalı duruyordu.
+
+
     static let debugPlayerNames = ["Alex", "Sam", "Mia", "Leo", "Ana", "Noah"]
 
-    /// Simülatörde arşivi dolu görebilmek için. Kaynak makara yoksa sentetik
-    /// bir video üretiliyor — aksi hâlde arşiv boşken tohumlama sessizce
-    /// hiçbir şey yapmıyordu.
-    /// `words` oynatıcının altyazı şeridini besliyor; çağıran onları seçili
-    /// dilin destesinden veriyor ki tohum her dilde okunur olsun.
+
     static func debugSeed(copies: Int, words: [String] = []) {
         prepareDirectory()
         let source = allReels().first
@@ -263,9 +235,7 @@ enum ReplayStore {
         enforcePolicy(retention: AppSettingsStore.shared.replayRetention)
     }
 
-    /// Kamera olmadan arşivi doldurmak için kısa bir renk şeridi. Gerçek
-    /// kayıttan bağımsız: küçük resim, oynatıcı ve kota yine gerçek dosyayla
-    /// çalışıyor.
+
     private static func makeSeedVideo() -> URL? {
         let url = directory.appending(path: "_seed.mov")
         if FileManager.default.fileExists(atPath: url.path) { return url }
@@ -333,9 +303,7 @@ enum ReplayStore {
     }
     #endif
 
-    /// Videosu olmayan metadata (kayıt açılırken uygulama sonlandırıldı) ya da
-    /// metadata'sı olmayan video (dosya yazıldı, tur sonu gelmedi) arşivde
-    /// görünmeyeceği için sessizce yer kaplıyor.
+
     static func removeOrphans() {
         let manager = FileManager.default
         guard let files = try? manager.contentsOfDirectory(

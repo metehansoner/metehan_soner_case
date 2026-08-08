@@ -1,12 +1,6 @@
 import SwiftUI
 
-/// Perde Arası — 08-sinematik-detaylar.md §B2, faz tanımı § `09` §5.
-///
-/// Bu ekran zaten gerekliydi: telefon elden ele geçiyor. Düz "Sıra Kırmızı
-/// Takımda" yerine eski sinemaların perde arası kartı giydirildi.
-///
-/// **Landscape** (§ `09` §1): telefon hâlâ yatay, yön burada değişmiyor.
-/// Mockup portrait bir kart; yatayda aynı içerik iki sütuna açılıyor.
+
 struct TeamTurnHandoffView: View {
     let match: TeamMatch
     let teamIndex: Int
@@ -39,7 +33,6 @@ struct TeamTurnHandoffView: View {
         .statusBarHidden()
     }
 
-    // MARK: Kart
 
     private var frame: some View {
         HStack(spacing: 0) {
@@ -63,7 +56,7 @@ struct TeamTurnHandoffView: View {
                     RoundedRectangle(cornerRadius: 8)
                         .strokeBorder(isSuddenDeath ? AppColors.stateSkip : AppColors.accentGold, lineWidth: 2)
                 }
-                // §B2: çerçevenin içinde, kenarlardan 12pt içeride iki ince çizgi.
+
                 .overlay(alignment: .top) { innerRule.padding(.top, 7) }
                 .overlay(alignment: .bottom) { innerRule.padding(.bottom, 7) }
         }
@@ -133,7 +126,7 @@ struct TeamTurnHandoffView: View {
                     .minimumScaleFactor(0.6)
             }
 
-            // § `09` §5: oyuncu adı opsiyonel — girilmemişse takım adıyla yetiniliyor.
+
             Text(
                 player.map { l10n.t("teams.handTo", ["name": $0]) }
                     ?? l10n.t("teams.handToTeam")

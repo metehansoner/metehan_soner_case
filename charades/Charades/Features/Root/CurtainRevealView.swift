@@ -1,14 +1,6 @@
 import SwiftUI
 
-/// Ekran 1 — 02-ekran-akisi.md §4, animasyonu 08-sinematik-detaylar.md A3.
-///
-/// Tek işi var: uygulama hazırlanırken geçen süreyi boş bir yükleme ekranı
-/// yerine perde açılışına çevirmek. §08'in temel ilkesi burada da geçerli —
-/// **var olan bir beklemeyi süslüyor, yeni bekleme yaratmıyor.**
-///
-/// Launch screen yalnızca kapalı perdeyi gösterir (`ornek-ekranlar.html` 1a).
-/// İkon perdenin **arkasındadır**; perde iki yana çekilince sahne, spot ve
-/// çerçeveli ikon belirir (1b).
+
 struct CurtainRevealView: View {
     var onFinish: () -> Void
 
@@ -17,17 +9,17 @@ struct CurtainRevealView: View {
 
     @State private var isOpen = false
     @State private var showsStage = false
-    /// Üst spot / ampul parlaklığı — 0 sönük, 1 tam yanık. Titreme akışı bunu sürer.
+
     @State private var lampLevel: Double = 0
 
-    /// Splash süresi — perde + lamba titremesi + sahne görünümü.
+
     private let total: TimeInterval = 2.2
     private let plaqueSide: CGFloat = 168
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Perdenin arkası — sahne, spot, ikon, wordmark.
+
                 AppColors.screenBackground
 
                 spotCone
@@ -42,11 +34,11 @@ struct CurtainRevealView: View {
                     .offset(y: plaqueSide / 2 + 54)
                     .opacity(showsStage ? 1 : 0)
 
-                // Kanatlar en üstte: kapalıyken sahneyi tamamen örter.
+
                 panel(.leading, size: geometry.size)
                 panel(.trailing, size: geometry.size)
 
-                // 1b — `ornek-ekranlar.html` `.splash-load`: perde açılınca alt kenarda.
+
                 loader
                     .frame(maxHeight: .infinity, alignment: .bottom)
                     .padding(.bottom, 56)
@@ -55,17 +47,14 @@ struct CurtainRevealView: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .ignoresSafeArea()
-        // §02 §4: splash'ta hiçbir dokunulabilir öğe yok, atlama butonu bile.
+
         .allowsHitTesting(false)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(l10n.t("app.name"))
         .task { await run() }
     }
 
-    // MARK: Katmanlar
 
-    /// Sahne ışığı — `ornek-ekranlar.html` `.spotcone`. Perde açılınca üstten
-    /// ikona düşen konik amber huzme; `lampLevel` ile titrer.
     private var spotCone: some View {
         GeometryReader { geometry in
             let width = min(geometry.size.width * 0.64, 280)
@@ -88,8 +77,7 @@ struct CurtainRevealView: View {
         .allowsHitTesting(false)
     }
 
-    /// Kadife kanat. Kenara giderken `scaleX` 0.6'ya düşüyor: gerçek sahne
-    /// perdesi kenara toplanınca kalınlaşır, düz kaydırma bunu kaçırıyor (A3).
+
     private func panel(_ edge: HorizontalEdge, size: CGSize) -> some View {
         let isLeading = edge == .leading
         return Image("launch_curtain")
@@ -104,7 +92,7 @@ struct CurtainRevealView: View {
             .offset(x: isOpen ? (isLeading ? -size.width * 0.62 : size.width * 0.62) : 0)
     }
 
-    /// Çerçeveli app ikonu — perdenin arkasında; kanatlar açılınca görünür.
+
     private var plaque: some View {
         Image("launch_plaque")
             .frame(width: plaqueSide, height: plaqueSide)
@@ -148,8 +136,7 @@ struct CurtainRevealView: View {
             .frame(height: 1)
     }
 
-    /// Alt kenar yükleme — kayan amber şerit + "Makara yükleniyor"
-    /// (`ornek-ekranlar.html` `.load-track` / `.load-txt`).
+
     private var loader: some View {
         VStack(spacing: 10) {
             ReelLoadTrack()
@@ -161,14 +148,13 @@ struct CurtainRevealView: View {
         }
     }
 
-    // MARK: Akış
 
     private func run() async {
         SoundService.curtainOpen()
 
         guard !reduceMotion else {
-            // §02 §4: Reduced Motion'da perde animasyonu yerine 200 ms fade.
-            // Çerçeveli ikon yine görünüyor, ampuller sabit yanıyor.
+
+
             await prepareCatalog()
             withAnimation(.easeOut(duration: 0.2)) {
                 isOpen = true
@@ -193,26 +179,25 @@ struct CurtainRevealView: View {
         onFinish()
     }
 
-    /// Eski sahne lambası: yanmaya çalışır, iki kez söner, sonra sabit kalır.
-    /// `sfx_bulb_flicker` ile aynı pencerede (~0.35–1.1 sn).
+
     private func playLampAndHold() async {
         let deadline = ContinuousClock.now + .seconds(total)
 
         try? await Task.sleep(for: .milliseconds(380))
 
-        // 1. tutukluk — kısa parlama, sonra sönüş
+
         withAnimation(.easeIn(duration: 0.05)) { lampLevel = 0.85 }
         try? await Task.sleep(for: .milliseconds(70))
         withAnimation(.easeOut(duration: 0.06)) { lampLevel = 0 }
         try? await Task.sleep(for: .milliseconds(110))
 
-        // 2. tutukluk — daha zayıf, biraz daha uzun sönük
+
         withAnimation(.easeIn(duration: 0.04)) { lampLevel = 0.55 }
         try? await Task.sleep(for: .milliseconds(55))
         withAnimation(.easeOut(duration: 0.07)) { lampLevel = 0 }
         try? await Task.sleep(for: .milliseconds(140))
 
-        // Kalıcı yanış
+
         withAnimation(.easeOut(duration: 0.22)) { lampLevel = 1 }
 
         let remaining = deadline - ContinuousClock.now
@@ -221,14 +206,13 @@ struct CurtainRevealView: View {
         }
     }
 
-    /// Deste kataloğu ilk erişimde kuruluyor (§05 §2). Kelime dosyaları
-    /// okunmuyor — onlar deste seçilince geliyor (§05 §5).
+
     private func prepareCatalog() async {
         await Task { @MainActor in _ = DeckCatalog.v1 }.value
     }
 }
 
-/// 104×2 pt ray, içinde %42 amber dilim soldan sağa kayıyor (1,4 sn döngü).
+
 private struct ReelLoadTrack: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var travel: CGFloat = 0
@@ -259,8 +243,7 @@ private struct ReelLoadTrack: View {
     }
 }
 
-/// Üstte dar, altta geniş — sahne spotunun trapez kesiti
-/// (`clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%)`).
+
 private struct SpotConeShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()

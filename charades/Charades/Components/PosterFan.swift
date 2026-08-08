@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Yelpaze gibi açılmış dört afiş — 01-tasarim-sistemi.md §6.2.
-///
-/// Ayrı bir illüstrasyon üretilmiyor: kapaklar zaten bundle'da (§ `05` §8) ve
-/// kullanıcı bir sonraki ekranda tam olarak bunları görecek. Onboarding adım 1
-/// (§ `03` §1) ve Nasıl Oynanır sayfa 1 (§ `02` §4) aynı görseli paylaşıyor.
+
 struct PosterFan: View {
     var deckIDs: [String] = ["party", "movieClassics", "animals", "nineties"]
 

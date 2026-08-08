@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Birincil buton — 01-tasarim-sistemi.md §4 "Marquee Button".
-///
-/// Alt kenardaki 3px `accentAmberDeep` şerit basılınca kayboluyor: amber yüzey
-/// aşağı doğru büyüyüp şeridi yutuyor, etiket onunla birlikte iniyor. Fiziksel
-/// tuş hissi bu iki hareketten geliyor, tek başına `scaleEffect` vermiyor.
+
 struct MarqueeButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         Surface(configuration: configuration)
@@ -28,8 +24,8 @@ struct MarqueeButtonStyle: ButtonStyle {
                 .offset(y: isPressed ? Self.lip / 2 : 0)
                 .background {
                     ZStack {
-                        // Şerit yalnızca basılabilir hâlde çiziliyor: disabled buton
-                        // fiziksel tuş gibi görünmemeli.
+
+
                         if isEnabled {
                             Capsule().fill(AppColors.accentAmberDeep)
                         }
@@ -49,7 +45,7 @@ struct MarqueeButtonStyle: ButtonStyle {
                 }
                 .scaleEffect(isPressed ? 0.97 : 1)
                 .animation(.easeOut(duration: 0.12), value: isPressed)
-                // §4.1: prepare parmak *inince*; ses de aynı anda (tap-down).
+
                 .onChange(of: isPressed) { _, pressed in
                     guard pressed else { return }
                     Haptics.prepareImpact()
@@ -59,7 +55,7 @@ struct MarqueeButtonStyle: ButtonStyle {
     }
 }
 
-/// İkincil buton — §4. Şeffaf zemin, 1.5px `accentGold` kenar, içeride hafif dolgu.
+
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         Surface(configuration: configuration)
@@ -99,9 +95,7 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
-/// Push ekranlarının sol üst geri oku — görünür glyph büyütülmüş, dokunma
-/// alanı en az 52pt (44pt minimumun üstü). Başlık ortalaması için karşı
-/// taraftaki dengeleyici boşluk da `hitSide` ile aynı boyutta olmalı.
+
 struct BackNavButton: View {
     var tint: Color = AppColors.accentGold
     var accessibilityLabel: String

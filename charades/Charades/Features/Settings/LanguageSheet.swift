@@ -1,14 +1,6 @@
 import SwiftUI
 
-/// Ekran 21 — Dil Seçimi (§06 §2 "Dil seçim ekranı").
-///
-/// 25 satır, her biri **kendi dilinde**; altında o dilin adı kullanıcının o
-/// anki dilinde (`Locale.localizedString`, ayrı çeviri anahtarı gerekmiyor).
-/// Arama alanı yok: 25 satır kaydırılabilir uzunlukta.
-///
-/// Seçim anında uygulanıyor, restart yok — `LocalizationManager` `@Observable`
-/// ve font ailesi de aynı değerden türüyor (§01 §2), yani Yunanca'ya geçişte
-/// tipografi de aynı karede değişiyor.
+
 struct LanguageSheet: View {
     var onClose: () -> Void
 
@@ -95,8 +87,7 @@ struct LanguageSheet: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// Seçili satırda "Sistem dili" yerine dilin kullanıcı dilindeki adı zaten
-    /// başlıkla aynı olurdu; onun yerine bu satırın neden seçili olduğu yazıyor.
+
     private func subtitle(for code: String, isSelected: Bool) -> String {
         if isSelected {
             return AppSettingsStore.shared.languageOverride == nil
@@ -108,8 +99,7 @@ struct LanguageSheet: View {
             ?? code.uppercased()
     }
 
-    /// Mockup'taki (ekran 21) bayrak sütunu. `ca` için Andorra: Katalanca'nın
-    /// tek resmî dil olduğu ülke — bölgesel bayrakların emoji karşılığı yok.
+
     private static func flag(_ code: String) -> String {
         let regions = [
             "en": "GB", "tr": "TR", "ar": "SA", "be": "BY", "ca": "AD",

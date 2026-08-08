@@ -1,15 +1,6 @@
 import SwiftUI
 
-/// Varyant C — 03-onboarding-paywall.md §2: tur sonu yumuşak önerisi.
-///
-/// İlk tamamlanan turun hemen ardından bir kez. Ürünün en yüksek dönüşüm
-/// potansiyeli olan an burası, ama akışı kesmiyor: tek CTA ve kolay kapatma.
-/// Tetikleyici `softPaywallSeen` — `paywallSeen` ile paylaşılsaydı onboarding
-/// paywall'ı herkeste `true` yaptığı için hiç görünmezdi.
-///
-/// Sistem sheet'i değil overlay paneli: tur sonu ekranı yatay (§09 §1) ve
-/// yatayda iPhone sheet'i detent'leri yok sayıp neredeyse tam ekran açılıyor —
-/// "kolay kapatma" iddiası orada çöküyor.
+
 struct SoftPaywallPanel: View {
     var onSeeTicket: () -> Void
     var onClose: () -> Void
@@ -18,7 +9,7 @@ struct SoftPaywallPanel: View {
 
     @State private var shownAt = Date.now
 
-    /// 92 v1 destesi − 1 kalıcı ücretsiz − 1 günün bedavası.
+
     private var lockedDeckCount: Int {
         let daily = DeckCatalog.dailyFreeDeckID() == nil ? 0 : 1
         return max(DeckCatalog.v1.count - 1 - daily, 0)
@@ -33,8 +24,8 @@ struct SoftPaywallPanel: View {
             panel
         }
         .transition(.opacity)
-        // §03 §5: üçüncü varyant. Tam ekran paywall ile aynı event, farklı
-        // `variant` — dönüşümü karşılaştırılabilir olsun diye.
+
+
         .onAppear {
             shownAt = .now
             Analytics.paywallView(variant: "soft", context: PaywallContext.roundEnd.id)
@@ -119,8 +110,7 @@ struct SoftPaywallPanel: View {
         .transition(.move(edge: .bottom))
     }
 
-    /// Yarım panelde afiş duvarı sığmıyor; tek sıra kapak aynı mesajı
-    /// ("burada çok şey var") daha az yer kaplayarak veriyor.
+
     private var posterStrip: some View {
         HStack(spacing: 7) {
             ForEach(Array(DeckCatalog.v1.filter { !$0.isFree }.prefix(3)), id: \.id) { deck in

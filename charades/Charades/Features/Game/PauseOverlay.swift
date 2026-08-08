@@ -1,14 +1,9 @@
 import SwiftUI
 
-/// Ekran 16 — 02-ekran-akisi.md §4, davranışı 04-oyun-modlari.md §3 ve
-/// 09-kesinti-ve-sinir-durumlari.md §3.
-///
-/// Oyun akışı `NavigationStack`in tamamının yerine render edildiği ve
-/// swipe-back kapatıldığı için (§02 §5) **çıkışın tek yolu burası.** Bu ekran
-/// modellenmezse kullanıcı oyunda kilitli kalıyor.
+
 struct PauseOverlay: View {
     let reason: LiveGame.PauseReason
-    /// Takım Savaşı'nda çıkış turu değil maçın tamamını siliyor (§09 §3).
+
     var cancelsMatch = false
     var onResume: () -> Void
     var onRestart: () -> Void
@@ -32,8 +27,7 @@ struct PauseOverlay: View {
                         .foregroundStyle(AppColors.textCream)
                         .padding(.bottom, 6)
 
-                    // §09 §2: sistem kesintisinde kullanıcı neden duraklandığını
-                    // bilmiyor; otomatik devam da yok, o yüzden bir satır açıklama.
+
                     if reason == .system {
                         Text(l10n.t("pause.system.body"))
                             .textStyle(.caption)
@@ -78,7 +72,7 @@ struct PauseOverlay: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        // §04 §3: kazara çıkış tur sonuçlarını yok ediyor, onay zorunlu.
+
         .confirmationDialog(
             l10n.t(cancelsMatch ? "pause.exit.confirm.title.match" : "pause.exit.confirm.title"),
             isPresented: $isConfirmingExit,

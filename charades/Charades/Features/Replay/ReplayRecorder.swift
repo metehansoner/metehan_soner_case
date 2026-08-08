@@ -2,31 +2,24 @@ import AVFoundation
 import Observation
 import UIKit
 
-/// Tur kaydının durum makinesi — 04-oyun-modlari.md §4.1, §09 §2–3.
-///
-/// Kayıt geri sayımda başlıyor, tur bitiminde duruyor ve tam olarak bir tur =
-/// bir dosya. Duraklat, gelen çağrı, ısınma ve çıkış bu kuralı bozmadan
-/// yönetiliyor: hiçbiri ikinci bir dosya açmıyor, hiçbiri yarım bir dosya
-/// bırakmıyor.
+
 @MainActor
 @Observable
 final class ReplayRecorder {
     static let shared = ReplayRecorder()
 
-    /// Kaydın neden yapılmadığı. "Kapalı" ile "izin yok" aynı sonucu veriyor
-    /// ama ayarlar ekranında bambaşka iki satır gösteriyor.
+
     enum Availability: Equatable {
         case ready
         case off
         case locked
         case denied
         case noCamera
-        /// §09 §2: düşük güç, ısınma, disk.
+
         case limited(DeviceConditions.Limit)
     }
 
-    /// Kaydın turdan gelen künyesi. Deste adı **çözülmüş hâliyle değil**
-    /// kimlikleriyle taşınıyor: arşiv başka bir dilde açılabiliyor.
+
     struct Context {
         let matchID: String
         let sceneIndex: Int
@@ -35,11 +28,10 @@ final class ReplayRecorder {
         let playerName: String?
     }
 
-    /// §04 §4.1: önizleme yok, yalnızca küçük bir kırmızı kayıt noktası.
+
     private(set) var isRecording = false
 
-    /// §09 §2: "kullanıcıya bir kez bilgi verilir". Gösteren taraf okuduktan
-    /// sonra `clearNotice()` ile siliyor.
+
     private(set) var noticeKey: String?
 
     private var engine: (any ReplayCaptureEngine)?
@@ -52,10 +44,10 @@ final class ReplayRecorder {
         let url: URL
         let context: Context
         let createdAt: Date
-        /// Motor ilk kareyi yazdığı an. `startRecording` çağrısı ile gerçek
-        /// başlangıç arasında ölçülemeyen bir gecikme var; damgalar bu ana göre.
+
+
         var videoStartedAt: Date?
-        /// Duraklatılmış aralıkları dışarıda bırakan birikmiş video saati.
+
         var elapsed: TimeInterval = 0
         var marks: [ReplayReel.Mark] = []
         var isPartial = false
@@ -64,17 +56,15 @@ final class ReplayRecorder {
 
     private init() {}
 
-    // MARK: Uygunluk
 
     var availability: Availability {
         guard AppSettingsStore.shared.replayEnabled else { return .off }
-        // §09 §7: abonelik düşerse arşiv salt-okunur oluyor, yeni kayıt yok.
+
         guard SubscriptionStore.shared.isPremium else { return .locked }
 
         guard hasCaptureDevice else { return .noCamera }
-        // İzin henüz sorulmadıysa da kayıt yok: izni tur başlarken istemek
-        // telefonu alnına götürmüş kullanıcının önüne sistem diyaloğu koyar.
-        // Soru ayarlarda, anahtar açılırken soruluyor (§06 §1).
+
+
         guard isCameraAuthorized else { return .denied }
         if let limit = DeviceConditions.recordingLimit() { return .limited(limit) }
         return .ready
@@ -84,16 +74,12 @@ final class ReplayRecorder {
         AVCaptureDevice.authorizationStatus(for: .video)
     }
 
-    /// Ayarlardaki anahtar açılırken çağrılıyor. §04 §4.5: gizlilik bilgi
-    /// ekranı bu çağrıdan **önce** gösteriliyor.
+
     static func requestCameraAccess() async -> Bool {
         await AVCaptureDevice.requestAccess(for: .video)
     }
 
-    // MARK: Kayıt
 
-    /// Geri sayımın başında. İkinci kez çağrılması sessizce yok sayılıyor:
-    /// `beginCountdown` duraklat sonrası da çalışıyor (§09 §2).
     func start(_ context: Context) {
         guard draft == nil else { return }
 
@@ -101,7 +87,7 @@ final class ReplayRecorder {
         case .ready:
             break
         case .limited(let limit):
-            // §09 §2: engel sessizce geçilmiyor, sebebi bir kez söyleniyor.
+
             noticeKey = limit.noticeKey
             return
         case .off, .locked, .denied, .noCamera:
@@ -118,9 +104,8 @@ final class ReplayRecorder {
         engine.start(
             to: url,
             rotationAngle: Self.rotationAngle(),
-            // Turu yeniden başlatmak eski kaydı kapatıp yenisini hemen açıyor;
-            // kapanan kaydın geri çağrısı yeni taslağın üstüne düşmesin diye
-            // her haber kendi kaydının kimliğiyle geliyor.
+
+
             events: ReplayCaptureEvents(
                 didStart: { [weak self] in
                     Task { @MainActor in self?.handleDidStart(id: id) }
@@ -137,21 +122,18 @@ final class ReplayRecorder {
         startThermalWatch()
     }
 
-    /// §04 §4.1: doğru/pas anları zaman damgası olarak kaydediliyor; oynatıcıdaki
-    /// zaman çizelgesi işaretleri ve altyazı buradan üretiliyor.
+
     func mark(word: String, key: String, isCorrect: Bool) {
         guard isRecording, draft?.videoStartedAt != nil else { return }
-        // Damganın zamanı `draft`a yazmadan **önce** okunuyor: aynı ifadede hem
-        // okuyup hem yazmak Swift'in özel erişim kuralını çiğniyor.
+
+
         let time = videoTime
         draft?.marks.append(
             ReplayReel.Mark(time: time, isCorrect: isCorrect, word: word, key: key)
         )
     }
 
-    /// Kullanıcı duraklattı. iOS 18'de video saati de duruyor; öncesinde kayıt
-    /// dönmeye devam ediyor (dosyada ölü saniyeler kalıyor ama damgalar yine
-    /// video saatiyle tutarlı).
+
     func pauseForUser() {
         guard isRecording, let engine, engine.pausesCleanly, draft?.videoStartedAt != nil else { return }
         engine.pause()
@@ -167,8 +149,7 @@ final class ReplayRecorder {
         draft?.videoStartedAt = .now
     }
 
-    /// §09 §2: arka plan, gelen çağrı, ekran kilidi ve ısınma. Dosya o ana kadar
-    /// yazılanla kapanıyor, tur devam ediyor, kayıt "kısmi" işaretleniyor.
+
     func interrupt() {
         guard isRecording else { return }
         draft?.isPartial = true
@@ -180,7 +161,7 @@ final class ReplayRecorder {
         interrupt()
     }
 
-    /// Tur sonu. Dosya kapanana kadar bekleyip metadata'yı yazıyor.
+
     func finish() async -> ReplayReel? {
         guard draft != nil else { return nil }
 
@@ -188,7 +169,7 @@ final class ReplayRecorder {
             await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
                 finishContinuation = continuation
                 engine?.stop()
-                // Motor haber vermezse tur sonu ekranı kilitlenmesin.
+
                 Task { [weak self] in
                     try? await Task.sleep(for: .seconds(3))
                     self?.resumeFinishContinuation()
@@ -221,15 +202,13 @@ final class ReplayRecorder {
             isPinned: false
         )
         ReplayStore.save(reel)
-        // §04 §4.2: kota yeni kayıt eklendiği anda işliyor. Açılışa bırakılsaydı
-        // uzun bir maç arşivi kotanın iki katına çıkarabilirdi. Kota bu kaydı
-        // yediyse tur sonu ekranına `REPLAY'İ İZLE` koymanın anlamı yok.
+
+
         ReplayStore.enforcePolicy(retention: AppSettingsStore.shared.replayRetention)
         return ReplayStore.reel(id: reel.id)
     }
 
-    /// §09 §3: turu yeniden başlatmak ya da çıkmak kaydı siliyor — yarım tur
-    /// videosu arşivi kirletiyor.
+
     func discard() {
         guard let draft else { return }
         self.draft = nil
@@ -237,8 +216,8 @@ final class ReplayRecorder {
         stopThermalWatch()
         engine?.stop()
         engine?.shutdown()
-        // Dosya motor tarafından hâlâ kapatılıyor olabilir; silme çağrısı
-        // kapandıktan sonra da geçerli.
+
+
         Task {
             try? await Task.sleep(for: .milliseconds(400))
             ReplayStore.delete(id: draft.id)
@@ -247,7 +226,6 @@ final class ReplayRecorder {
 
     func clearNotice() { noticeKey = nil }
 
-    // MARK: Motor geri çağrıları
 
     private func handleDidStart(id: String) {
         guard draft?.id == id else { return }
@@ -270,15 +248,13 @@ final class ReplayRecorder {
         continuation.resume()
     }
 
-    // MARK: Yardımcılar
 
     private var videoTime: TimeInterval {
         guard let draft else { return 0 }
         return draft.elapsed + (draft.videoStartedAt.map { Date().timeIntervalSince($0) } ?? 0)
     }
 
-    /// §04 §4.1: 10 tur arka arkaya oynanan takım maçında ısınma olabiliyor.
-    /// `.serious` seviyesinde kayıt duruyor ve kullanıcı bilgilendiriliyor.
+
     private func startThermalWatch() {
         thermalWatch?.cancel()
         thermalWatch = Task { [weak self] in
@@ -312,9 +288,7 @@ final class ReplayRecorder {
         return AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) != nil
     }
 
-    /// Motor turdan tura yaşıyor. Her turda yeni bir `AVCaptureSession` kurmak
-    /// hem kamerayı baştan ısıtıyor hem de turu yeniden başlatırken kapanmakta
-    /// olan oturumla yenisi aynı cihaza aynı anda uzanıyor.
+
     private func captureEngine() -> (any ReplayCaptureEngine)? {
         if let engine { return engine }
         engine = makeEngine()
@@ -329,17 +303,14 @@ final class ReplayRecorder {
     }
 
     #if DEBUG
-    /// Yalnızca kamera bulunmayan simülatörde ve yalnızca açıkça istendiğinde.
+
     static var usesSyntheticCapture: Bool {
         ProcessInfo.processInfo.arguments.contains("-FakeReplay")
             && AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) == nil
     }
     #endif
 
-    /// Oyun `ForcedLandscapeContainer` (landscapeRight) ile çiziliyor; pencere
-    /// ise OrientationLock yüzünden **hep portrait**. `interfaceOrientation`
-    /// bu yüzden her zaman `.portrait` dönüyordu ve video 90° (dikey)
-    /// damgalanıyordu — yatay kayda rağmen oynatıcıda dikey/yan görünüyordu.
+
     private static func rotationAngle() -> CGFloat {
         let device = UIDevice.current
         if !device.isGeneratingDeviceOrientationNotifications {
@@ -356,8 +327,8 @@ final class ReplayRecorder {
         case .portrait:
             return 90
         case .faceUp, .faceDown, .unknown:
-            // Alnında çoğu zaman faceUp/unknown — ForcedLandscape varsayılanı
-            // (home sağda / landscapeRight).
+
+
             return 0
         @unknown default:
             return 0

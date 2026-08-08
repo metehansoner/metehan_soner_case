@@ -1,18 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Duraklat jesti — 04-oyun-modlari.md §3 + 09-kesinti-ve-sinir-durumlari.md §3.
-///
-/// İki yol var ve ikisi de gerekli: **iki parmakla dokunma** ve **üstten aşağı
-/// sürükleme**. §09 §3 ikisinin de çakışmasını çözüyor:
-///
-/// 1. Dokunmatik cevap modunda iki parmakla dokunma aynı zamanda bir ekran
-///    yarısına dokunma demek — o modda iki parmak devre dışı, yalnızca sürükleme.
-/// 2. Tilt modunda telefonu alından indirme hareketi kaçınılmaz olarak 40°'yi
-///    geçiyor; sürükleme **başladığı anda** motion tetikleri kilitleniyor.
+
 struct PauseGesture: ViewModifier {
     var allowsTwoFingerTap: Bool
-    /// Sürükleme başladı — tetikleri kilitle. Duraklatma henüz olmadı.
+
     var onGestureBegan: () -> Void
     var onPause: () -> Void
 
@@ -28,8 +20,8 @@ struct PauseGesture: ViewModifier {
             .gesture(
                 DragGesture(minimumDistance: 8, coordinateSpace: .local)
                     .onChanged { value in
-                        // Üst kenardan başlamayan sürüklemeler duraklatmıyor:
-                        // ekran ortasındaki savurmalar tur boyunca oluyor.
+
+
                         guard value.startLocation.y < 70 else { return }
                         if !didLockThisDrag {
                             didLockThisDrag = true
@@ -63,12 +55,7 @@ extension View {
     }
 }
 
-/// SwiftUI'da parmak sayısına duyarlı dokunuş yok.
-///
-/// Tanıyıcı view'ın kendisine değil **pencereye** ekleniyor ve view dokunuşlara
-/// tamamen şeffaf (`hitTest` nil). Aksi hâlde iki parmak yakalayıcısı üstüne
-/// bindiği tek/çift dokunuşları da yutar; dokunmatik cevap modunda ekranın
-/// yarılarına dokunmak çalışmaz olurdu.
+
 private struct TwoFingerTapCatcher: UIViewRepresentable {
     let action: () -> Void
 

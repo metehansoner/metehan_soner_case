@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// Oyundaki gerçek duruş: alında **yatay** telefon. Nasıl Oynanır / onboarding
-/// diyagramlarında dikey siluet yerine bunu kullanıyoruz.
+
 struct LandscapeDemoPhone<Overlay: View>: View {
     var rim: Color = AppColors.accentGold
     var width: CGFloat = 132
@@ -14,7 +13,7 @@ struct LandscapeDemoPhone<Overlay: View>: View {
 
     var body: some View {
         ZStack {
-            // Gövde
+
             RoundedRectangle(cornerRadius: outerRadius, style: .continuous)
                 .fill(
                     LinearGradient(
@@ -43,7 +42,7 @@ struct LandscapeDemoPhone<Overlay: View>: View {
                         )
                 }
 
-            // Ses / güç düğmeleri
+
             HStack {
                 VStack(spacing: 5) {
                     Capsule().fill(Color(hex: 0x3A3028)).frame(width: 2.2, height: height * 0.12)
@@ -60,7 +59,7 @@ struct LandscapeDemoPhone<Overlay: View>: View {
             .padding(.horizontal, 1)
             .frame(height: height * 0.7)
 
-            // Ekran
+
             RoundedRectangle(cornerRadius: screenRadius, style: .continuous)
                 .fill(
                     LinearGradient(
@@ -73,7 +72,7 @@ struct LandscapeDemoPhone<Overlay: View>: View {
                     )
                 )
                 .overlay {
-                    // Film-kart hissi: hafif vignette
+
                     RoundedRectangle(cornerRadius: screenRadius, style: .continuous)
                         .strokeBorder(Color.black.opacity(0.12), lineWidth: 0.8)
                 }
@@ -108,7 +107,7 @@ extension LandscapeDemoPhone where Overlay == EmptyView {
     }
 }
 
-/// Öne eğ = DOĞRU, arkaya eğ = PAS — iki yatay telefon.
+
 struct TiltAnswerDiagram: View {
     var showsHints: Bool = false
 

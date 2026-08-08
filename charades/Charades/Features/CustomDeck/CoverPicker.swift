@@ -1,14 +1,10 @@
 import PhotosUI
 import SwiftUI
 
-/// Custom deste kapağı — 05-desteler-ve-kategoriler.md §7.
-///
-/// 12 tema afişi (hayvan, insan, araç…) SF Symbol + gradient ile çiziliyor.
-/// PNG asset yok: paket boyutu ve renk güncellemesi ucuz kalıyor. Photos'tan
-/// seçilen görsel varsa şablonun yerine geçiyor.
+
 struct CustomCoverArt: View {
     let cover: CustomDeckCover
-    /// Premium'un Photos'tan seçtiği görsel; varsa şablonun yerine geçiyor.
+
     var imageData: Data?
 
     var body: some View {
@@ -19,8 +15,8 @@ struct CustomCoverArt: View {
                 template
             }
         }
-        // Canvas/symbol ilk çizimi önbelleğe alabiliyor; kapak/foto değişince
-        // kimlik değişmezse önizleme eski şablonda kalıyordu.
+
+
         .id(artIdentity)
         .clipped()
         .allowsHitTesting(false)
@@ -46,7 +42,7 @@ struct CustomCoverArt: View {
                     endPoint: .bottomTrailing
                 )
 
-                // Derinlik: köşelerde soft vignette.
+
                 RadialGradient(
                     colors: [.clear, .black.opacity(0.42)],
                     center: .center,
@@ -54,14 +50,14 @@ struct CustomCoverArt: View {
                     endRadius: side * 0.9
                 )
 
-                // Arka plan gölge sembolü — afişe hacim verir.
+
                 Image(systemName: cover.symbol)
                     .font(.system(size: side * 0.78, weight: .bold))
                     .foregroundStyle(cover.glow.opacity(0.14))
                     .offset(x: side * 0.1, y: side * 0.14)
                     .blur(radius: side * 0.02)
 
-                // Ana amblem.
+
                 Image(systemName: cover.symbol)
                     .font(.system(size: side * 0.44, weight: .semibold))
                     .symbolRenderingMode(.hierarchical)
@@ -79,7 +75,7 @@ struct CustomCoverArt: View {
                     .shadow(color: cover.glow.opacity(0.55), radius: side * 0.07, y: side * 0.025)
                     .shadow(color: .black.opacity(0.35), radius: side * 0.03, y: side * 0.02)
 
-                // Küçük köşe süsleri — katalog afişlerindeki köşe yıldızlarına paralel.
+
                 ForEach(Array(cornerOffsets.enumerated()), id: \.offset) { _, point in
                     Image(systemName: cover.ornament)
                         .font(.system(size: side * 0.08, weight: .bold))
@@ -109,13 +105,7 @@ struct CustomCoverArt: View {
         ]
     }
 
-    /// §05 §7: seçilen görsele otomatik sepia + grain + altın çerçeve. Kullanıcı
-    /// kapağı tema dışına çıkaramıyor — custom içeriğin ızgarayı bozmasını
-    /// engelleyen kritik detay bu.
-    ///
-    /// `Image.scaledToFill` ideal boyutu piksel boyutundan öneriyor; `Color`
-    /// üzerine overlay ile çizmek kartın 3:4 oranını fotoğrafın en-boy
-    /// oranına göre şişirmesini engelliyor.
+
     private func photo(_ image: UIImage) -> some View {
         Color.clear
             .overlay {
@@ -137,10 +127,9 @@ struct CustomCoverArt: View {
     }
 }
 
-// MARK: - Tema paleti
 
 extension CustomDeckCover {
-    /// Ana SF Symbol — afişin konusu.
+
     var symbol: String {
         switch self {
         case .animals: "pawprint.fill"
@@ -158,7 +147,7 @@ extension CustomDeckCover {
         }
     }
 
-    /// Köşe süsü — ana sembolden küçük, afişi dolduruyor.
+
     var ornament: String {
         switch self {
         case .animals: "hare.fill"
@@ -176,7 +165,7 @@ extension CustomDeckCover {
         }
     }
 
-    /// Gradient zemin — her tema yan yana ayırt edilebilsin.
+
     var tones: [Color] {
         switch self {
         case .animals: [Color(hex: 0x5C3A1E), Color(hex: 0x1E120A)]
@@ -194,7 +183,7 @@ extension CustomDeckCover {
         }
     }
 
-    /// Sembol ışıması — gradient'in sıcak ucu.
+
     var glow: Color {
         switch self {
         case .animals: Color(hex: 0xD4A06A)
@@ -213,10 +202,7 @@ extension CustomDeckCover {
     }
 }
 
-// MARK: - Seçici
 
-/// Editördeki `◆ KAPAK SEÇ` satırı. 12 şablon yatay kayan şeritte; Premium'da
-/// başta bir de Photos düğmesi var.
 struct CoverPicker: View {
     @Binding var selection: CustomDeckCover
     @Binding var imageData: Data?
@@ -234,8 +220,8 @@ struct CoverPicker: View {
                 ForEach(CustomDeckCover.allCases) { cover in
                     Button {
                         Haptics.deckSelected()
-                        // Foto varsa binding set zaten temizliyor; seçim
-                        // değişimi gözlemi tetiklesin diye tek yerden yazılıyor.
+
+
                         selection = cover
                     } label: {
                         CoverSwatch(isSelected: imageData == nil && selection == cover) {
@@ -251,8 +237,8 @@ struct CoverPicker: View {
             .padding(.vertical, 3)
         }
         .scrollClipDisabled()
-        // Fotoğrafın tamamı `coverImageData`ya gidiyor; 12 MP bir kare SwiftData
-        // deposunu şişirirdi, kart boyutuna indiriliyor.
+
+
         .task(id: photoItem) {
             guard let photoItem,
                   let raw = try? await photoItem.loadTransferable(type: Data.self)
@@ -264,8 +250,8 @@ struct CoverPicker: View {
     @ViewBuilder
     private var photoButton: some View {
         if subscription.isPremium {
-            // `PhotosPicker`ın etiket closure'ı izolasyon dışında çalışıyor;
-            // içeride `self`e dokunmamak için değerler önceden alınıyor.
+
+
             let data = imageData
             let cover = selection
             PhotosPicker(selection: $photoItem, matching: .images) {
@@ -276,7 +262,7 @@ struct CoverPicker: View {
     }
 }
 
-/// Photos düğmesinin yüzü: seçilmiş fotoğraf ya da boş kare.
+
 private struct PhotoCoverLabel: View {
     let imageData: Data?
     let cover: CustomDeckCover
@@ -316,7 +302,7 @@ private struct CoverSwatch<Content: View>: View {
 }
 
 extension UIImage {
-    /// Kapak en fazla ~180pt genişliğinde çiziliyor; @3x için 600px yeterli.
+
     func downscaled(maxDimension: CGFloat) -> Data? {
         let longest = max(size.width, size.height)
         guard longest > maxDimension else { return jpegData(compressionQuality: 0.82) }

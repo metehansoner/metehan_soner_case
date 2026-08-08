@@ -1,15 +1,9 @@
 import SwiftData
 import SwiftUI
 
-/// Custom Deste Editörü (ekran 8) — 05-desteler-ve-kategoriler.md §7.
-///
-/// Alanlar doğrudan SwiftData nesnesine yazıyor: mockup'taki "otomatik
-/// kaydedilir" alt başlığı bu. Yerel bir kopya tutup `KAYDET`te yazsaydık,
-/// 40 kelime girip uygulamayı arka plana atan kullanıcı hepsini kaybederdi.
-/// `KAYDET` bu yüzden bir yazma değil, "bitirdim" düğmesi — basılmadan önce
-/// alandaki taslak kelime senkron listeye alınır.
+
 struct CustomDeckEditorView: View {
-    /// `nil`: listeye uğramadan açılan yeni deste (Öne Çıkanlar kısayolu).
+
     let deckID: UUID?
 
     @Environment(LocalizationManager.self) private var l10n
@@ -18,7 +12,7 @@ struct CustomDeckEditorView: View {
     @Environment(SubscriptionStore.self) private var subscription
     @Environment(\.modelContext) private var modelContext
 
-    /// Deste sayısı en fazla 3; predicate yazmak yerine istemcide seçmek ucuz.
+
     @Query private var decks: [CustomDeck]
 
     @State private var createdID: UUID?
@@ -31,7 +25,7 @@ struct CustomDeckEditorView: View {
         return decks.first { $0.uuid == id }
     }
 
-    /// Alandaki taslak da eklense oynamaya yeter mi — buton durumu için.
+
     private func projectedWordCount(for deck: CustomDeck) -> Int {
         let words = deck.words
         let draft = wordDraft
@@ -49,8 +43,8 @@ struct CustomDeckEditorView: View {
         }
         .dismissKeyboardOnTap()
         .onAppear(perform: createIfNeeded)
-        // Adsız ve kelimesiz deste listede iz bırakmıyor: kullanıcı yanlışlıkla
-        // dokunup geri döndüğünde boş bir kart kalmamalı.
+
+
         .onDisappear(perform: discardIfEmpty)
         .alert(
             l10n.t("customDeck.delete.title"),
@@ -72,8 +66,8 @@ struct CustomDeckEditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(alignment: .top, spacing: 14) {
-                        // §05 §7: "marquee önizlemesi canlı güncellenir" —
-                        // isim ve kapak değiştikçe ızgarada nasıl görüneceği.
+
+
                         CustomDeckCard(deck: deck, isLocked: false)
                             .frame(width: 96)
                             .id("preview-\(deck.coverTemplate)-\(deck.coverImageData?.count ?? 0)")
@@ -101,8 +95,8 @@ struct CustomDeckEditorView: View {
                                 }
                             )
                         )
-                        // Şerit ekranın kenarına kadar kaysın: 12 şablon
-                        // 20pt'lik iç boşlukta kesik görünüyordu.
+
+
                         .padding(.horizontal, -20)
                     }
 
@@ -125,7 +119,6 @@ struct CustomDeckEditorView: View {
         }
     }
 
-    // MARK: Başlık
 
     private func navBar(_ deck: CustomDeck) -> some View {
         HStack(spacing: 0) {
@@ -169,7 +162,6 @@ struct CustomDeckEditorView: View {
         return name.isEmpty ? l10n.t("customDeck.defaultName") : name
     }
 
-    // MARK: Alanlar
 
     private func field(label: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 9) {
@@ -194,8 +186,8 @@ struct CustomDeckEditorView: View {
                     .textInputAutocapitalization(.words)
                     .submitLabel(.done)
                     .focused($isNamingFocused)
-                    // 24 karakter sınırı yazarken uygulanıyor; sonradan kırpmak
-                    // kullanıcının yazdığını sessizce yutmak olurdu.
+
+
                     .onChange(of: deck.name) { _, new in
                         if new.count > CustomDeckLimits.maxNameLength {
                             deck.name = String(new.prefix(CustomDeckLimits.maxNameLength))
@@ -236,7 +228,6 @@ struct CustomDeckEditorView: View {
         )
     }
 
-    // MARK: Alt bar
 
     private func footer(_ deck: CustomDeck) -> some View {
         VStack(spacing: 7) {
@@ -251,8 +242,8 @@ struct CustomDeckEditorView: View {
                     Haptics.primaryButton()
                     finishEditing(playAfter: false)
                 } label: {
-                    // İki butonun yüksekliği eşit kalmalı: `KAYDET VE OYNA`
-                    // uzun dillerde iki satıra taşıp yanındakini kısa bırakıyor.
+
+
                     Text(l10n.t("customDeck.save")).lineLimit(1)
                 }
                 .buttonStyle(SecondaryButtonStyle())
@@ -290,7 +281,6 @@ struct CustomDeckEditorView: View {
         }
     }
 
-    // MARK: Eylemler
 
     private func createIfNeeded() {
         guard deckID == nil, createdID == nil else { return }
@@ -301,7 +291,7 @@ struct CustomDeckEditorView: View {
             router.pop()
             return
         }
-        // Boş isim: liste satırı ile "Deste Oluştur" kartı aynı metni paylaşmasın.
+
         let deck = CustomDeck(
             name: "",
             languageCode: l10n.localeCode,
@@ -315,8 +305,8 @@ struct CustomDeckEditorView: View {
 
     private func discardIfEmpty() {
         guard let deck else { return }
-        // Çıkmadan önce taslak hâlâ duruyorsa yaz: swipe-back parent
-        // `leaveEditor` çağırmadan pop edebiliyor.
+
+
         _ = commitPendingDraft(into: deck, trackAnalytics: false)
         modelContext.persistCustomDecks()
         guard !deck.hasListableContent else { return }
@@ -332,7 +322,7 @@ struct CustomDeckEditorView: View {
         router.pop()
     }
 
-    /// Taslağı yazar, kaydeder; `Kaydet` / geri çıkar, `Kaydet ve Oyna` oyuna geçer.
+
     private func finishEditing(playAfter: Bool) {
         guard let deck else {
             router.pop()
@@ -343,8 +333,8 @@ struct CustomDeckEditorView: View {
         modelContext.persistCustomDecks()
 
         if playAfter {
-            // §09 §9: yazmak ücretsiz, oynamak Tam Bilet. Duvar burada çıkıyor —
-            // kullanıcı destesini bitirmiş, ne satın alacağını görüyor.
+
+
             guard subscription.isPremium else {
                 Haptics.lockedWall()
                 router.openPaywall(.customDeck)
@@ -361,7 +351,7 @@ struct CustomDeckEditorView: View {
             return
         }
 
-        // Pop'tan önce sil: aksi hâlde ana ızgara boş kartı bir kare gösterir.
+
         let shouldKeep = deck.hasListableContent
         if !shouldKeep {
             modelContext.delete(deck)
@@ -386,8 +376,7 @@ struct CustomDeckEditorView: View {
         return flush
     }
 
-    /// Featured kısayolundan (`deckID == nil`) gelindiyse listeye düş: kayıt
-    /// teyidi görünsün. Listeden gelindiyse bir basamak geri.
+
     private func leaveEditor(saved deck: CustomDeck) {
         if deckID == nil, deck.hasListableContent {
             router.path = [.customList]

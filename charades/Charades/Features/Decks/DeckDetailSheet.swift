@@ -1,9 +1,6 @@
 import SwiftUI
 
-/// Deste Detayı (ekran 5) — `ornek-ekranlar.html` sheet düzeni.
-///
-/// Üstte `DESTE` başlığı + çarpı; solda küçük afiş, sağda başlık/etiket/açıklama;
-/// altta kesik çerçeveli örnek kelimeler ve tam genişlik `OYNA`.
+
 struct DeckDetailSheet: View {
     let deck: DeckDef
 
@@ -61,8 +58,8 @@ struct DeckDetailSheet: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        // iPad’de fraction sheet’ler garip boşluk bırakıyor; large oturuyor.
-        // Telefonda %70 — OYNA altta, arka ekran görünmez.
+
+
         .presentationDetents(
             AppLayout.isRegularWidth(horizontalSizeClass) ? [.large] : [.fraction(0.7)]
         )
@@ -70,7 +67,6 @@ struct DeckDetailSheet: View {
         .task(id: deck.id) { loadSampleWords() }
     }
 
-    // MARK: Hero — afiş sol, meta sağ
 
     private var hero: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -97,7 +93,7 @@ struct DeckDetailSheet: View {
         }
     }
 
-    /// HTML `.dd-poster` — küçük çerçeveli afiş + alt şerit.
+
     private var miniPoster: some View {
         VStack(spacing: 0) {
             ZStack {
@@ -161,7 +157,6 @@ struct DeckDetailSheet: View {
         }
     }
 
-    // MARK: Örnek kelimeler
 
     private var sampleWordSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -192,7 +187,6 @@ struct DeckDetailSheet: View {
         }
     }
 
-    // MARK: CTA
 
     private var actions: some View {
         VStack(spacing: 8) {
@@ -208,8 +202,7 @@ struct DeckDetailSheet: View {
                 .buttonStyle(MarqueeButtonStyle())
                 .disabled(!isLocked && !hasContent)
 
-                // §02 §4: ikon buton `FAVORİ` — filtre chip'i en az bir favori
-                // varken görünüyor (§09 §9).
+
                 favoriteButton
             }
 
@@ -249,7 +242,7 @@ struct DeckDetailSheet: View {
         .accessibilityAddTraits(isFavorite ? .isSelected : [])
     }
 
-    /// §4: 6 kelime. Deste dosyası burada lazy yükleniyor — ana ekranda değil.
+
     private func loadSampleWords() {
         let cards = CardBank.shared.cards(in: deck.id)
         guard !cards.isEmpty else {
@@ -260,7 +253,6 @@ struct DeckDetailSheet: View {
     }
 }
 
-// MARK: - Parçalar
 
 private struct DetailTag: View {
     let text: String
@@ -317,7 +309,7 @@ private struct SampleChip: View {
     }
 }
 
-/// Örnek kelime / etiket satırları değişken uzunlukta sarıyor.
+
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
     var alignment: HorizontalAlignment = .center

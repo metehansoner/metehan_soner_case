@@ -1,13 +1,10 @@
 import SwiftUI
 
-/// Ekran zemini — 01-tasarim-sistemi.md §1 (radial gradient) + §3 (doku katmanları).
-///
-/// Katman sırası dokümandaki sırayla aynı: zemin, perde, spot, ışık sızıntısı,
-/// vignette, en üstte grain.
+
 struct VelvetBackground: View {
-    /// §3: kadife perde şeritleri — onboarding ve paywall sheet arka planında.
+
     var showsCurtain = false
-    /// §3: köşeden gelen turuncu radial — ana ekranın sağ üstünde.
+
     var showsLightLeak = false
     var showsGrain = true
 
@@ -44,9 +41,7 @@ struct VelvetBackground: View {
     }
 }
 
-/// §3: dikey gradient şeritler, üstte `bgVelvetLight` kıvrım vurgusu.
-/// Gerçek kadife perdede ışık kıvrımın tepesinde toplanır, kenarlarda düşer —
-/// şerit içindeki gradient bu yüzden ortada açılıp iki yana koyulaşıyor.
+
 private struct CurtainDrape: View {
     private let foldWidth: CGFloat = 26
 

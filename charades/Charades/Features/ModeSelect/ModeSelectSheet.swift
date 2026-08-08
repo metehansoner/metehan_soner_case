@@ -1,17 +1,10 @@
 import SwiftUI
 
-/// Ekran 10 + 12 — Mod seçimi ve tur ön ayar tek sheet (§ `02` §4, § `04` §1–3).
-///
-/// Üstte altı mod, altta süre/zorluk, en altta `OYNA`. Takım / Kelime Sepeti /
-/// eksik Mix gibi ara kurulum isteyen modlar sheet'i kapatıp kendi ekranına
-/// gidiyor; dönüşte yine bu sheet açılıyor.
-///
-/// § `09` §9: buradaki süre/zorluk **yalnızca o tur için**; ayarlardaki kalıcı
-/// tercihi yazmıyor.
+
 struct ModeSelectSheet: View {
     var onClose: () -> Void
     var onPlay: () -> Void
-    /// Ara kurulum isteyen mod — sheet kapanır, ilgili rota açılır.
+
     var onNeedsSideSetup: (GameMode) -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -72,7 +65,6 @@ struct ModeSelectSheet: View {
         }
     }
 
-    // MARK: Modlar
 
     private var modes: some View {
         VStack(spacing: 9) {
@@ -106,7 +98,7 @@ struct ModeSelectSheet: View {
         }
     }
 
-    /// Takım, Kelime Sepeti veya henüz 2 deste seçilmemiş Mix — ayrı ekran.
+
     private func needsSideSetup(_ mode: GameMode) -> Bool {
         if !mode.needsDeckSelection { return true }
         if mode.usesTeams { return true }
@@ -114,7 +106,6 @@ struct ModeSelectSheet: View {
         return false
     }
 
-    // MARK: Süre
 
     private var durationRow: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -184,7 +175,6 @@ struct ModeSelectSheet: View {
         setup.duration = next
     }
 
-    // MARK: Zorluk
 
     private var difficultyRow: some View {
         HStack(spacing: 6) {
@@ -243,7 +233,6 @@ struct ModeSelectSheet: View {
         }
     }
 
-    // MARK: Ortak
 
     private func groupLabel(_ key: String) -> some View {
         Text(l10n.t(key))

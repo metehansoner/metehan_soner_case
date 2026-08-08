@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// "ŞİMDİ VİZYONDA" şeridi — 02-ekran-akisi.md §4 (ekran 4, madde 3).
-///
-/// Günlük bedava desteyi geri sayımla duyuruyor. Premium kullanıcıda gizli:
-/// zaten her deste açık, şerit ona bir şey söylemiyor. Gün dönümü cihazın
-/// yerel gece yarısı (§09 §8).
+
 struct NowShowingStrip: View {
     let deck: DeckDef
     var onTap: () -> Void
@@ -75,7 +71,7 @@ struct NowShowingStrip: View {
             .shadow(color: .black.opacity(0.35), radius: 5, y: 2)
     }
 
-    /// Saniye başı yenilenen tek öğe bu; şeridin geri kalanı yeniden çizilmiyor.
+
     private var countdown: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             VStack(alignment: .trailing, spacing: 2) {

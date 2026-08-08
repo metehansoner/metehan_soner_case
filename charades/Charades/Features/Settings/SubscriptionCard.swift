@@ -1,9 +1,6 @@
 import SwiftUI
 
-/// Altın bilet kartı — 06-ayarlar-ve-lokalizasyon.md §1 Grup 4.
-///
-/// Yalnızca premium kullanıcıda, HESAP grubunun **üstünde**. Gerekçe dokümanda
-/// tek cümle: ödediği şeyi görmesi iptal oranını düşürüyor.
+
 struct SubscriptionCard: View {
     let renewalDate: Date?
 
@@ -43,8 +40,7 @@ struct SubscriptionCard: View {
         }
     }
 
-    /// Tarih yoksa satır hiç yazılmıyor: "Yenileme: —" bilgi vermiyor, sadece
-    /// bir şeyin bozuk olduğunu düşündürüyor.
+
     private var renewal: String? {
         guard let renewalDate else { return nil }
         let formatted = renewalDate.formatted(

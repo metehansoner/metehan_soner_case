@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Ana ekran header'ı — 02-ekran-akisi.md §1 ve §4 (ekran 4).
-///
-/// Tab bar yok; ayarlar bu satırdaki dişliden sheet olarak açılıyor. Logo
-/// boyutu sabit — kaydırınca küçülmez. VIP, takım, arşiv ve dişli her zaman
-/// erişilebilir; arşivde kayıt yokken de makara görünür (boş arşive gider).
+
 struct HeaderBar: View {
     var archiveCount: Int
     var isPremium: Bool
@@ -16,7 +12,7 @@ struct HeaderBar: View {
 
     @Environment(LocalizationManager.self) private var l10n
 
-    /// Sol VIP+takım, sağ arşiv+dişli — iki yan da iki buton (~98).
+
     private let sideInset: CGFloat = 98
 
     var body: some View {
@@ -63,7 +59,7 @@ struct HeaderBar: View {
         .padding(.bottom, 8)
     }
 
-    /// §4: logo Oswald Bold, çevresinde 14 ampul, sıralı yanıp sönme.
+
     private var logoPlaque: some View {
         Text(l10n.t("app.name"))
             .font(AppFont.display(34, weight: .bold))
@@ -82,7 +78,7 @@ struct HeaderBar: View {
             .accessibilityAddTraits(.isHeader)
     }
 
-    /// §4: logonun altında ince altın çizgi + sabit alt başlık.
+
     private var tagline: some View {
         HStack(spacing: 8) {
             goldRule
@@ -109,8 +105,7 @@ struct HeaderBar: View {
     }
 }
 
-/// 40pt daire, aynı glyph kutusu — SF Symbol genişliği butondan butona
-/// oynamasın diye ikon sabit 20×20 alanda ortalanıyor.
+
 struct HeaderCircleIconButton: View {
     var systemName: String
     var tint: Color = AppColors.accentBrass
@@ -150,8 +145,8 @@ struct HeaderCircleIconButton: View {
                             .offset(x: 4, y: -2)
                     }
                 }
-                // Daire 40pt: header bandının yüksekliği buna göre kuruldu.
-                // Dokunma alanı 44pt'ye açılıyor, görünen boyut değişmiyor.
+
+
                 .frame(width: 44, height: 44)
                 .contentShape(Circle())
         }

@@ -1,16 +1,11 @@
 import SwiftUI
 
-/// Öne çıkan satır — 02-ekran-akisi.md §4 (ekran 4, madde 5).
-///
-/// `KENDİ KELİMELERİN` burada olmak zorunda, tercih değil: o mod deste
-/// seçmiyor, dolayısıyla "deste seç → mod seç" hattından hiç erişilemez.
-/// `MIX` de aynı sebeple burada.
+
 struct FeaturedRow: View {
-    /// §02 §24: ücretsiz kullanıcı Kelime Sepeti'ni **hiç görmüyor** — 20 kelime
-    /// yazdırıp sonunda paywall göstermek yem-değiştir olurdu. Mix'te durum
-    /// farklı: kurulum serbest, duvar oynarken çıkıyor.
+
+
     var isWordBasketLocked: Bool
-    /// Destesi yoksa kart "oluştur" kısayolu; varsa yönetim listesine gider.
+
     var hasCustomDecks: Bool
     var onMix: () -> Void
     var onWordBasket: () -> Void
@@ -45,8 +40,8 @@ struct FeaturedRow: View {
 
 private struct FeaturedCard: View {
     enum Style {
-        /// §4: Mix dönen film makarası, Kendi Kelimelerin kelime kartları + kalem,
-        /// Custom boş afiş + artı. Üçü de ızgaradaki desteden farklı görsel dil.
+
+
         case mix, wordBasket, customDeck
     }
 
@@ -131,13 +126,13 @@ private struct FeaturedCard: View {
                 )
             )
         case .customDeck:
-            // Mockup'taki 46° çizgili boş afiş dokusu — Canvas ile bir kez çiziliyor.
+
             AnyShapeStyle(AppColors.surfaceCard)
         }
     }
 }
 
-/// §4 mockup'ındaki custom kart: 46° çizgili boş afiş.
+
 private struct StripedFill: View {
     var body: some View {
         Canvas { context, size in
@@ -158,8 +153,7 @@ private struct StripedFill: View {
     }
 }
 
-/// Kendi Kelimelerin: üst üste iki kelime kartı + ince kalem — bilet ikonundan
-/// daha okunaklı; Mix makarası / Custom afiş ile aynı “çizim” dili.
+
 private struct WordBasketIcon: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -206,7 +200,7 @@ private struct WordBasketIcon: View {
     }
 }
 
-/// §4: Mix kartının dönen film makarası. 12 fps — §01 §3'ün animasyon bütçesi.
+
 private struct SpinningReel: View {
     var isSpinning: Bool
 

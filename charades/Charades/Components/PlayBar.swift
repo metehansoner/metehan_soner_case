@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// Alt aksiyon barı — 02-ekran-akisi.md §1 ve §4 (madde 7).
-///
-/// Tab bar kaldırıldığı için ekranın altı sabit bir navigasyon öğesi değil:
-/// seçim varken beliriyor, yokken tüm dikey alan ızgaraya kalıyor. Doğrudan
-/// safe area'nın üzerinde oturuyor.
+
 struct PlayBar: View {
     var deckCount: Int
     var cardCount: Int
-    /// §09 §9: 2+ deste ile `OYNA` Mix demek ve Mix premium. Etiket ikinci
-    /// deste seçildiği anda görünüyor — kullanıcı butona basmadan önce.
+
+
     var isMix: Bool
     var isPremium: Bool
     var isPlayEnabled: Bool

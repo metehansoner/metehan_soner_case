@@ -1,25 +1,17 @@
 import UserNotifications
 
-/// Bildirimler — 06-ayarlar-ve-lokalizasyon.md §1 "Grup 3" ve "Ne gönderiyoruz".
-///
-/// Hepsi **yerel**. Sunucu yok: APNs / Firebase Messaging yok (§ `07` §4).
-/// Saat `Calendar.current` ile cihazın **yerel saat diliminde** planlanır —
-/// Türkiye'de 18:00 ise ABD'de de o cihazın 18:00'inde düşer.
-///
-/// Metin planlama anında `LocalizationManager` dilinden yazılır; dil değişince
-/// `scheduleChanged()` tüm kuyruğu yeniden kurar.
+
 enum NotificationService {
     private static let dailyFreeDeckPrefix = "dailyFreeDeck."
     private static let engagementPrefix = "engage."
     private static let trialEndingID = "trialEnding"
 
-    /// § `06` §3: metinde **o günün** deste adı geçtiği için tekrarlayan tetik
-    /// kullanılamıyor. Onun yerine iki haftalık pencere tek tek planlanıyor.
+
     private static let scheduleWindowDays = 14
 
-    /// Akşam parti saati — günlük bedava deste + engagement.
+
     private static let eveningHour = 18
-    /// İkinci hatırlatma: kullanıcıyı uygulamaya çekmek.
+
     private static let lateHour = 20
 
     static func authorizationStatus() async -> UNAuthorizationStatus {
@@ -33,8 +25,7 @@ enum NotificationService {
         }
     }
 
-    /// Sistem diyaloğunu açıyor. Hata durumunda `false`: izin verilmemiş sayılıyor,
-    /// uygulama akışı değişmiyor.
+
     @discardableResult
     static func requestAuthorization() async -> Bool {
         let options: UNAuthorizationOptions = [.alert, .sound, .badge]
@@ -43,13 +34,10 @@ enum NotificationService {
         return granted
     }
 
-    /// Açılışta dil, abonelik ve tercih art arda tetikleyebiliyor; iki planlama
-    /// iç içe girerse biri diğerinin eklediğini siliyor.
+
     private static var scheduling: Task<Void, Never>?
 
-    /// Planlamayı etkileyen bir şey değişti: dil, abonelik, bildirim tercihi ya
-    /// da izin. Planlanan metin planlama anında sabitlendiği için dil değişince
-    /// hepsi yeniden yazılmalı.
+
     static func scheduleChanged() {
         let previous = scheduling
         scheduling = Task {
@@ -75,7 +63,7 @@ enum NotificationService {
         guard isEnabled else { return }
 
         let schedulesDailyFree = wantsDailyDeck && !isPremium
-        // UNNotificationRequest Sendable değil; üretim + ekleme MainActor'da kalsın.
+
         await enqueueLocalNotifications(
             center: center,
             schedulesDailyFree: schedulesDailyFree
@@ -87,8 +75,7 @@ enum NotificationService {
         #endif
     }
 
-    /// § `09` §7: sessiz kesinti şikâyet üretiyor. Deneme bitiminden 24 saat önce,
-    /// tek seferlik.
+
     static func scheduleTrialEndingNotice(trialEndsAt: Date) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [trialEndingID])
@@ -123,7 +110,6 @@ enum NotificationService {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
-    // MARK: - Temizlik
 
     private static func clearPrefixedRequests(
         in center: UNUserNotificationCenter,
@@ -135,8 +121,7 @@ enum NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: ids)
     }
 
-    /// 18:00 bedava deste + engagement. `UNNotificationRequest` Sendable
-    /// olmadığı için üretimi ve `add` MainActor'da kalıyor.
+
     @MainActor
     private static func enqueueLocalNotifications(
         center: UNUserNotificationCenter,
@@ -147,14 +132,13 @@ enum NotificationService {
                 try? await center.add(request)
             }
         }
-        // 18:00'de bedava deste zaten varsa engagement'ı o saate koyma —
-        // aynı anda iki bildirim düşmesin. 20:00 herkese engagement.
+
+
         for request in engagementRequests(skipEveningHour: schedulesDailyFree) {
             try? await center.add(request)
         }
     }
 
-    // MARK: - Günlük bedava deste (18:00 yerel)
 
     @MainActor
     private static func dailyFreeDeckRequests() -> [UNNotificationRequest] {
@@ -189,10 +173,7 @@ enum NotificationService {
         }
     }
 
-    // MARK: - Engagement (yerel 18:00 / 20:00)
 
-    /// Uygulamaya çekme hatırlatmaları. Metin güne ve saate göre döner; dil
-    /// uygulama dilidir (cihaz dili değil).
     @MainActor
     private static func engagementRequests(skipEveningHour: Bool) -> [UNNotificationRequest] {
         let l10n = LocalizationManager.shared
@@ -223,8 +204,7 @@ enum NotificationService {
         }
     }
 
-    /// Gün + saat için kararlı “zar”: yeniden planlamada aynı güne aynı metin
-    /// düşer; ertesi gün havuzdaki dört metinden başka biri gelir.
+
     @MainActor
     private static func engagementCopy(
         day: Date,
@@ -232,7 +212,7 @@ enum NotificationService {
         l10n: LocalizationManager
     ) -> (title: String, body: String) {
         let dayNumber = Calendar.current.ordinality(of: .day, in: .era, for: day) ?? 0
-        // Basit karıştırma — a/b/c/d eşit şansla, gün gün değişir.
+
         let mix = dayNumber &* 2654435761 &+ hour &* 40503
         let variants = ["a", "b", "c", "d"]
         let key = variants[abs(mix) % variants.count]

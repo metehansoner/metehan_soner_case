@@ -1,13 +1,9 @@
 import SwiftData
 import SwiftUI
 
-/// Mix Kurulumu (ekran 6) — 05-desteler-ve-kategoriler.md §6.
-///
-/// Ana ekrandaki ızgaradan farkı: dokunuş detay sheet'i açmıyor, doğrudan
-/// seçimi değiştiriyor. Burada kullanıcı zaten "birden fazla deste seçiyorum"
-/// bağlamında ve her deste için sheet açıp kapamak akışı öldürüyor.
+
 struct MixSetupView: View {
-    /// Karışım hazır — kurulum sheet'ine (mod + tur ayarı) dönülüyor.
+
     var onContinue: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
@@ -26,8 +22,7 @@ struct MixSetupView: View {
 
     private var selectionCount: Int { setup.selectedDeckIDs.count }
 
-    /// §10 §4: kelime dosyası üretilmemiş deste kilitli değil **içeriksiz**;
-    /// boş havuzla tur başlamıyor.
+
     private var hasContent: Bool {
         setup.selectedDeckIDs.allSatisfy { DeckCatalog.contentReadyIDs.contains($0) }
     }
@@ -74,7 +69,6 @@ struct MixSetupView: View {
         }
     }
 
-    // MARK: Başlık
 
     private var navBar: some View {
         HStack(spacing: 0) {
@@ -104,9 +98,7 @@ struct MixSetupView: View {
         .padding(.bottom, 6)
     }
 
-    /// §05 §6: karışımı isimlendirip kaydetme (max 5). Aynı desteler zaten
-    /// kayıtlıysa buton kapalı — ikinci bir "Cuma Gecesi Karışımı" üretmenin
-    /// kullanıcıya faydası yok, listeyi 5 slotluk sınırda tıkıyor.
+
     private var saveButton: some View {
         Button {
             Haptics.secondaryButton()
@@ -131,13 +123,12 @@ struct MixSetupView: View {
         setup.isMixReady && !isSelectionSaved && savedMixes.count < MixLimits.maxSaved
     }
 
-    /// İlk destenin adından türeyen öneri; kullanıcı üzerine yazabiliyor.
+
     private var suggestedName: String {
         guard let first = setup.selectedDecks.first else { return "" }
         return l10n.t("mix.save.suggestion", ["deck": l10n.t(first.titleKey)])
     }
 
-    // MARK: Özet ve karışım göstergesi
 
     private var mixBar: some View {
         VStack(alignment: .leading, spacing: 9) {
@@ -186,7 +177,6 @@ struct MixSetupView: View {
         .animation(.easeOut(duration: 0.22), value: selectionCount)
     }
 
-    // MARK: Izgara
 
     private var sectionRow: some View {
         Text(l10n.t("mix.allDecks"))
@@ -200,8 +190,7 @@ struct MixSetupView: View {
             .padding(.bottom, 10)
     }
 
-    /// Mockup'ta Mix ızgarası sabit 3 kolon: seçim yaparken tek ekranda daha
-    /// çok deste görmek, kapak detayından önemli.
+
     private var deckGrid: some View {
         LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 3),
@@ -230,7 +219,6 @@ struct MixSetupView: View {
         .padding(.horizontal, 16)
     }
 
-    // MARK: Alt bar
 
     private var footer: some View {
         VStack(spacing: 7) {
@@ -248,8 +236,8 @@ struct MixSetupView: View {
         .padding(.horizontal, 20)
         .padding(.top, 10)
         .padding(.bottom, 12)
-        // Izgara butonun altından geçtiği için `PlayBar`ın zemini burada da
-        // gerekiyor: kart köşeleri butonun kenarına yapışmasın.
+
+
         .background {
             LinearGradient(
                 colors: [
@@ -269,14 +257,13 @@ struct MixSetupView: View {
         }
     }
 
-    /// §02 §6: tek deste seçiliyken oynanamaz ve sebebi yazıyor.
+
     private var footerHint: String? {
         if selectionCount < MixLimits.deckRange.lowerBound { return l10n.t("mix.hint.tooFew") }
         if !hasContent { return l10n.t("playbar.noContent") }
         return nil
     }
 
-    // MARK: Eylemler
 
     private func toggle(_ deck: DeckDef, isLocked: Bool) {
         guard !isLocked else {
@@ -285,8 +272,8 @@ struct MixSetupView: View {
             return
         }
         guard setup.canToggleInMix(deck.id) else {
-            // §05 §6: 8 sınırında yeni deste eklenmiyor; kullanıcı önce birini
-            // çıkarmalı. Sessizce yutmak yerine dokunsal geri bildirim.
+
+
             Haptics.stepperLimit()
             return
         }
@@ -306,7 +293,7 @@ struct MixSetupView: View {
     private func saveMix() {
         let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
         let name = trimmed.isEmpty ? suggestedName : trimmed
-        // Yeni karışım listenin başına geliyor: en son kaydedilen en taze.
+
         let topIndex = (savedMixes.map(\.sortIndex).min() ?? 0) - 1
         modelContext.insert(
             SavedMix(name: name, deckIDs: setup.selectedDeckIDs, sortIndex: topIndex)
@@ -316,8 +303,8 @@ struct MixSetupView: View {
     }
 
     private func play() {
-        // §09 §9: Mix premium. Kurulum serbest, duvar oynarken çıkıyor —
-        // kullanıcı ne satın aldığını görmüş oluyor.
+
+
         guard subscriptions.isPremium else {
             Haptics.lockedWall()
             router.openPaywall(.mix)
@@ -329,14 +316,7 @@ struct MixSetupView: View {
     }
 }
 
-// MARK: - Karışım göstergesi
 
-/// §05 §6: yatay yığın çubuk, her destenin katkı oranı kendi renginde.
-///
-/// Segmentler **eşit** genişlikte, çünkü karıştırma ağırlıklı round-robin:
-/// desteler eşit olasılıkla çekiliyor, 60 kartlık deste 300 kartlığın altında
-/// kalmıyor. Kart sayısıyla orantılı bir çubuk oyunun gerçek davranışını
-/// yanlış anlatırdı. Çubuğun toplam doluluğu ise 8 destelik tavana göre.
 private struct MixMeter: View {
     let decks: [DeckDef]
 

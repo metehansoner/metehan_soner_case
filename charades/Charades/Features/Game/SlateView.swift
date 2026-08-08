@@ -1,46 +1,32 @@
 import SwiftUI
 
-/// Klaket ve başlık kartı — 08-sinematik-detaylar.md A2 + B5.
-///
-/// İkisi tek view: B5'in kendi tanımı "klaketle birlikte tek akış gibi görünür".
-/// Ayrı iki faz yapmak aralarına bir kare boşluk koyuyor ve akış iki ayrı ekran
-/// gibi okunuyordu.
-///
-/// §08 §0 bütçesi (biraz nefes alan tempo):
-///
-/// | Tur | Klaket | Başlık | Geri sayım | Toplam |
-/// |---|---|---|---|---|
-/// | Maçın ilki | ~1,25 sn | 1,4 sn | 3 sn | ~5,65 sn |
-/// | Sonrakiler | 0,35 sn | — | 3 sn | 3,35 sn |
-///
-/// Ekranın tamamı dokunuşla atlanıyor (§0: geri sayım hariç hepsi atlanabilir).
+
 struct SlateView: View {
-    /// Maçtaki sahne sırası — arşivdeki `replay.scene` ile **aynı sayı**.
+
     let scene: Int
-    /// §08 A2: "Takım modunda ÇEKİM 03 tur numarasını veriyor." Diğer modlarda
-    /// aynı sahnenin kaçıncı denemesi (Duraklat → `YENİDEN`); ikisi de "bu kaçıncı
-    /// deneme" sorusunun o moddaki karşılığı.
+
+
     let take: Int
     let deckTitle: String
     let modeTitle: String
-    /// Yalnızca maçın ilk turunda tam sürüm; sonrakiler kısa (§08 A2).
+
     let isFull: Bool
     var onFinish: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Çubuğun açık (kalkık) hâli. Kapanış "klak" anı.
+
     @State private var isBarOpen = true
     @State private var flash = false
     @State private var hasExited = false
     @State private var showsTitleCard = false
 
-    // Süreler tek yerde: bütçe denetimi tabloya bakarak yapılabilsin.
+
     private var barFall: TimeInterval { isFull ? 0.55 : 0.18 }
     private var holdAfterClack: TimeInterval { isFull ? 0.4 : 0.07 }
     private var exitDuration: TimeInterval { isFull ? 0.3 : 0.1 }
-    /// "Takdim eder" kartı — okunacak kadar durmalı.
+
     private let titleCardDuration: TimeInterval = 1.4
     private let titleCardFade: TimeInterval = 0.35
 
@@ -53,14 +39,13 @@ struct SlateView: View {
                     .transition(.opacity)
             } else {
                 slate
-                    // Kapanınca sola kayarak çıkıyor — kameranın önünden
-                    // çekilen gerçek klaketin yönü.
+
+
                     .offset(x: hasExited ? -exitOffset : 0)
                     .opacity(hasExited ? 0 : 1)
             }
 
-            // Klak anında tek karelik beyaz patlama. Reduce Motion'da yok:
-            // ani parlaklık değişimi §5'in kapattığı ilk şey.
+
             if flash {
                 Color.white.ignoresSafeArea()
             }
@@ -73,7 +58,6 @@ struct SlateView: View {
         .task { await run() }
     }
 
-    // MARK: Klaket
 
     private var slate: some View {
         VStack(spacing: 0) {
@@ -86,7 +70,7 @@ struct SlateView: View {
         .shadow(color: .black.opacity(0.6), radius: 24, y: 12)
     }
 
-    /// Üstteki çubuk: yukarıdan iniyor ve gövdeye çarpıyor.
+
     private var clapstick: some View {
         DiagonalStripes()
             .frame(height: 34)
@@ -95,7 +79,7 @@ struct SlateView: View {
             .overlay {
                 Rectangle().strokeBorder(AppColors.textOnPoster.opacity(0.35), lineWidth: 1)
             }
-            // Menteşe solda: çubuk düz inmiyor, dönerek kapanıyor.
+
             .rotationEffect(.degrees(isBarOpen ? -22 : 0), anchor: .bottomLeading)
     }
 
@@ -135,9 +119,8 @@ struct SlateView: View {
                 .appTracking(2.4)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textCream.opacity(0.6))
-                // Sütun sabit: dört satırın değerleri aynı hizada başlamazsa
-                // klaket künye değil liste gibi duruyor. Uzun diller (`el`
-                // "Λειτουργία") sütunu taşırmasın diye küçülüyor.
+
+
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
                 .frame(width: 82, alignment: .leading)
@@ -154,7 +137,6 @@ struct SlateView: View {
         }
     }
 
-    // MARK: Başlık kartı — B5
 
     private var titleCard: some View {
         VStack(spacing: 12) {
@@ -176,12 +158,11 @@ struct SlateView: View {
         .padding(.horizontal, 40)
     }
 
-    // MARK: Akış
 
     private func run() async {
         guard !reduceMotion else {
-            // §5: klaket "anlık kesmeye" dönüyor. Bilgi kaybolmuyor —
-            // deste ve mod adı zaten bir önceki ekranda seçildi.
+
+
             onFinish()
             return
         }
@@ -212,7 +193,7 @@ struct SlateView: View {
     private func clack() {
         Haptics.clapper()
         SoundService.clapper()
-        // Bir kare (~16 ms) fazla kalırsa patlama değil geçiş oluyor.
+
         flash = true
         Task {
             try? await Task.sleep(for: .milliseconds(50))
@@ -220,7 +201,7 @@ struct SlateView: View {
         }
     }
 
-    /// Dokunuş: kalan bezemeyi atlıyor, bilgiyi zaten okunmuş sayıyor.
+
     private func finishNow() {
         guard !hasExited || showsTitleCard else { return }
         onFinish()
@@ -232,7 +213,7 @@ struct SlateView: View {
         String(format: "%02d", value)
     }
 
-    /// VoiceOver klaketi kare kare okumuyor: tek cümlede sahne, deste ve mod.
+
     private var spokenSummary: String {
         isFull
             ? "\(l10n.t("slate.scene")) \(scene), \(deckTitle), \(modeTitle)"
@@ -240,7 +221,7 @@ struct SlateView: View {
     }
 }
 
-/// Klaket çubuğunun siyah-beyaz eğik şeritleri.
+
 private struct DiagonalStripes: View {
     private let stripeWidth: CGFloat = 22
 

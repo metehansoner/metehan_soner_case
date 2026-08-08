@@ -1,11 +1,6 @@
 import SwiftUI
 
-/// Ekran 15 — 02-ekran-akisi.md §4, oyunun ana ekranı.
-///
-/// Zemin afiş kağıdı, üst ve altta film sprocket şeridi; kelime ortada, Oswald
-/// Bold 96'dan başlayıp sığana kadar küçülüyor (min 44). Portrait yedeğinde
-/// (§09 §1) telefon alna konmadığı ve kelimeyi kullanıcı da gördüğü için ölçek
-/// 48–64'e düşüyor.
+
 struct GameCardView: View {
     let game: LiveGame
 
@@ -18,8 +13,7 @@ struct GameCardView: View {
         ZStack {
             poster
 
-            // Dokunmatik cevap yalnızca `DOKUN` seçiliyken. Eğ modunda ekrana
-            // basmak istemsiz PAS/DOĞRU üretiyordu; orada mekanik sadece tilt.
+
             if game.answerInput == .touch {
                 touchZoneChrome
                 touchTargets
@@ -30,8 +24,7 @@ struct GameCardView: View {
                     .transition(.opacity)
             }
 
-            // Eğ modunda da erişilebilir olsun diye touchTargets'tan bağımsız;
-            // dokunmatikte ise yarıların üstünde olmalı.
+
             pauseButton
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(.top, 36)
@@ -40,14 +33,12 @@ struct GameCardView: View {
         .animation(.easeOut(duration: 0.12), value: game.flash)
     }
 
-    // MARK: Afiş
 
     private var poster: some View {
         VStack(spacing: 0) {
             sprocketBand
-                // §08 A5: kavis işareti karenin sağ üst köşesinde, şeridin
-                // üstünde. Skor bloğuyla çakışmayan tek yer burası ve gerçek
-                // kopyalarda da işaret görüntünün kenarında duruyor.
+
+
                 .overlay(alignment: .trailing) {
                     CueMark(isActive: game.isInFinalTen, diameter: 18)
                         .padding(.trailing, 16)
@@ -62,7 +53,7 @@ struct GameCardView: View {
                 endPoint: .bottom
             )
             .overlay {
-                // Mockup'taki `.game::after` kağıt dokusu.
+
                 HalftoneTexture(dotSize: 0.6, spacing: 3.5, color: .black.opacity(0.45))
                     .opacity(0.16)
             }
@@ -104,9 +95,7 @@ struct GameCardView: View {
         .padding(.horizontal, isPortrait ? 22 : 30)
     }
 
-    /// §04 §1 `Canlandır`: kelimeyi yalnızca telefonu tutan görmeli, bu yüzden
-    /// **küçük ve tek satır**. Diğer modlarda tam tersi geçerli — kelime iki
-    /// metre öteden okunacak.
+
     private var wordSize: CGFloat {
         if !game.mode.screenVisibleToGuesser { return isPortrait ? 30 : 34 }
         return isPortrait ? 64 : 96
@@ -121,10 +110,8 @@ struct GameCardView: View {
             .minimumScaleFactor(game.mode.screenVisibleToGuesser ? (isPortrait ? 48.0 / 64 : 44.0 / 96) : 0.5)
             .opacity(game.flash == nil ? 1 : 0.12)
             .id(game.currentCard?.k)
-            // §08 A4: film karesi ilerlemesi — mevcut kelime yukarı kayıyor,
-            // yeni kelime alttan geliyor. Reduce Motion'da kaymanın yerini
-            // kesme alıyor: ekranın en büyük hareketi bu ve tur boyunca her
-            // cevapta tekrarlıyor.
+
+
             .transition(
                 reduceMotion
                     ? .opacity
@@ -135,9 +122,7 @@ struct GameCardView: View {
             .accessibilityLabel(game.currentCard.map { $0.text(for: l10n.localeCode) } ?? "")
     }
 
-    /// §04 §1 `Hız Turu`: "ekranda kelimenin altında ince bir sayaç çubuğu
-    /// erir". Ticker 0.1 sn'de bir işlediği için genişlik adım adım geliyor;
-    /// lineer animasyon aradaki kareleri dolduruyor.
+
     private var wordTimerBar: some View {
         GeometryReader { geometry in
             let fraction = game.wordTimeFraction ?? 1
@@ -156,11 +141,10 @@ struct GameCardView: View {
         .accessibilityHidden(true)
     }
 
-    // MARK: HUD
 
     private var hud: some View {
         HStack(alignment: .top) {
-            // Çarpı sol üstte overlay; sayaca yer bırak.
+
             Color.clear.frame(width: 36, height: 1)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -168,7 +152,7 @@ struct GameCardView: View {
                     .font(AppFont.display(38, weight: .bold))
                     .appTracking(1)
                     .monospacedDigit()
-                    // §04 §3: son 10 saniyede sayaç `stateWarning`e dönüyor.
+
                     .foregroundStyle(
                         game.isInFinalTen ? AppColors.stateWarning : AppColors.textOnPoster
                     )
@@ -202,9 +186,7 @@ struct GameCardView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// §04 §4.1: kamera önizlemesi **gösterilmiyor** — kullanıcı kendini
-    /// görmesin, doğal davransın. Kaydın sürdüğünü söyleyen tek işaret bu nokta;
-    /// nabzı yavaş, kelimeyle yarışmıyor.
+
     private var recordingDot: some View {
         TimelineView(.periodic(from: .now, by: 0.9)) { context in
             let isOn = Int(context.date.timeIntervalSinceReferenceDate / 0.9) % 2 == 0
@@ -224,13 +206,7 @@ struct GameCardView: View {
         .accessibilityHidden(true)
     }
 
-    // MARK: Alt şerit
 
-    /// §02 ekran 15: `PAS ↰ | ↱ DOĞRU`, ilk 3 turda görünüyor.
-    ///
-    /// Ok yönleri dilden ve RTL'den bağımsız (§04 §2, §06 §2): telefonu öne
-    /// eğmek her dilde DOĞRU. Dokunmatik modda oklar yerini ekran yarılarına
-    /// bırakıyor.
     private var inputHint: some View {
         HStack(spacing: 74) {
             Label {
@@ -252,7 +228,7 @@ struct GameCardView: View {
         .accessibilityHidden(true)
     }
 
-    /// §09 §4: havuz bitip başa döndü.
+
     private var wrapNotice: some View {
         Text(l10n.t("game.deckWrapped"))
             .font(AppFont.ui(8.5, weight: .bold, scales: nil))
@@ -266,13 +242,12 @@ struct GameCardView: View {
             }
     }
 
-    /// §09 §2: kullanıcı telefonu fiziksel olarak dikey tutuyorsa açı nötr
-    /// banda düşer ve hiç tetik gelmez — oyun bozuk değil, duruş yanlış.
+
     private var reminder: some View {
         Text(l10n.t("game.holdLandscape"))
             .font(AppFont.ui(10, weight: .semibold, scales: nil))
-            // Kırmızı mürekkep krem kapsülde 4,45:1'de kalıyordu (§01 §7 AA).
-            // Uyarı rengi kenarlığa taşındı: metin okunur, işaret kırmızı.
+
+
             .foregroundStyle(AppColors.textOnPoster)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
@@ -284,10 +259,7 @@ struct GameCardView: View {
             }
     }
 
-    // MARK: Duraklat
 
-    /// Görünür çıkış yolu — jest (üstten sürükleme) ve arka plan kesintisine
-    /// alternatif. Aynı `PauseOverlay` menüsünü açıyor (§09 §3).
     private var pauseButton: some View {
         Button {
             Haptics.secondaryButton()
@@ -312,9 +284,7 @@ struct GameCardView: View {
         .accessibilityLabel(l10n.t("pause.title"))
     }
 
-    // MARK: Dokunmatik cevap
 
-    /// §04 §2: ekranın sol yarısı PAS, sağ yarısı DOĞRU.
     private var touchTargets: some View {
         HStack(spacing: 0) {
             Button { game.answer(isCorrect: false) } label: {
@@ -330,8 +300,7 @@ struct GameCardView: View {
         .buttonStyle(.plain)
     }
 
-    /// Sol/sağ haritası — yalnızca dokunmatik modda, tur boyunca.
-    /// Kelimeyi örtmeden kenarda duruyor; damga anında kayboluyor.
+
     private var touchZoneChrome: some View {
         HStack(spacing: 0) {
             touchZoneSide(
@@ -377,15 +346,13 @@ struct GameCardView: View {
             }
             .foregroundStyle(color.opacity(0.95))
             .padding(.horizontal, isPortrait ? 14 : 18)
-            // Alt kenardan uzak: kelime/ipucu bandının üstünde okunur kalsın.
+
             .padding(.bottom, isPortrait ? 56 : 48)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: Geri bildirim
 
-    /// §04 §2: tam ekran renk + eğik mühür, 0.45 saniye.
     private func answerFlash(_ flash: LiveGame.Flash) -> some View {
         ZStack {
             (flash == .correct ? AppColors.stateCorrect : AppColors.stateSkip)
@@ -422,14 +389,9 @@ struct GameCardView: View {
     }
 }
 
-/// §08 A4 film şeridi geçişi: kelime değişince deliklerin bir an hızlanması.
-///
-/// Kelimenin kayması tek başına "kart değişti" diyor; şeridin de ilerlemesi
-/// bunu "makara bir kare ilerledi"ye çeviriyor. Kayma **tam bir delik aralığı**
-/// kadar: desen periyodik olduğu için başa dönüş görünmüyor, şerit sonsuz
-/// akıyormuş gibi duruyor.
+
 private struct AdvancingSprocketBand: View {
-    /// Her değişimi bir kare ilerleme sayılıyor.
+
     var advanceToken: String?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -448,8 +410,8 @@ private struct AdvancingSprocketBand: View {
                 spacing: spacing,
                 holeColor: AppColors.surfacePoster.opacity(0.9)
             )
-            // Kayma sırasında kenarda delik eksilmesin diye şerit iki periyot
-            // geniş çiziliyor, taşan kısmı bant kırpıyor.
+
+
             .frame(width: geometry.size.width + period * 2, height: geometry.size.height)
             .offset(x: -period + shift)
         }
@@ -462,12 +424,12 @@ private struct AdvancingSprocketBand: View {
     }
 
     private func advance() {
-        // Reduce Motion'da kelime zaten kesmeyle geliyor; şeridin kayması o
-        // ekranda tek başına hareket eden şey olurdu.
+
+
         guard !reduceMotion else { return }
         withAnimation(.easeOut(duration: 0.22)) { shift = -period }
-        // Sıfıra dönüş animasyonsuz: aynı deseni bir periyot ötelemek görsel
-        // olarak fark edilmiyor, animasyonla dönmek geri sarma gibi duruyor.
+
+
         Task {
             try? await Task.sleep(for: .milliseconds(230))
             var transaction = Transaction()
@@ -477,7 +439,7 @@ private struct AdvancingSprocketBand: View {
     }
 }
 
-/// `PAS ↰` solda ikon, `↱ DOĞRU` sağda ikon — ok her zaman ekranın dışına bakıyor.
+
 private struct TrailingIconLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 6) {

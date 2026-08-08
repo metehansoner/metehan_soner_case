@@ -1,21 +1,14 @@
 import SwiftUI
 
-/// Afiş duvarı — 03-onboarding-paywall.md §2 madde 1, `paywall.html` `.collage`.
-///
-/// Kapaklar **gerçek deste kapaklarından** diziliyor. Kolonlar farklı hızda,
-/// ortadakiler ters yönde; alt kenar kadife perdeye karışıyor.
-///
-/// Kayma Core Animation `repeatForever` ile gidiyor: şerit bir kez
-/// `drawingGroup` ile rasterize ediliyor, sonra yalnız ofset kayıyor. Eski
-/// ~30 fps `@State` döngüsü kare kare zıplıyor ve kasıyordu.
+
 struct PosterWall: View {
     var decks: [DeckDef]
-    /// Varyant B'de duvar geri çekiliyor, öndeki bağlam kapağı öne çıkıyor.
+
     var opacity: Double = 1
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Biraz daha yavaş = daha akıcı his; kolonlar hâlâ birbirinden kayıyor.
+
     private static let durations: [Double] = [56, 68, 60]
     private static let columnCount = 3
 
@@ -57,7 +50,7 @@ struct PosterWall: View {
         .accessibilityHidden(true)
     }
 
-    /// Kolon başına birkaç afiş; fazlası şeridi ağırlaştırıyor.
+
     private func slice(_ index: Int) -> [DeckDef] {
         let stride = decks.enumerated().compactMap {
             $0.offset % Self.columnCount == index ? $0.element : nil
@@ -67,7 +60,6 @@ struct PosterWall: View {
     }
 }
 
-// MARK: - Kolon
 
 private struct PosterColumn: View {
     let decks: [DeckDef]
@@ -76,7 +68,7 @@ private struct PosterColumn: View {
     let isReversed: Bool
     let isAnimated: Bool
 
-    /// `repeatForever` ofseti — gövde her karede yenilenmiyor, katman kayıyor.
+
     @State private var offsetY: CGFloat = 0
 
     private var posterHeight: CGFloat { width * 4 / 3 }
@@ -114,12 +106,11 @@ private struct PosterColumn: View {
 
         guard isAnimated else { return }
 
-        // Reset’in commit olması için bir tur bekleniyor; yoksa forever
-        // animasyonu başlangıç değerini yutabiliyor.
+
         await Task.yield()
         guard !Task.isCancelled else { return }
 
-        // Şerit iki kez dizili; tam `halfHeight` yol görünmez şekilde döngüleniyor.
+
         let end = isReversed ? start + halfHeight : start - halfHeight
         withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
             offsetY = end
@@ -140,8 +131,7 @@ private struct PosterColumn: View {
     }
 }
 
-/// Sabit şerit. `Equatable` sayesinde ebeveyn ofset güncellemesi gövdeyi
-/// yeniden kurmuyor — kapak PNG'leri bir kez decode edilip kalıyor.
+
 private struct PosterStrip: View, Equatable {
     let decks: [DeckDef]
     let width: CGFloat
@@ -165,15 +155,11 @@ private struct PosterStrip: View, Equatable {
     }
 }
 
-// MARK: - Mini afiş
 
-/// Ana ekrandaki deste kartının küçültülmüş hâli — paywall afiş duvarı +
-/// kilitli deste hero kartı. Tipografi kart genişliğine göre ölçekleniyor;
-/// sabit 6pt yazı duvarda okunmuyordu.
 struct DeckMiniPoster: View {
     let deck: DeckDef
-    /// Duvar kolonunda `drawingGroup` zaten rasterize ediyor; nokta dokusu
-    /// her karede pahalı ve kaymayı kasıyordu.
+
+
     var showsHalftone: Bool = true
 
     @Environment(LocalizationManager.self) private var l10n

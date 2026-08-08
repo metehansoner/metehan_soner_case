@@ -1,16 +1,12 @@
 import SwiftUI
 
-/// Marquee ampulleri — 01-tasarim-sistemi.md §3.
-///
-/// Nabız 1.5 saniye, her ampul 0.12 saniye gecikmeli başlıyor; dizi boyunca
-/// akan bir dalga oluşuyor. §7: Reduce Motion açıkken nabız durur, ampuller
-/// sabit yanık kalır.
+
 struct BulbRow: View {
     var count = 9
     var diameter: CGFloat = 5
     var color: Color = AppColors.accentAmber
     var isLit = true
-    /// Dalganın kaçıncı ampulden başladığı; üst ve alt sıra kaydırmalı yansın diye.
+
     var phaseOffset = 0
 
     var body: some View {
@@ -31,7 +27,7 @@ struct BulbRow: View {
     }
 }
 
-/// Üst ve alt kenara dizilmiş iki sıra — logo plaketi ve birincil buton (§3, §4).
+
 struct BulbFrame: View {
     var countPerEdge = 5
     var diameter: CGFloat = 3.5
@@ -54,8 +50,7 @@ struct BulbFrame: View {
     }
 }
 
-/// Dört kenarı saran ampul halkası — splash ikon çerçevesi (`ornek-ekranlar.html`
-/// `ringBulbs`). Köşeler iki kez sayılmasın diye yan kenarlar uçları atlar.
+
 struct BulbRing: View {
     var countPerSide = 8
     var diameter: CGFloat = 4
@@ -98,15 +93,15 @@ struct BulbRing: View {
     }
 }
 
-/// Nabız hesabını tek yerde tutar; her ampul kendi `TimelineView`'ını kurmasın diye.
+
 private struct BulbTimeline<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let content: (@escaping (Int) -> Double) -> Content
 
     var body: some View {
-        // §08 §5: nabız süregelen bir efekt — ısınmada sabit yanık kalıyor.
-        // Ampuller sönmüyor, yalnızca 12 fps'lik çizim duruyor.
+
+
         if reduceMotion || ThermalMonitor.shared.isThrottled {
             content { _ in 1 }
         } else {
@@ -117,7 +112,7 @@ private struct BulbTimeline<Content: View>: View {
         }
     }
 
-    /// 1.5 sn periyot, 1 → 0.34 → 1; ampul başına 0.12 sn gecikme.
+
     private static func level(at time: TimeInterval, index: Int) -> Double {
         let period = 1.5
         let shifted = time - Double(index) * 0.12
@@ -130,7 +125,7 @@ private struct BulbTimeline<Content: View>: View {
 private struct Bulb: View {
     let diameter: CGFloat
     let color: Color
-    /// 0 = sönük (disabled), 1 = tam parlak.
+
     let level: Double
 
     var body: some View {

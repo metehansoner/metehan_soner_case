@@ -1,20 +1,11 @@
 import SwiftUI
 
-/// Kelime giriş bölümü — 05-desteler-ve-kategoriler.md §7 ve 02-ekran-akisi.md §24.
-///
-/// Custom deste editörü ile Kelime Sepeti bu bileşeni paylaşıyor: giriş satırı,
-/// sayaç, toplu ekleme ve chip listesi tek yerde. İki ekranda "aynı kelimeyi iki
-/// kez ekledim" ya da "Enter'a bastım" davranışının ayrışması kullanıcıya hata
-/// gibi görünürdü.
-///
-/// `draft` üstte tutuluyor: Kaydet / geri / Oyna, `onChange` yarışına
-/// kalmadan alandaki yazıyı senkron flush edebilsin. Aksi hâlde kullanıcı
-/// "yazdım kaydettim" sanıp boş deste / önceki ekrana dönüş görüyordu.
+
 struct WordListSection: View {
     @Binding var words: [String]
     @Binding var draft: String
-    /// Ekran açılır açılmaz klavye — sepette şart (§02 §24), editörde önce isim
-    /// alanı doldurulduğu için kapalı.
+
+
     var autoFocusesEntry = false
 
     @Environment(LocalizationManager.self) private var l10n
@@ -45,18 +36,17 @@ struct WordListSection: View {
         }
         .onAppear {
             #if DEBUG
-            // Mağaza karesinde klavye ekranın yarısını yiyor.
+
             if ProcessInfo.processInfo.arguments.contains("-NoKeyboard") { return }
             #endif
             if autoFocusesEntry { isEntryFocused = true }
         }
-        // Geri jesti / beklenmedik kaybolma: alandaki yazı listeye alınsın.
+
         .onDisappear {
             WordDraft.flush(draft: $draft, into: $words)
         }
     }
 
-    // MARK: Giriş satırı
 
     private var entryRow: some View {
         HStack(spacing: 8) {
@@ -66,8 +56,8 @@ struct WordListSection: View {
                 .foregroundStyle(AppColors.textCream)
                 .textInputAutocapitalization(.sentences)
                 .autocorrectionDisabled()
-                // §02 §24: Enter kelimeyi ekliyor ve alanı boşaltıyor, klavye
-                // **kapanmıyor** — 20 kelime yazan kullanıcı için tek önemli detay.
+
+
                 .submitLabel(.next)
                 .focused($isEntryFocused)
                 .onSubmit(add)
@@ -80,8 +70,8 @@ struct WordListSection: View {
                 .background(Circle().fill(AppColors.accentAmber))
                 .opacity(draft.isEmpty || isFull ? 0.4 : 1)
                 .tapTarget()
-                // `Button` TextField odağını çalıyor; geri verince ScrollView
-                // giriş satırına zıplıyor. TapGesture odak çalmaz.
+
+
                 .onTapGesture {
                     guard !draft.isEmpty, !isFull else { return }
                     add()
@@ -104,7 +94,6 @@ struct WordListSection: View {
         }
     }
 
-    // MARK: Sayaç
 
     private var counterRow: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -141,7 +130,7 @@ struct WordListSection: View {
         }
     }
 
-    /// §02 §6: 5 altında engel, §09 §4: 20 altında tavsiye.
+
     private var hint: String? {
         if isFull { return l10n.t("words.limitReached") }
         if words.count < CustomDeckLimits.minWordsToPlay { return l10n.t("words.hint.min") }
@@ -149,7 +138,6 @@ struct WordListSection: View {
         return nil
     }
 
-    // MARK: Kelime chip'leri
 
     private var chips: some View {
         LazyVGrid(
@@ -157,8 +145,8 @@ struct WordListSection: View {
             alignment: .leading,
             spacing: 7
         ) {
-            // `offset` id olunca başa eklenen her kelime tüm kimlikleri kaydırıp
-            // grid'i yeniden kuruyor → dış ScrollView başa zıplıyordu.
+
+
             ForEach(Array(words.enumerated()), id: \.element) { index, word in
                 chip(index: index, word: word)
             }
@@ -185,8 +173,8 @@ struct WordListSection: View {
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
                     .frame(width: 18, height: 18)
-                    // Chip'in içinde: 44pt satırı boyuna zorluyor, 34 hem
-                    // vurulabilir hem şeridi bozmuyor.
+
+
                     .tapTarget(34)
             }
             .buttonStyle(.plain)
@@ -217,14 +205,13 @@ struct WordListSection: View {
         .animation(.easeOut(duration: 0.18), value: isFlashed)
     }
 
-    // MARK: Eylemler
 
     private func add() {
         let result = WordDraft.flush(draft: $draft, into: $words)
 
         if let duplicate = result.duplicateIndex {
-            // §02 §24: tekrar eden kelime sessizce eklenmiyor, mevcut satır bir an
-            // amber yanıyor. Parti ortamında modal okunmuyor, uyarı metni yok.
+
+
             flash(duplicate)
             return
         }
@@ -265,8 +252,7 @@ struct WordListSection: View {
     }
 }
 
-/// Alanındaki yazıyı kelime listesine alma — editör Kaydet/geri ile bölüm
-/// paylaşsın diye `WordListSection` dışında da çağrılabiliyor.
+
 enum WordDraft {
     @discardableResult
     static func flush(draft: inout String, into words: inout [String]) -> WordList.Insertion {

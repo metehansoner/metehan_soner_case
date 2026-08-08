@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// §09 §7: deneme bitip abonelik iptal edildiğinde ana ekranda **bir kez**
-/// gösterilen yumuşak bilgi kartı.
-///
-/// Ton bilinçli olarak sitem değil bilgi: kullanıcı bir şey kaybetmedi,
-/// desteleri ve arşivi yerinde duruyor. Sessizce kilitlemek şikâyet üretiyor.
+
 struct LapseNoticeCard: View {
     var onSeeTicket: () -> Void
     var onDismiss: () -> Void

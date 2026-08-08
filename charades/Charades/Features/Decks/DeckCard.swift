@@ -1,29 +1,23 @@
 import SwiftUI
 
-/// Deste kartı — 01-tasarim-sistemi.md §4 anatomisi, ölçüler
-/// `ornek-ekranlar.html` `.deck*` kurallarından (mockup 1:1 pt ölçeğinde).
-///
-/// Kapak amblemi şeffaf PNG (§01 §5): zemin görselin içinde değil, burada
-/// bölümün baskın tonundan çiziliyor. Kilitli hâlde sepya yalnızca amblemi ve
-/// başlık şeridini etkiliyor, altın çerçeve ve mühür üstte net kalıyor.
+
 struct DeckCard: View {
     let deck: DeckDef
     var isSelected: Bool
     var isLocked: Bool
-    /// §05 §4: bugünün bedava destesi — kilidi açık ama kalıcı ücretsiz değil.
+
     var isDailyFree: Bool
     var cardCount: Int?
-    /// §05 §1 + §04 §1: `Canlandır` modu seçiliyken `describe` desteler
-    /// soluklaşıp `ANLATMA DESTESİ` etiketi alıyor. Kilit **değil** — seçilebilir
-    /// kalıyor, kullanıcı yalnızca ne aldığını biliyor.
+
+
     var isOffMode: Bool = false
-    /// §05 §6: Mix kurulumunda seçili kartlar onay yerine **kaçıncı sırada**
-    /// seçildiklerini gösteriyor — karışım göstergesindeki renk sırası bu.
+
+
     var selectionOrder: Int?
-    /// Ana ızgarada kilit/ücretsiz rozetleri kapalı: tüm kartlar aktif görünür,
-    /// premium bilgisi deste detayında (§ kullanıcı tercihi).
+
+
     var showsAccessState: Bool = true
-    /// Favori yıldızı — ızgarada durum okunaklı kalsın diye.
+
     var isFavorite: Bool = false
 
     @Environment(LocalizationManager.self) private var l10n
@@ -33,8 +27,8 @@ struct DeckCard: View {
     var body: some View {
         ZStack {
             poster
-                // §04 anatomi: kilitli görsel sepia + karartma. Filtre yalnızca
-                // afiş katmanına uygulanıyor.
+
+
                 .saturation(visuallyLocked ? 0.3 : 1)
                 .brightness(visuallyLocked ? -0.22 : 0)
                 .colorMultiply(visuallyLocked ? Color(hex: 0xC9A98A) : .white)
@@ -50,7 +44,7 @@ struct DeckCard: View {
             }
         }
         .padding(5)
-        // Kilitli kartın sepyası kadar sert değil: bu bir engel değil uyarı.
+
         .opacity(isOffMode && !visuallyLocked ? 0.62 : 1)
         .background {
             RoundedRectangle(cornerRadius: 14)
@@ -62,7 +56,7 @@ struct DeckCard: View {
                     )
                 }
         }
-        // §04: seçili kartın ampul dizisi yanıyor.
+
         .overlay {
             if isSelected {
                 BulbFrame(countPerEdge: 6, diameter: 3, color: AppColors.accentAmber)
@@ -81,7 +75,6 @@ struct DeckCard: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    // MARK: Katmanlar
 
     private var poster: some View {
         VStack(spacing: 0) {
@@ -101,7 +94,7 @@ struct DeckCard: View {
             HalftoneTexture(dotSize: 0.7, spacing: 4, color: .black.opacity(0.65))
                 .opacity(0.2)
 
-            // §05 §1: amblem art alanının %80 genişliğinde ortalanıyor.
+
             GeometryReader { geometry in
                 Image(deck.imageName)
                     .resizable()
@@ -112,15 +105,15 @@ struct DeckCard: View {
         }
         .overlay(alignment: .leading) { edgeSprockets }
         .overlay(alignment: .trailing) { edgeSprockets }
-        // Etiket başlık şeridinin değil afiş alanının altına oturuyor; şeridin
-        // üstünde deste adını kapatıyordu.
+
+
         .overlay(alignment: .bottomLeading) {
             if isOffMode, !visuallyLocked {
                 offModeTag.padding(7)
             }
         }
-        // Seçim rozeti de aynı sebeple afiş alanının içinde: 3 kolonlu Mix
-        // ızgarasında şeridin üstündeyken deste adının son harfini yiyordu.
+
+
         .overlay(alignment: .bottomTrailing) {
             if isSelected {
                 selectionTick.padding(7)
@@ -128,7 +121,7 @@ struct DeckCard: View {
         }
     }
 
-    /// §03 "Film şeridi (sprocket)" — deste kartı kenarı.
+
     private var edgeSprockets: some View {
         SprocketStrip(
             axis: .vertical,
@@ -174,12 +167,7 @@ struct DeckCard: View {
         }
     }
 
-    /// §04: sol üst köşede `REEL No. 07`.
-    ///
-    /// Köşe rozetleri (makara no, kurdele, `describe` etiketi) afişin üzerine
-    /// basılmış mürekkep; Dynamic Type ile büyüyünce kapağın dörtte birini
-    /// kaplayıp birbirinin üstüne biniyorlar. Taşıdıkları bilgi kartın
-    /// erişilebilirlik etiketinde zaten var (§7).
+
     private var reelTag: some View {
         Text(l10n.t("deck.reel", ["no": deck.reelLabel]))
             .font(AppFont.ui(6.5, weight: .bold, scales: nil))
@@ -219,9 +207,7 @@ struct DeckCard: View {
         }
     }
 
-    /// Favori rozeti — kurdele yokken sağ üstte, varken onun altında değil
-    /// afiş köşesinde kalır; ribbon varsa sol alt yerine sağ üst ribbon'ın
-    /// yerini bırakıp art alanının sağ altına yakın küçük yıldız.
+
     private var favoriteMark: some View {
         Image(systemName: "star.fill")
             .font(.system(size: 11, weight: .bold))
@@ -243,8 +229,7 @@ struct DeckCard: View {
             .accessibilityHidden(true)
     }
 
-    /// Kalıcı ücretsiz / bugün bedava yalnızca `showsAccessState` açıkken.
-    /// Ana ızgarada gizlenir; `YENİ` rozeti kalır.
+
     private var ribbonKey: String? {
         if showsAccessState {
             if isDailyFree { return "deck.dailyFree.badge" }
@@ -328,12 +313,7 @@ struct DeckCard: View {
     }
 }
 
-/// Mockup'taki `.art::after` / `.deck-strip::before` serigrafi noktası —
-/// kapak amblemlerinin halftone dokusunu zemine kadar taşıyor.
-///
-/// Tek nokta deseni `Canvas` ile çizilseydi 3:4 kart başına ~2.500 daire
-/// ederdi ve ızgarada altı kart aynı anda görünüyor. Onun yerine bir kez
-/// üretilen tek gözlü bir bitmap döşeniyor.
+
 struct HalftoneTexture: View {
     var dotSize: CGFloat = 0.7
     var spacing: CGFloat = 4

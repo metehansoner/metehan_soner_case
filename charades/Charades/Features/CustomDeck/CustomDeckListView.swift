@@ -1,11 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// Kendi Destelerim (ekran 7) — 02-ekran-akisi.md §7, limitler §05 §7.
-///
-/// Ana ekrandaki ızgara custom desteleri **oynamak** için gösteriyor; bu ekran
-/// onları **düzenlemek** için. İki kapıyı ayırmak §05 §7'nin ilk tablosundaki
-/// ayrımın devamı: burada dokunuş editörü açıyor, tur başlatmıyor.
+
 struct CustomDeckListView: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppRouter.self) private var router
@@ -16,8 +12,7 @@ struct CustomDeckListView: View {
 
     @State private var deckPendingDeletion: CustomDeck?
 
-    /// Editörün boş taslağı listede flaş etmesin; slot hesabı tüm kayıtları
-    /// saymaya devam ediyor (açık taslak yeri tutsun).
+
     private var listedDecks: [CustomDeck] {
         decks.filter(\.hasListableContent)
     }
@@ -44,8 +39,7 @@ struct CustomDeckListView: View {
                                 row(deck, isReadOnly: index >= slotLimit)
                             }
 
-                            // Slot doluyken dashed "Yeni Deste" kartı ikinci bir
-                            // boş deste gibi duruyordu — yalnızca yer varken.
+
                             if hasFreeSlot {
                                 addRow
                             } else {
@@ -74,7 +68,6 @@ struct CustomDeckListView: View {
         }
     }
 
-    // MARK: Başlık
 
     private var navBar: some View {
         HStack(spacing: 0) {
@@ -104,7 +97,6 @@ struct CustomDeckListView: View {
         .padding(.bottom, 6)
     }
 
-    // MARK: Boş durum — §02 §6
 
     private var emptyState: some View {
         VStack(spacing: 18) {
@@ -147,7 +139,6 @@ struct CustomDeckListView: View {
         .padding(.top, 48)
     }
 
-    // MARK: Deste satırı
 
     private func row(_ deck: CustomDeck, isReadOnly: Bool) -> some View {
         Button {
@@ -179,8 +170,7 @@ struct CustomDeckListView: View {
 
                 Spacer(minLength: 0)
 
-                // §09 §9: Premium'dan düşen kullanıcının fazla desteleri
-                // silinmiyor, salt-okunur kalıyor — kendi emeğini kaybetmiyor.
+
                 Image(systemName: isReadOnly ? "lock.fill" : "chevron.right")
                     .flipsForRightToLeftLayoutDirection(true)
                     .font(.system(size: isReadOnly ? 12 : 14, weight: .semibold))
@@ -224,14 +214,12 @@ struct CustomDeckListView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = Locale(identifier: l10n.localeCode)
         formatter.unitsStyle = .full
-        // `.named` yakın zamanı "şimdi"/"dün" diye yazıyor; ham biçim az önce
-        // düzenlenen destede "0 saniye içinde" gibi geleceğe bakan bir metin
-        // üretiyordu. Tarih ayrıca şimdiye kırpılıyor.
+
+
         formatter.dateTimeStyle = .named
         return formatter.localizedString(for: min(date, .now), relativeTo: .now)
     }
 
-    // MARK: Yeni deste
 
     private var addRow: some View {
         Button(action: createDeck) {
@@ -276,7 +264,6 @@ struct CustomDeckListView: View {
             .padding(.vertical, 14)
     }
 
-    // MARK: Eylemler
 
     private func createDeck() {
         guard hasFreeSlot else {
@@ -285,8 +272,8 @@ struct CustomDeckListView: View {
             return
         }
         Haptics.secondaryButton()
-        // İsimsiz deste hemen yazılıyor: editör otomatik kaydediyor. İsim
-        // boş bırakılıyor — "Yeni Deste" hem satır hem + kartı olmasın diye.
+
+
         let deck = CustomDeck(
             name: "",
             languageCode: l10n.localeCode,

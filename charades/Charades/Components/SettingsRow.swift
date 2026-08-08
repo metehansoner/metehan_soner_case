@@ -1,14 +1,9 @@
 import SwiftUI
 
-/// Ayarlar satırı — 06-ayarlar-ve-lokalizasyon.md §1: `surfaceCard` kart,
-/// solda ikon kolonu, ortada başlık + isteğe bağlı alt metin, sağda kontrol.
-///
-/// Kartlar tek tek değil grup hâlinde çiziliyor (`SettingsGroup`), aralarında
-/// 1px altın çizgi var; her satırın kendi kenarlığı olsaydı 13 satır 13 ayrı
-/// kutuya bölünüp liste okunmaz hâle gelirdi.
+
 struct SettingsRow<Control: View>: View {
-    /// Segment ve stepper üç seçenek + başlıkla aynı satıra sığmıyor; o
-    /// kontroller başlığın altına, tam genişliğe geçiyor.
+
+
     enum ControlPlacement {
         case trailing
         case below
@@ -17,8 +12,8 @@ struct SettingsRow<Control: View>: View {
     let icon: String
     let title: String
     var subtitle: String?
-    /// Dokunulabilir satırlarda tüm kart bir buton gibi davranıyor; kontrolü
-    /// kendi olan satırlarda (anahtar, segment) `nil`.
+
+
     var action: (() -> Void)?
     var isEnabled = true
     var placement: ControlPlacement = .trailing
@@ -37,16 +32,13 @@ struct SettingsRow<Control: View>: View {
             .buttonStyle(.plain)
             .disabled(!isEnabled)
         } else {
-            // Kendi kontrolü olan satırlar üç ayrı öğe olarak okunuyordu:
-            // başlık, alt metin ve etiketsiz anahtar. Birleşince anahtarın
-            // durumu başlığın değeri hâline geliyor.
+
+
             content.accessibilityElement(children: .combine)
         }
     }
 
-    /// Erişilebilirlik puntolarında başlık ile kontrol yan yana sığmıyor:
-    /// başlığa kalan genişlik iki-üç karaktere iniyor ve kelimeler ortadan
-    /// bölünüyor ("Roun d lengt h"). O boyutlarda kontrol alt satıra geçiyor.
+
     private var stacksControl: Bool {
         placement == .below || typeSize.isAccessibilitySize
     }
@@ -88,7 +80,7 @@ struct SettingsRow<Control: View>: View {
     }
 }
 
-/// Satırın sağ ucundaki `›`. Yön bağımlı olduğu için RTL'de aynalanıyor (§ `06` §2).
+
 struct SettingsDisclosure: View {
     var value: String?
 
@@ -103,14 +95,14 @@ struct SettingsDisclosure: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(AppColors.textMuted)
                 .flipsForRightToLeftLayoutDirection(true)
-                // Satırın kendisi zaten "düğme" diye okunuyor; ok işareti
-                // eklenince VoiceOver her satırın sonuna bir de "chevron" diyor.
+
+
                 .accessibilityHidden(true)
         }
     }
 }
 
-/// Grup başlığı + kart. Satırlar arasına altın %15 ayraç koyuyor.
+
 struct SettingsGroup<Content: View>: View {
     let title: String
     @ViewBuilder var content: Content
@@ -146,8 +138,7 @@ struct SettingsDivider: View {
     }
 }
 
-/// İki ya da üç seçenekli kapsül segment (§ `06` §1 satır 3 ve 4).
-/// Kurulum sheet'indeki zorluk satırının aynısı; orada inline duruyordu.
+
 struct SettingsSegment<Option: Hashable>: View {
     let options: [Option]
     let title: (Option) -> String
@@ -174,7 +165,7 @@ struct SettingsSegment<Option: Hashable>: View {
                         .background {
                             Capsule().fill(isSelected ? AppColors.accentAmber : .clear)
                         }
-                        // Kapsül 31pt yüksekliğinde kalıyor; dokunma alanı 44pt.
+
                         .frame(minHeight: 38)
                         .contentShape(Capsule())
                 }
@@ -193,8 +184,7 @@ struct SettingsSegment<Option: Hashable>: View {
     }
 }
 
-/// `−  01:00  +` (§ `06` §1 satır 2). Sınıra dayanınca değer değişmiyor ama
-/// haptik geliyor — sessiz kalan bir stepper bozuk sanılıyor.
+
 struct SettingsStepper: View {
     @Binding var value: Int
     let range: ClosedRange<Int>
@@ -213,8 +203,8 @@ struct SettingsStepper: View {
 
             button(systemImage: "plus", delta: step)
         }
-        // Üç ayrı öğe yerine tek ayarlanabilir değer: VoiceOver'da yukarı/aşağı
-        // kaydırmayla değişiyor, satırın başlığı da etiket olarak kalıyor.
+
+
         .accessibilityElement(children: .ignore)
         .accessibilityValue(format(value))
         .accessibilityAdjustableAction { direction in
@@ -252,9 +242,8 @@ struct SettingsStepper: View {
                             )
                         }
                 }
-                // Daire 32pt kalıyor — satırın dikey ritmi onunla kuruldu — ama
-                // dokunma alanı 44pt'ye açılıyor (§01: "dokunma hedefleri
-                // tamamen modern").
+
+
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
