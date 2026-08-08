@@ -35,12 +35,12 @@ struct PlanCard: View {
 
                     if let subtitle {
                         Text(subtitle)
-                            .font(AppFont.ui(10.5))
+                            .font(AppFont.ui(12.5, weight: .medium))
                             .foregroundStyle(
-                                isSelected ? AppColors.textSecondary : AppColors.textMuted
+                                isSelected ? AppColors.textCream.opacity(0.88) : AppColors.textSecondary
                             )
-                            .lineLimit(bandIsInline ? 3 : 1)
-                            .minimumScaleFactor(0.75)
+                            .lineLimit(bandIsInline ? 3 : 2)
+                            .minimumScaleFactor(0.8)
                     }
 
                     if bandIsInline { band }

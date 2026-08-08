@@ -68,11 +68,13 @@ struct SheetScaffold<Content: View>: View {
             .ignoresSafeArea()
         }
         .presentationCornerRadius(28)
-        // Opak zemin + alta taşırma: fraction detent'te home indicator
-        // altında arka ekranın görünmesini engeller (SwiftUI bilinen boşluk).
-        .presentationBackground {
-            AppColors.surfaceCard
-                .padding(.bottom, -120)
+        // Fraction detent'te negatif padding zemin yüksekliğini kısaltıp
+        // altta delik açıyordu. Opak ShapeStyle + UIKit kenar boyası.
+        .presentationBackground(AppColors.surfaceCard)
+        .background {
+            SheetEdgeFill(color: UIColor(AppColors.surfaceCard))
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
         }
         .localizedLayout()
     }

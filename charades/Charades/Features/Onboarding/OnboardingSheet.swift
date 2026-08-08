@@ -220,77 +220,8 @@ private struct OnboardingStepView: View {
                 .resizable()
                 .scaledToFit()
                 .accessibilityHidden(true)
-        case .tiltZones:
-            AnswerZonesArt(showsPhone: true)
-        case .tapZones:
-            AnswerZonesArt(showsPhone: false)
-        }
-    }
-}
-
-// MARK: - Eğme / dokunma diyagramı
-
-/// Adım 3: eğmede yatay telefon diyagramı; dokunmada sol/sağ bölgeler.
-/// Öne eğ = DOĞRU (yeşil), arkaya eğ = PAS (kırmızı) — § `04` §2.
-/// Dokunmatikte sağ yarı DOĞRU, sol yarı PAS. Sol/sağ çevrilmiyor.
-private struct AnswerZonesArt: View {
-    var showsPhone: Bool
-
-    @Environment(LocalizationManager.self) private var l10n
-
-    var body: some View {
-        Group {
-            if showsPhone {
-                TiltAnswerDiagram(showsHints: true)
-            } else {
-                HStack(spacing: 14) {
-                    zone(
-                        color: AppColors.stateSkip,
-                        systemImage: "arrow.left",
-                        label: l10n.t("game.stamp.skip"),
-                        hint: l10n.t("onboarding.zone.tapLeft")
-                    )
-                    zone(
-                        color: AppColors.stateCorrect,
-                        systemImage: "arrow.right",
-                        label: l10n.t("game.stamp.correct"),
-                        hint: l10n.t("onboarding.zone.tapRight")
-                    )
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .environment(\.layoutDirection, .leftToRight)
-    }
-
-    private func zone(color: Color, systemImage: String, label: String, hint: String) -> some View {
-        VStack(spacing: 5) {
-            Image(systemName: systemImage)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(color)
-
-            Text(label)
-                .font(AppFont.display(12, weight: .bold))
-                .appTracking(1.6)
-                .textCase(.uppercase)
-                .foregroundStyle(color)
-
-            Text(hint)
-                .font(AppFont.ui(8.5))
-                .appTracking(1.4)
-                .textCase(.uppercase)
-                .foregroundStyle(AppColors.textMuted)
-        }
-        .multilineTextAlignment(.center)
-        .padding(.vertical, 11)
-        .padding(.horizontal, 8)
-        .frame(maxWidth: 104)
-        .background {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(color.opacity(0.15))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12).strokeBorder(color, lineWidth: 1.5)
-                }
+        case .tiltZones, .tapZones:
+            TiltAnswerDiagram(showsHints: true)
         }
     }
 }
