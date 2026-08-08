@@ -173,7 +173,7 @@ struct RootView: View {
                         if continuesToGame { startGame() }
                     }
                 )
-                .presentationDetents([.fraction(0.78)])
+                .presentationDetents([.large])
 
             case nil:
                 Color.clear

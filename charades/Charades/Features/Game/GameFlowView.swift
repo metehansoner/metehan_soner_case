@@ -75,7 +75,7 @@ struct GameFlowView: View {
         }
         .fullScreenCover(isPresented: $showsFullPaywall) {
             PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
-                .forcedLandscape()
+                // Portrait paywall: forced-landscape kısa kenarda CTA/X kesiliyordu.
                 .environment(LocalizationManager.shared)
                 .environment(AppSettingsStore.shared)
                 .environment(SubscriptionStore.shared)

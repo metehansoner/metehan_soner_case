@@ -17,6 +17,7 @@ struct PaywallView: View {
     @Environment(AppSettingsStore.self) private var settings
     @Environment(SubscriptionStore.self) private var store
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var selectedPlan: SubscriptionStore.Plan = .weekly
     @State private var status: Status?
@@ -32,8 +33,11 @@ struct PaywallView: View {
         case purchaseFailed
     }
 
-    /// Erişilebilirlik puntolarında sabit flex layout sığmıyor; o zaman scroll.
-    private var usesScrollLayout: Bool { typeSize.isAccessibilitySize }
+    /// Erişilebilirlik puntolarında veya kısa/yüksek iPad penceresinde
+    /// sabit flex layout sığmıyor; o zaman scroll.
+    private var prefersScrollLayout: Bool {
+        typeSize.isAccessibilitySize || AppLayout.isRegularWidth(horizontalSizeClass)
+    }
 
     /// HTML Varyant A: afiş duvarı + `TAM BİLET` plaketi.
     /// VIP / tur sonu da aynı vitrini kullanıyor — modal kaçış (`X`) kalıyor.
@@ -47,23 +51,31 @@ struct PaywallView: View {
         ZStack(alignment: .top) {
             VelvetBackground(showsCurtain: true).ignoresSafeArea()
 
-            Group {
-                if usesScrollLayout {
-                    ScrollView {
-                        column(fillsHeight: false)
+            GeometryReader { geometry in
+                let headerHeight = showcaseHeaderHeight(for: geometry.size.height)
+                let needsScroll = prefersScrollLayout
+                    || geometry.size.height < (usesShowcaseChrome ? 780 : 680)
+
+                Group {
+                    if needsScroll {
+                        ScrollView {
+                            column(fillsHeight: false, headerHeight: headerHeight)
+                                .padding(.bottom, 28)
+                        }
+                        .scrollBounceBehavior(.basedOnSize)
+                    } else {
+                        column(fillsHeight: true, headerHeight: headerHeight)
                     }
-                    .scrollBounceBehavior(.basedOnSize)
-                } else {
-                    column(fillsHeight: true)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .readableWidth()
+                .frame(width: geometry.size.width, height: geometry.size.height)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             // `paywall.html` `.content { inset:0 }` — afiş duvarı status bar
             // altına kadar uzar; aksi hâlde kayma üstte sert kesilir.
             .ignoresSafeArea(edges: .top)
 
-            restoreControl
-            escapeControl
+            topChrome
         }
         .task {
             settings.paywallSeen = true
@@ -82,11 +94,22 @@ struct PaywallView: View {
         }
     }
 
+    /// Sol geri yükle + sağ kaçış — safe area içinde, içeriğin üstünde.
+    private var topChrome: some View {
+        HStack(alignment: .top) {
+            restoreControl
+            Spacer(minLength: 8)
+            escapeControl
+        }
+        .padding(.horizontal, 12)
+        .safeAreaPadding(.top, 8)
+    }
+
     /// `paywall.html` `.content`: afiş → gövde ortalanmış (`flex:1` +
     /// `justify-content:center`) → CTA alta.
-    private func column(fillsHeight: Bool) -> some View {
+    private func column(fillsHeight: Bool, headerHeight: CGFloat) -> some View {
         VStack(spacing: 0) {
-            header
+            header(height: headerHeight)
 
             if fillsHeight { Spacer(minLength: 4) }
 
@@ -97,7 +120,7 @@ struct PaywallView: View {
             callToAction
                 .padding(.horizontal, 20)
                 .padding(.top, fillsHeight ? 4 : 22)
-                .padding(.bottom, fillsHeight ? 4 : 24)
+                .padding(.bottom, fillsHeight ? 12 : 24)
         }
         .frame(
             maxWidth: .infinity,
@@ -106,16 +129,24 @@ struct PaywallView: View {
         )
     }
 
+    private func showcaseHeaderHeight(for screenHeight: CGFloat) -> CGFloat {
+        guard usesShowcaseChrome else {
+            return min(274, max(180, screenHeight * 0.28))
+        }
+        // iPad / kısa pencerede 340pt duvar CTA'yı eziyordu.
+        return min(340, max(160, screenHeight * 0.32))
+    }
+
     // MARK: Üst bölge
 
     @ViewBuilder
-    private var header: some View {
+    private func header(height: CGFloat) -> some View {
         if usesShowcaseChrome {
-            // HTML `.collage.tall` — üç kolonlu okunaklı afişler için biraz daha yüksek.
             PosterWall(decks: DeckCatalog.v1)
-                .frame(height: 340)
+                .frame(height: height)
         } else {
             contextHero
+                .frame(height: height)
         }
     }
 
@@ -129,7 +160,6 @@ struct PaywallView: View {
                 heroCard(for: deck).padding(.bottom, 6)
             }
         }
-        .frame(height: 274)
     }
 
     private func heroCard(for deck: DeckDef) -> some View {
@@ -353,8 +383,7 @@ struct PaywallView: View {
         .buttonStyle(.plain)
     }
 
-    /// Geri yükleme sol üstte — satın alma geçmişi olan kullanıcı kaçışın
-    /// yanında, CTA'nın altına gömülmeden buluyor.
+    /// Geri yükleme — üst şeridin solu.
     private var restoreControl: some View {
         Button {
             Task { await restore() }
@@ -385,13 +414,10 @@ struct PaywallView: View {
                     )
                 }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 16)
-        .safeAreaPadding(.top, variant == .onboarding ? 26 : 18)
     }
 
-    /// §03 §2: `ATLA` onboarding varyantında görünür ve sağ üstte — kaçış yolu
-    /// gizlenmiyor. Modalda yerini 1,5 saniye gecikmeli `X` alıyor.
+    /// §03 §2: `ATLA` onboarding varyantında görünür — kaçış yolu gizlenmiyor.
+    /// Modalda yerini 1,5 saniye gecikmeli `X` alıyor.
     @ViewBuilder
     private var escapeControl: some View {
         switch variant {
@@ -415,10 +441,6 @@ struct PaywallView: View {
                     }
             }
             .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, 16)
-            // `paywall.html` `.skip { top: 60px }` — status bar altına yapışmasın.
-            .safeAreaPadding(.top, 26)
 
         case .modal:
             Button(action: dismiss) {
@@ -440,10 +462,6 @@ struct PaywallView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("common.close"))
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, 16)
-            // Status bar / Dynamic Island'a yapışmasın; biraz nefes alanı.
-            .safeAreaPadding(.top, 18)
             .opacity(canDismiss ? 1 : 0)
             .allowsHitTesting(canDismiss)
         }

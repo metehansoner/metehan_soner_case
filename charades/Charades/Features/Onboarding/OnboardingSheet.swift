@@ -15,14 +15,14 @@ struct OnboardingSheet: View {
     @Environment(LocalizationManager.self) private var l10n
     @Environment(AppSettingsStore.self) private var settings
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var index = 0
 
-    /// §03 §1 sheet'i ekranın %55'i. Erişilebilirlik puntolarında o yükseklikte
-    /// başlık + iki satır özet + CTA aynı anda durmuyor; kart yükseliyor,
-    /// arkadaki ızgara hâlâ görünür kalıyor (bölümün asıl istediği o).
+    /// §03 §1 sheet'i ekranın %55'i. Erişilebilirlik / iPad'de yükseliyor.
     private var detent: PresentationDetent {
-        typeSize.isAccessibilitySize ? .fraction(0.9) : .fraction(0.55)
+        if AppLayout.isRegularWidth(horizontalSizeClass) { return .large }
+        return typeSize.isAccessibilitySize ? .fraction(0.9) : .fraction(0.55)
     }
 
     var body: some View {

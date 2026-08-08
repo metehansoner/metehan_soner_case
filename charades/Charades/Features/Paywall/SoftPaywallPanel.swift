@@ -98,7 +98,8 @@ struct SoftPaywallPanel: View {
             .padding(.top, 6)
             .padding(.bottom, 14)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: AppLayout.readableWidth)
+        .frame(maxWidth: .infinity, alignment: .bottom)
         .background {
             LinearGradient(
                 stops: [

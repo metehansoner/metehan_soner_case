@@ -47,6 +47,7 @@ struct SheetScaffold<Content: View>: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .frame(maxWidth: AppLayout.readableWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background {
             LinearGradient(

@@ -195,6 +195,39 @@ do {
     }
 }
 
+// MARK: 8 — Cevap sonrası eğik tutma (kelime yağmuru)
+
+do {
+    var detector = TiltDetector()
+    detector.reset(at: 0)
+    var triggers = run(detector: &detector, seconds: 1) { _ in 50 }
+    expect(triggers.count == 1, "8a: ilk eğimde tek tetik")
+
+    // `MotionService.resume` simülasyonu: silahsız reset, telefon hâlâ eğik.
+    detector.reset(at: 1, rearm: false)
+    triggers += run(detector: &detector, seconds: 1, from: 1) { _ in 50 }
+    expect(triggers.count == 1, "8b: eğik resume sonrası yağmur olmamalı, \(triggers.count) geldi")
+
+    triggers += run(detector: &detector, seconds: 0.5, from: 2) { _ in 5 }
+    triggers += run(detector: &detector, seconds: 0.5, from: 2.5) { _ in 50 }
+    expect(triggers.count == 2, "8c: dikleşip yeniden eğince tetiklenmeli, \(triggers.count) geldi")
+}
+
+do {
+    var detector = TiltDetector()
+    detector.reset(at: 0)
+    var triggers = run(detector: &detector, seconds: 1) { _ in 50 }
+    triggers += run(detector: &detector, seconds: 9, from: 1) { _ in 50 }
+    expect(
+        triggers.count == 1,
+        "8d: tetik sonrası eğik tutunca ikinci kelime gelmemeli, \(triggers.count) geldi"
+    )
+    expect(
+        detector.pendingBaselineShift != nil,
+        "8e: uzun eğik tutuşta baseline kayması istenmeli"
+    )
+}
+
 // MARK: Sonuç
 
 print("\(checks) kontrol, \(failures) başarısız")

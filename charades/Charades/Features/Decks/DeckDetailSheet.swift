@@ -13,6 +13,7 @@ struct DeckDetailSheet: View {
     @Environment(AppRouter.self) private var router
     @Environment(GameSetup.self) private var setup
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var sampleWords: [String] = []
 
@@ -60,8 +61,11 @@ struct DeckDetailSheet: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        // %70 yükseklik; zemin alta taşırıldığı için arka ekran görünmez.
-        .presentationDetents([.fraction(0.7)])
+        // iPad’de fraction sheet’ler garip boşluk bırakıyor; large oturuyor.
+        // Telefonda %70 — OYNA altta, arka ekran görünmez.
+        .presentationDetents(
+            AppLayout.isRegularWidth(horizontalSizeClass) ? [.large] : [.fraction(0.7)]
+        )
         .presentationContentInteraction(.scrolls)
         .task(id: deck.id) { loadSampleWords() }
     }

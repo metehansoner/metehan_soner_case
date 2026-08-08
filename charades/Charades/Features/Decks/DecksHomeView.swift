@@ -17,6 +17,7 @@ struct DecksHomeView: View {
     @Environment(AppRouter.self) private var router
     @Environment(GameSetup.self) private var setup
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     /// §05 §6: kaydedilmiş karışımlar `BENİM DESTELERİM` bölümünde görünüyor.
     @Query(sort: \SavedMix.sortIndex) private var savedMixes: [SavedMix]
@@ -86,10 +87,15 @@ struct DecksHomeView: View {
                     }
                 }
                 .padding(.bottom, 24)
+                .readableWidth(AppLayout.gridWidth)
             }
             .scrollIndicators(.hidden)
-            .safeAreaInset(edge: .top, spacing: 0) { topBar }
-            .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                topBar.readableWidth(AppLayout.gridWidth)
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                bottomBar.readableWidth(AppLayout.gridWidth)
+            }
         }
         // Premium'a dönülünce bilgi kartı sıfırlanıyor; ikinci bir düşüşte
         // kullanıcı yine bir kez bilgilendiriliyor.
@@ -306,10 +312,14 @@ struct DecksHomeView: View {
     }
 
     private var deckGrid: some View {
-        LazyVGrid(
+        let columns = AppLayout.isRegularWidth(horizontalSizeClass)
+            ? max(settings.gridColumns + 1, 4)
+            : settings.gridColumns
+
+        return LazyVGrid(
             columns: Array(
                 repeating: GridItem(.flexible(), spacing: 12),
-                count: settings.gridColumns
+                count: columns
             ),
             spacing: 12
         ) {

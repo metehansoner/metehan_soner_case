@@ -63,10 +63,10 @@ struct TiltDetector {
         lockedUntil = time + duration
     }
 
-    mutating func reset(at time: TimeInterval) {
+    mutating func reset(at time: TimeInterval, rearm: Bool = true) {
         samples.removeAll()
         driftSamples.removeAll()
-        isArmed = true
+        isArmed = rearm
         lastTriggerTime = nil
         lastTriggerOrStart = time
         lockedUntil = nil
@@ -131,7 +131,9 @@ struct TiltDetector {
         driftSamples.removeAll()
         samples.removeAll()
         smoothedAngle = 0
-        isArmed = true
+        // `isArmed = true` burada aynı karede yeniden tetik üretiyordu
+        // (hâlâ eşiğin üstündeyken). Baseline kayınca açı ~0 olur; histerezis
+        // nötr bandında yeniden kurar.
     }
 }
 

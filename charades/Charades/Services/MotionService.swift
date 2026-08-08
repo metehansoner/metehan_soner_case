@@ -106,7 +106,9 @@ final class MotionService {
 
     func resume() {
         guard state == .suspended else { return }
-        detector.reset(at: now)
+        // Cevap animasyonu bitince telefon hâlâ eğik olabilir. Silahlı reset
+        // aynı eğimde kelime yağmuru yapıyordu — nötre dönülmeden kurulmaz.
+        detector.reset(at: now, rearm: false)
         state = .running
     }
 
@@ -135,7 +137,9 @@ final class MotionService {
             // yakın ve hangi landscape'te olduğumuzu doğrudan söylüyor.
             // `UIDevice.orientation` aynı soruya alında güvenilir cevap vermiyor.
             if abs(motion.gravity.x) > 0.5 {
-                sign = motion.gravity.x > 0 ? -1 : 1
+                // ForcedLandscape (landscapeRight) alnında: +x → öne = DOĞRU.
+                // Ters işaret öne eğince PAS üretiyordu.
+                sign = motion.gravity.x > 0 ? 1 : -1
             }
             calibrator.add(raw * sign)
             angle = 0

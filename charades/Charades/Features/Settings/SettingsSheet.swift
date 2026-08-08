@@ -59,7 +59,7 @@ struct SettingsSheet: View {
             )
             .environment(l10n)
             .environment(settings)
-            .presentationDetents([.fraction(0.78)])
+            .presentationDetents([.large])
         }
         .sheet(isPresented: $isShowingReplayPrivacy) {
             ReplayPrivacySheet(
@@ -249,8 +249,8 @@ struct SettingsSheet: View {
                 .opacity(notificationStatus == .denied ? 0.55 : 1)
             }
 
-            // §06 §1 satır 11: yalnızca satır 10 açıkken. Premium kullanıcıda
-            // gönderilecek bildirim yok, anahtar da yok.
+            // §06 §1 satır 11: yalnızca satır 10 açıkken. Premium'da bedava
+            // deste bildirimi yok; engagement hatırlatmaları ana anahtarla geliyor.
             if notificationsOn, !subscriptions.isPremium {
                 SettingsDivider()
                 switchRow(icon: "ticket", key: "settings.dailyFreeDeck", isOn: $settings.dailyFreeDeckNotice)
