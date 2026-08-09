@@ -22,12 +22,14 @@ struct HeaderBar: View {
                     .padding(.horizontal, sideInset)
 
                 HStack(spacing: 10) {
-                    HeaderCircleIconButton(
-                        systemName: isPremium ? "ticket.fill" : "ticket",
-                        tint: isPremium ? AppColors.accentGold : AppColors.accentBrass,
-                        accessibilityLabel: l10n.t(isPremium ? "header.vip.premium" : "header.vip"),
-                        action: onTapVIP
-                    )
+                    if !isPremium {
+                        HeaderCircleIconButton(
+                            systemName: "ticket",
+                            tint: AppColors.accentBrass,
+                            accessibilityLabel: l10n.t("header.vip"),
+                            action: onTapVIP
+                        )
+                    }
 
                     HeaderCircleIconButton(
                         systemName: "person.3.fill",
