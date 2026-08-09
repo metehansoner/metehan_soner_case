@@ -193,7 +193,7 @@ struct DeckDetailSheet: View {
             HStack(spacing: 10) {
                 Button(l10n.t(isLocked ? "deck.buyTicket" : "common.play")) {
                     if isLocked {
-                        router.openPaywall(.lockedDeck(deck.id))
+                        router.openPaywall(.vipButton)
                     } else {
                         setup.select(only: deck.id)
                         router.beginSetupAfterDeckDetail()

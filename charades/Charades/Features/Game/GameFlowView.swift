@@ -61,7 +61,7 @@ struct GameFlowView: View {
             }
         }
         .fullScreenCover(isPresented: $showsFullPaywall) {
-            PaywallView(context: .roundEnd, variant: .modal) { showsFullPaywall = false }
+            PaywallView(context: .roundEnd, variant: .onboarding) { showsFullPaywall = false }
 
                 .environment(LocalizationManager.shared)
                 .environment(AppSettingsStore.shared)

@@ -555,14 +555,7 @@ struct PaywallView: View {
     }
 
     private var contextSummary: String {
-        if case .lockedDeck = context {
-            return l10n.t(
-                "paywall.context.deck.sub",
-                count: max(DeckCatalog.v1.count - 1, 0),
-                ["cards": Self.formatted(DeckCatalog.advertisedCardCount)]
-            )
-        }
-        return l10n.t(
+        l10n.t(
             "paywall.summary.content",
             [
                 "decks": Self.formatted(DeckCatalog.v1.count),

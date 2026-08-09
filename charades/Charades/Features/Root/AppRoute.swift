@@ -109,7 +109,7 @@ final class AppRouter {
         deckDetailID = deckID
     }
 
-    func openPaywall(_ context: PaywallContext, variant: PaywallVariant = .modal) {
+    func openPaywall(_ context: PaywallContext, variant: PaywallVariant = .onboarding) {
 
 
         if case .lockedDeck(let deckID) = context {
@@ -124,7 +124,9 @@ final class AppRouter {
             involuntaryPaywallCount += 1
         }
 
-        paywallVariant = variant
+
+        paywallVariant = .onboarding
+        _ = variant
         deckDetailID = nil
         setupStep = nil
         paywall = context
