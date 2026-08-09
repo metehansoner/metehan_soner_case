@@ -24,7 +24,6 @@ struct DeckDetailSheet: View {
         deck.id == dailyFreeID && !deck.isFree
     }
 
-    private var cardCount: Int? { DeckCardCounts.count(for: deck.id) }
     private var hasContent: Bool { DeckCatalog.contentReadyIDs.contains(deck.id) }
 
     var body: some View {
@@ -144,9 +143,6 @@ struct DeckDetailSheet: View {
 
     private var tagRow: some View {
         FlowLayout(spacing: 5, alignment: .leading) {
-            if let cardCount {
-                DetailTag(text: l10n.t("deck.cardCount", count: cardCount))
-            }
             DetailTag(text: l10n.t(deck.difficulty.titleKey))
             DetailTag(text: l10n.t("deck.reel", ["no": deck.reelLabel]))
             if isDailyFree {

@@ -209,7 +209,6 @@ struct MixSetupView: View {
                         isSelected: setup.isSelected(deck.id),
                         isLocked: isLocked,
                         isDailyFree: deck.id == dailyFreeDeckID && !deck.isFree,
-                        cardCount: DeckCardCounts.count(for: deck.id),
                         selectionOrder: setup.mixOrder(of: deck.id)
                     )
                 }

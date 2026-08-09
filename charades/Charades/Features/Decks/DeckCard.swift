@@ -7,8 +7,6 @@ struct DeckCard: View {
     var isLocked: Bool
 
     var isDailyFree: Bool
-    var cardCount: Int?
-
 
     var isOffMode: Bool = false
 
@@ -141,14 +139,6 @@ struct DeckCard: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.75)
                 .foregroundStyle(AppColors.textOnPoster)
-
-            if let cardCount {
-                Text(l10n.t("deck.cardCount", count: cardCount))
-                    .font(AppFont.ui(7.5, weight: .semibold))
-                    .appTracking(1.3)
-                    .textCase(.uppercase)
-                    .foregroundStyle(AppColors.textOnPosterMuted)
-            }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 7)
@@ -303,7 +293,6 @@ struct DeckCard: View {
 
     private var accessibilityLabel: String {
         var parts = [l10n.t(deck.titleKey)]
-        if let cardCount { parts.append(l10n.t("deck.cardCount", count: cardCount)) }
         if let selectionOrder { parts.append(l10n.t("mix.selection.order", ["order": "\(selectionOrder)"])) }
         if showsAccessState, isLocked { parts.append(l10n.t("deck.locked.stamp")) }
         if isOffMode, !visuallyLocked { parts.append(l10n.t("deck.describeOnly.badge")) }

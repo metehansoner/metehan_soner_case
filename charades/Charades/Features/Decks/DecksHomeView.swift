@@ -354,7 +354,6 @@ struct DecksHomeView: View {
                         isSelected: setup.isSelected(deck.id),
                         isLocked: false,
                         isDailyFree: false,
-                        cardCount: DeckCardCounts.count(for: deck.id),
                         isOffMode: isOffMode(deck),
                         showsAccessState: false,
                         isFavorite: settings.isFavorite(deck.id)
