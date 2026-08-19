@@ -54,15 +54,15 @@ struct SavedMixCard: View {
     private var titleStrip: some View {
         VStack(spacing: 1) {
             Text(mix.name)
-                .font(AppFont.display(11, weight: .semibold))
-                .appTracking(0.6)
+                .font(AppFont.display(13, weight: .semibold))
+                .appTracking(0.4)
                 .foregroundStyle(AppColors.textCream)
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
+                .minimumScaleFactor(0.85)
 
             Text(deckSummary)
-                .font(AppFont.ui(8))
-                .appTracking(0.8)
+                .font(AppFont.ui(9, weight: .medium))
+                .appTracking(0.5)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textMuted)
                 .lineLimit(1)

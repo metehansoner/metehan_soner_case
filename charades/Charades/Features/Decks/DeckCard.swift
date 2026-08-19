@@ -133,48 +133,44 @@ struct DeckCard: View {
     private var titleStrip: some View {
         VStack(spacing: 2) {
             Text(l10n.t(deck.titleKey))
-                .font(AppFont.accent(13, weight: .black))
-                .lineSpacing(-1)
+                .font(AppFont.display(13.5, weight: .semibold))
+                .appTracking(0.4)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-                .minimumScaleFactor(0.75)
+                .minimumScaleFactor(0.85)
                 .foregroundStyle(AppColors.textOnPoster)
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 7)
-        .padding(.top, 6)
-        .padding(.bottom, 7)
+        .padding(.horizontal, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 9)
         .background {
             LinearGradient(
                 colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .overlay {
-                HalftoneTexture(dotSize: 0.5, spacing: 3, color: AppColors.surfaceCard.opacity(0.5))
-                    .opacity(0.14)
-            }
         }
     }
 
 
     private var reelTag: some View {
         Text(l10n.t("deck.reel", ["no": deck.reelLabel]))
-            .font(AppFont.ui(6.5, weight: .bold, scales: nil))
-            .appTracking(1)
+            .font(AppFont.display(9, weight: .semibold, scales: nil))
+            .appTracking(0.8)
             .textCase(.uppercase)
             .foregroundStyle(AppColors.accentGold)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2.5)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 4)
             .background {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(AppColors.bgFilmBlack.opacity(0.72))
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(AppColors.bgFilmBlack.opacity(0.82))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 3)
-                            .strokeBorder(AppColors.accentGold.opacity(0.4), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: 4)
+                            .strokeBorder(AppColors.accentGold.opacity(0.5), lineWidth: 0.6)
                     }
             }
-            .padding(9)
+            .padding(8)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
@@ -182,8 +178,8 @@ struct DeckCard: View {
     private var ribbon: some View {
         if let ribbonKey {
             Text(l10n.t(ribbonKey))
-                .font(AppFont.ui(6.5, weight: .bold, scales: nil))
-                .appTracking(1)
+                .font(AppFont.display(8, weight: .semibold, scales: nil))
+                .appTracking(0.8)
                 .textCase(.uppercase)
                 .foregroundStyle(isDailyFree ? AppColors.textOnAmber : Color(hex: 0xEAF5EA))
                 .padding(.horizontal, 6)

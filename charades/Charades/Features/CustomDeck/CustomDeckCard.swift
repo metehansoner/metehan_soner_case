@@ -56,25 +56,25 @@ struct CustomDeckCard: View {
     }
 
     private var titleStrip: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 3) {
             Text(displayName)
-                .font(AppFont.accent(13, weight: .black))
-                .lineSpacing(-1)
+                .font(AppFont.display(13.5, weight: .semibold))
+                .appTracking(0.4)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-                .minimumScaleFactor(0.75)
+                .minimumScaleFactor(0.85)
                 .foregroundStyle(AppColors.textOnPoster)
 
             Text(l10n.t("customDeck.wordCount", count: deck.wordCount))
-                .font(AppFont.ui(7.5, weight: .semibold))
-                .appTracking(1.3)
+                .font(AppFont.ui(9, weight: .medium))
+                .appTracking(0.6)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.textOnPosterMuted)
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 7)
-        .padding(.top, 6)
-        .padding(.bottom, 7)
+        .padding(.horizontal, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 9)
         .background {
             LinearGradient(
                 colors: [AppColors.surfacePoster, AppColors.surfaceTicket],
@@ -92,8 +92,8 @@ struct CustomDeckCard: View {
 
     private var languageTag: some View {
         Text(deck.languageCode.uppercased())
-            .font(AppFont.ui(6.5, weight: .bold))
-            .appTracking(1)
+            .font(AppFont.display(8, weight: .semibold, scales: nil))
+            .appTracking(0.8)
             .foregroundStyle(AppColors.accentGold)
             .padding(.horizontal, 5)
             .padding(.vertical, 2.5)
