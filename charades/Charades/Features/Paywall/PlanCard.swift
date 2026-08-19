@@ -126,18 +126,20 @@ struct PlanCard: View {
 
     private var notches: some View {
         HStack {
-            notch
+            notch(lit: isSelected)
             Spacer(minLength: 0)
-            notch
+            notch(lit: false)
         }
         .padding(.horizontal, -7)
         .allowsHitTesting(false)
     }
 
-    private var notch: some View {
-        Circle()
-            .fill(AppColors.bgVelvetDeep)
+    private func notch(lit: Bool) -> some View {
+        let yellow = Color(hex: 0xFFE27A)
+        return Circle()
+            .fill(lit ? yellow : AppColors.bgVelvetDeep)
             .frame(width: 13, height: 13)
+            .shadow(color: yellow.opacity(lit ? 0.95 : 0), radius: lit ? 5 : 0)
     }
 
 
