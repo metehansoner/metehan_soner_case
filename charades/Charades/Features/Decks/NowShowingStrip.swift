@@ -9,18 +9,20 @@ struct NowShowingStrip: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 poster
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(l10n.t("nowShowing.badge"))
-                        .font(AppFont.ui(9.5, weight: .bold))
-                        .appTracking(1.6)
+                        .font(AppFont.display(11, weight: .semibold))
+                        .appTracking(0.6)
                         .textCase(.uppercase)
                         .foregroundStyle(AppColors.accentAmber)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
 
                     Text(l10n.t(deck.titleKey))
-                        .font(AppFont.accent(18, weight: .black))
+                        .font(AppFont.accent(20, weight: .black))
                         .foregroundStyle(AppColors.textCream)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -29,26 +31,10 @@ struct NowShowingStrip: View {
 
                 countdown
             }
-            .padding(.horizontal, 12)
+            .padding(.leading, 10)
+            .padding(.trailing, 12)
             .padding(.vertical, 10)
-            .background {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                AppColors.surfaceCardRaised.opacity(0.98),
-                                AppColors.surfaceCard.opacity(0.88),
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 14)
-                            .strokeBorder(AppColors.accentAmber.opacity(0.55), lineWidth: 1.4)
-                    }
-                    .shadow(color: AppColors.accentAmber.opacity(0.22), radius: 14, y: 4)
-            }
+            .background { chrome }
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
@@ -59,35 +45,48 @@ struct NowShowingStrip: View {
             .resizable()
             .scaledToFit()
             .padding(7)
-            .frame(width: 58, height: 76)
+            .frame(width: 56, height: 74)
             .background {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(deck.section.artGradient)
                     .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(AppColors.accentGold.opacity(0.85), lineWidth: 1.2)
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(AppColors.accentGold.opacity(0.55), lineWidth: 1.15)
                     }
             }
-            .shadow(color: .black.opacity(0.35), radius: 5, y: 2)
     }
-
 
     private var countdown: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             VStack(alignment: .trailing, spacing: 2) {
                 Text(Self.remainingText(at: context.date))
-                    .font(AppFont.display(17, weight: .semibold))
-                    .appTracking(0.6)
+                    .font(AppFont.display(16, weight: .semibold))
+                    .appTracking(0.3)
                     .monospacedDigit()
-                    .foregroundStyle(AppColors.accentGold)
+                    .foregroundStyle(AppColors.textCream)
 
                 Text(l10n.t("nowShowing.remaining"))
-                    .font(AppFont.ui(8, weight: .medium))
-                    .appTracking(1.3)
+                    .font(AppFont.display(9, weight: .semibold))
+                    .appTracking(0.8)
                     .textCase(.uppercase)
-                    .foregroundStyle(AppColors.textMuted)
+                    .foregroundStyle(AppColors.accentGold)
             }
         }
+    }
+
+    private var chrome: some View {
+        RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [AppColors.surfaceCardRaised, AppColors.surfaceCard],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(AppColors.accentAmber.opacity(0.7), lineWidth: 1.15)
+            }
     }
 
     static func remainingText(at date: Date, calendar: Calendar = .current) -> String {

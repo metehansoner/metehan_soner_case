@@ -336,8 +336,6 @@ struct DecksHomeView: View {
 
                 ForEach(savedMixes) { mix in
                     Button { playSavedMix(mix) } label: {
-
-
                         SavedMixCard(mix: mix, isLocked: !subscriptions.isPremium)
                     }
                     .buttonStyle(.plain)
@@ -350,6 +348,11 @@ struct DecksHomeView: View {
                             modelContext.persistCustomDecks()
                         }
                     }
+                }
+
+                if hasPersonalDecks, !visibleDecks.isEmpty {
+                    catalogDivider
+                        .gridCellColumns(columns)
                 }
             }
 
@@ -390,6 +393,28 @@ struct DecksHomeView: View {
         .padding(.horizontal, 18)
         .padding(.top, 14)
         .animation(.easeOut(duration: 0.2), value: settings.gridColumns)
+    }
+
+    private var hasPersonalDecks: Bool {
+        !listedCustomDecks.isEmpty || !savedMixes.isEmpty
+    }
+
+    private var catalogDivider: some View {
+        HStack(spacing: 12) {
+            catalogRule
+            Image(systemName: "diamond.fill")
+                .font(.system(size: 5, weight: .bold))
+                .foregroundStyle(AppColors.accentGold.opacity(0.55))
+            catalogRule
+        }
+        .padding(.vertical, 8)
+        .accessibilityHidden(true)
+    }
+
+    private var catalogRule: some View {
+        Rectangle()
+            .fill(AppColors.accentGold.opacity(0.28))
+            .frame(height: 1)
     }
 
 

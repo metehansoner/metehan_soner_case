@@ -272,19 +272,31 @@ struct CoverPickerSheet: View {
         if subscription.isPremium {
             let data = imageData
             let cover = selection
+            let title = l10n.t("customDeck.cover.photo")
             PhotosPicker(selection: $photoItem, matching: .images) {
-                VStack(spacing: 7) {
-                    PhotoCoverLabel(imageData: data, cover: cover, width: 92, height: 118)
-                    Text(l10n.t("customDeck.cover.photo"))
-                        .font(AppFont.ui(11, weight: .semibold))
-                        .foregroundStyle(AppColors.textSecondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                }
-                .contentShape(Rectangle())
+                PhotoPickerCell(imageData: data, cover: cover, title: title)
             }
-            .accessibilityLabel(l10n.t("customDeck.cover.photo"))
+            .accessibilityLabel(title)
         }
+    }
+}
+
+
+private struct PhotoPickerCell: View {
+    let imageData: Data?
+    let cover: CustomDeckCover
+    let title: String
+
+    var body: some View {
+        VStack(spacing: 7) {
+            PhotoCoverLabel(imageData: imageData, cover: cover, width: 92, height: 118)
+            Text(title)
+                .font(AppFont.ui(11, weight: .semibold))
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .contentShape(Rectangle())
     }
 }
 
