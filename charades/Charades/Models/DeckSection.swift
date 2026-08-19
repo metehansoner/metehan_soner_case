@@ -61,6 +61,24 @@ enum DeckSection: String, CaseIterable, Identifiable, Sendable {
 
 
     var isDateGated: Bool { self == .seasonal }
+
+    var symbolName: String {
+        switch self {
+        case .party: "party.popper.fill"
+        case .actOut: "theatermasks.fill"
+        case .movieTV: "film.fill"
+        case .music: "music.note"
+        case .kids: "teddybear.fill"
+        case .sports: "soccerball"
+        case .knowledge: "lightbulb.fill"
+        case .brands: "tag.fill"
+        case .nostalgia: "clock.arrow.circlepath"
+        case .world: "globe.europe.africa.fill"
+        case .animals: "pawprint.fill"
+        case .home: "house.fill"
+        case .seasonal: "gift.fill"
+        }
+    }
 }
 
 
@@ -89,6 +107,76 @@ enum DeckFilter: Hashable, Identifiable, Sendable {
         case .favorites: "filter.favorites"
         case .section(let s): "filter.section.\(s.rawValue)"
         }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .all: "square.grid.2x2.fill"
+        case .popular: "flame.fill"
+        case .new: "sparkles"
+        case .favorites: "heart.fill"
+        case .section(let s): s.symbolName
+        }
+    }
+
+    var chipAccent: Color {
+        switch self {
+        case .all: AppColors.accentGold
+        case .popular: AppColors.accentAmber
+        case .new: Color(hex: 0x4EC4BF)
+        case .favorites: AppColors.stateSkip
+        case .section(let s): s.meterTone
+        }
+    }
+
+    var chipFill: LinearGradient {
+        switch self {
+        case .all:
+            LinearGradient(
+                colors: [AppColors.accentGold, AppColors.accentBrass],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        case .popular:
+            LinearGradient(
+                colors: [Color(hex: 0xFFC45A), AppColors.accentAmberDeep],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        case .new:
+            LinearGradient(
+                colors: [Color(hex: 0x4EC4BF), AppColors.accentTeal],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        case .favorites:
+            LinearGradient(
+                colors: [Color(hex: 0xE05548), AppColors.stateSkip],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        case .section:
+            LinearGradient(
+                colors: [AppColors.accentAmber, AppColors.accentAmberDeep],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    var usesDarkChipLabel: Bool {
+        switch self {
+        case .new, .favorites: false
+        case .all, .popular, .section: true
+        }
+    }
+
+    var chipBulbColor: Color {
+        usesDarkChipLabel ? AppColors.surfacePoster : AppColors.accentGold
+    }
+
+    var chipLabelColor: Color {
+        usesDarkChipLabel ? AppColors.textOnAmber : AppColors.textCream
     }
 
 
