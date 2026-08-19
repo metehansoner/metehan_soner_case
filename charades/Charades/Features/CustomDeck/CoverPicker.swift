@@ -245,6 +245,7 @@ struct CoverPickerSheet: View {
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
                             }
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(l10n.t(cover.titleKey))
@@ -280,6 +281,7 @@ struct CoverPickerSheet: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }
+                .contentShape(Rectangle())
             }
             .accessibilityLabel(l10n.t("customDeck.cover.photo"))
         }
@@ -326,6 +328,7 @@ private struct CoverSwatch<Content: View>: View {
                 )
             }
             .shadow(color: AppColors.accentAmber.opacity(isSelected ? 0.45 : 0), radius: 8)
+            .contentShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

@@ -109,6 +109,7 @@ struct CustomDeckEditorView: View {
             .environment(l10n)
             .environment(subscription)
             .presentationDetents([.medium, .large])
+            .presentationContentInteraction(.scrolls)
         }
     }
 

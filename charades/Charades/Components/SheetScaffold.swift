@@ -64,8 +64,7 @@ struct SheetScaffold<Content: View>: View {
             .ignoresSafeArea()
         }
         .presentationCornerRadius(28)
-
-
+        .presentationDragIndicator(.hidden)
         .presentationBackground {
             AppColors.surfaceCard
                 .padding(.bottom, -120)
