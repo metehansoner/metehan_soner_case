@@ -203,59 +203,83 @@ extension CustomDeckCover {
 }
 
 
-struct CoverPicker: View {
+struct CoverPickerSheet: View {
     @Binding var selection: CustomDeckCover
     @Binding var imageData: Data?
+    var onClose: () -> Void
 
     @Environment(LocalizationManager.self) private var l10n
     @Environment(SubscriptionStore.self) private var subscription
 
     @State private var photoItem: PhotosPickerItem?
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 92), spacing: 12),
+    ]
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                photoButton
+        SheetScaffold(title: l10n.t("customDeck.field.cover"), onClose: onClose) {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    photoButton
 
-                ForEach(CustomDeckCover.allCases) { cover in
-                    Button {
-                        Haptics.deckSelected()
+                    ForEach(CustomDeckCover.allCases) { cover in
+                        Button {
+                            Haptics.deckSelected()
+                            selection = cover
+                            imageData = nil
+                            onClose()
+                        } label: {
+                            VStack(spacing: 7) {
+                                CoverSwatch(
+                                    isSelected: imageData == nil && selection == cover,
+                                    width: 92,
+                                    height: 118
+                                ) {
+                                    CustomCoverArt(cover: cover)
+                                }
 
-
-                        selection = cover
-                    } label: {
-                        CoverSwatch(isSelected: imageData == nil && selection == cover) {
-                            CustomCoverArt(cover: cover)
+                                Text(l10n.t(cover.titleKey))
+                                    .font(AppFont.ui(11, weight: .semibold))
+                                    .foregroundStyle(AppColors.textSecondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                            }
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(l10n.t(cover.titleKey))
+                        .accessibilityAddTraits(imageData == nil && selection == cover ? .isSelected : [])
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(l10n.t(cover.titleKey))
-                    .accessibilityAddTraits(imageData == nil && selection == cover ? .isSelected : [])
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 28)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 3)
+            .scrollIndicators(.hidden)
         }
-        .scrollClipDisabled()
-
-
         .task(id: photoItem) {
             guard let photoItem,
                   let raw = try? await photoItem.loadTransferable(type: Data.self)
             else { return }
             imageData = UIImage(data: raw)?.downscaled(maxDimension: 600)
+            if imageData != nil { onClose() }
         }
     }
 
     @ViewBuilder
     private var photoButton: some View {
         if subscription.isPremium {
-
-
             let data = imageData
             let cover = selection
             PhotosPicker(selection: $photoItem, matching: .images) {
-                PhotoCoverLabel(imageData: data, cover: cover)
+                VStack(spacing: 7) {
+                    PhotoCoverLabel(imageData: data, cover: cover, width: 92, height: 118)
+                    Text(l10n.t("customDeck.cover.photo"))
+                        .font(AppFont.ui(11, weight: .semibold))
+                        .foregroundStyle(AppColors.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
             }
             .accessibilityLabel(l10n.t("customDeck.cover.photo"))
         }
@@ -266,16 +290,18 @@ struct CoverPicker: View {
 private struct PhotoCoverLabel: View {
     let imageData: Data?
     let cover: CustomDeckCover
+    var width: CGFloat = 52
+    var height: CGFloat = 66
 
     var body: some View {
-        CoverSwatch(isSelected: imageData != nil) {
+        CoverSwatch(isSelected: imageData != nil, width: width, height: height) {
             if let imageData {
                 CustomCoverArt(cover: cover, imageData: imageData)
             } else {
                 ZStack {
                     AppColors.surfaceCardRaised
                     Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 17))
+                        .font(.system(size: height * 0.28))
                         .foregroundStyle(AppColors.accentGold)
                 }
             }
@@ -285,19 +311,21 @@ private struct PhotoCoverLabel: View {
 
 private struct CoverSwatch<Content: View>: View {
     let isSelected: Bool
+    var width: CGFloat = 52
+    var height: CGFloat = 66
     @ViewBuilder let content: Content
 
     var body: some View {
         content
-            .frame(width: 52, height: 66)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay {
-                RoundedRectangle(cornerRadius: 8).strokeBorder(
+                RoundedRectangle(cornerRadius: 10).strokeBorder(
                     isSelected ? AppColors.accentAmber : AppColors.accentGold.opacity(0.3),
-                    lineWidth: isSelected ? 2 : 1
+                    lineWidth: isSelected ? 2.5 : 1
                 )
             }
-            .shadow(color: AppColors.accentAmber.opacity(isSelected ? 0.4 : 0), radius: 7)
+            .shadow(color: AppColors.accentAmber.opacity(isSelected ? 0.45 : 0), radius: 8)
     }
 }
 

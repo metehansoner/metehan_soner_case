@@ -49,29 +49,39 @@ struct WordListSection: View {
 
 
     private var entryRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             TextField(l10n.t("words.placeholder"), text: $draft)
-                .font(AppFont.display(15, weight: .medium))
-                .appTracking(1)
+                .font(AppFont.display(18, weight: .medium))
+                .appTracking(0.6)
                 .foregroundStyle(AppColors.textCream)
                 .textInputAutocapitalization(.sentences)
                 .autocorrectionDisabled()
-
-
                 .submitLabel(.next)
                 .focused($isEntryFocused)
                 .onSubmit(add)
                 .disabled(isFull)
 
+            Button {
+                Haptics.secondaryButton()
+                isEntryFocused = false
+                isBulkPasting = true
+            } label: {
+                Image(systemName: "text.append")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(isFull ? AppColors.stateLocked : AppColors.accentGold)
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.plain)
+            .disabled(isFull)
+            .accessibilityLabel(l10n.t("words.bulkAdd"))
+
             Image(systemName: "plus")
-                .font(.system(size: 13, weight: .heavy))
+                .font(.system(size: 16, weight: .heavy))
                 .foregroundStyle(AppColors.textOnAmber)
-                .frame(width: 28, height: 28)
+                .frame(width: 36, height: 36)
                 .background(Circle().fill(AppColors.accentAmber))
                 .opacity(draft.isEmpty || isFull ? 0.4 : 1)
-                .tapTarget()
-
-
+                .tapTarget(44)
                 .onTapGesture {
                     guard !draft.isEmpty, !isFull else { return }
                     add()
@@ -80,13 +90,14 @@ struct WordListSection: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityRemoveTraits(.isImage)
         }
-        .padding(.horizontal, 13)
-        .frame(height: 46)
+        .padding(.leading, 16)
+        .padding(.trailing, 10)
+        .frame(height: 56)
         .background {
-            RoundedRectangle(cornerRadius: 11)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(AppColors.bgFilmBlack.opacity(0.66))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 11).strokeBorder(
+                    RoundedRectangle(cornerRadius: 14).strokeBorder(
                         isEntryFocused ? AppColors.accentAmber : AppColors.accentGold.opacity(0.34),
                         lineWidth: 1
                     )
@@ -99,8 +110,7 @@ struct WordListSection: View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             if let hint {
                 Text(hint)
-                    .font(AppFont.ui(10))
-                    .appTracking(0.6)
+                    .font(AppFont.ui(13))
                     .foregroundStyle(words.count < CustomDeckLimits.minWordsToPlay
                         ? AppColors.stateWarning
                         : AppColors.textMuted)
@@ -109,22 +119,8 @@ struct WordListSection: View {
 
             Spacer(minLength: 0)
 
-            Button {
-                Haptics.secondaryButton()
-                isEntryFocused = false
-                isBulkPasting = true
-            } label: {
-                Label(l10n.t("words.bulkAdd"), systemImage: "text.append")
-                    .font(AppFont.ui(10, weight: .semibold))
-                    .appTracking(1.2)
-                    .textCase(.uppercase)
-                    .foregroundStyle(isFull ? AppColors.stateLocked : AppColors.accentGold)
-            }
-            .buttonStyle(.plain)
-            .disabled(isFull)
-
             Text("\(words.count) / \(CustomDeckLimits.maxWords)")
-                .font(AppFont.display(14, weight: .semibold))
+                .font(AppFont.display(16, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(AppColors.accentAmber)
         }
@@ -133,20 +129,16 @@ struct WordListSection: View {
 
     private var hint: String? {
         if isFull { return l10n.t("words.limitReached") }
-        if words.count < CustomDeckLimits.minWordsToPlay { return l10n.t("words.hint.min") }
-        if words.count < CustomDeckLimits.recommendedWordCount { return l10n.t("words.hint.recommended") }
         return nil
     }
 
 
     private var chips: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 104), spacing: 7)],
+            columns: [GridItem(.adaptive(minimum: 128), spacing: 8)],
             alignment: .leading,
-            spacing: 7
+            spacing: 8
         ) {
-
-
             ForEach(Array(words.enumerated()), id: \.element) { index, word in
                 chip(index: index, word: word)
             }
@@ -156,10 +148,10 @@ struct WordListSection: View {
     private func chip(index: Int, word: String) -> some View {
         let isFlashed = flashedIndex == index
 
-        return HStack(spacing: 6) {
+        return HStack(spacing: 8) {
             Text(word)
-                .font(AppFont.display(13, weight: .medium))
-                .appTracking(0.9)
+                .font(AppFont.display(15, weight: .medium))
+                .appTracking(0.6)
                 .foregroundStyle(AppColors.textCream)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -170,21 +162,19 @@ struct WordListSection: View {
                 remove(at: index)
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(AppColors.textMuted)
-                    .frame(width: 18, height: 18)
-
-
-                    .tapTarget(34)
+                    .frame(width: 22, height: 22)
+                    .tapTarget(36)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(l10n.t("words.remove"))
         }
-        .padding(.leading, 11)
-        .padding(.trailing, 3)
-        .padding(.vertical, 6)
+        .padding(.leading, 14)
+        .padding(.trailing, 6)
+        .padding(.vertical, 10)
         .background {
-            RoundedRectangle(cornerRadius: 7)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -196,7 +186,7 @@ struct WordListSection: View {
                     )
                 )
                 .overlay {
-                    RoundedRectangle(cornerRadius: 7).strokeBorder(
+                    RoundedRectangle(cornerRadius: 10).strokeBorder(
                         isFlashed ? AppColors.accentAmber : AppColors.accentGold.opacity(0.28),
                         lineWidth: isFlashed ? 1.5 : 1
                     )

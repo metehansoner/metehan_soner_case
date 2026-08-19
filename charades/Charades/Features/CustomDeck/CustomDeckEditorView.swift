@@ -18,6 +18,7 @@ struct CustomDeckEditorView: View {
     @State private var createdID: UUID?
     @State private var wordDraft = ""
     @State private var showDeleteConfirm = false
+    @State private var isPickingCover = false
     @FocusState private var isNamingFocused: Bool
 
     private var deck: CustomDeck? {
@@ -64,41 +65,8 @@ struct CustomDeckEditorView: View {
             navBar(deck)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    HStack(alignment: .top, spacing: 14) {
-
-
-                        CustomDeckCard(deck: deck, isLocked: false)
-                            .frame(width: 96)
-                            .id("preview-\(deck.coverTemplate)-\(deck.coverImageData?.count ?? 0)")
-
-                        nameField(deck)
-                    }
-
-                    field(label: l10n.t("customDeck.field.cover")) {
-                        CoverPicker(
-                            selection: Binding(
-                                get: { deck.cover },
-                                set: { newCover in
-                                    deck.coverTemplate = newCover.rawValue
-                                    deck.coverImageData = nil
-                                    deck.updatedAt = .now
-                                    modelContext.persistCustomDecks()
-                                }
-                            ),
-                            imageData: Binding(
-                                get: { deck.coverImageData },
-                                set: { data in
-                                    deck.coverImageData = data
-                                    deck.updatedAt = .now
-                                    modelContext.persistCustomDecks()
-                                }
-                            )
-                        )
-
-
-                        .padding(.horizontal, -20)
-                    }
+                VStack(alignment: .leading, spacing: 22) {
+                    identity(deck)
 
                     field(label: l10n.t("customDeck.field.words")) {
                         WordListSection(
@@ -108,7 +76,7 @@ struct CustomDeckEditorView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 4)
+                .padding(.top, 8)
                 .padding(.bottom, 24)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -116,6 +84,31 @@ struct CustomDeckEditorView: View {
             .scrollDismissesKeyboard(.interactively)
 
             footer(deck)
+        }
+        .sheet(isPresented: $isPickingCover) {
+            CoverPickerSheet(
+                selection: Binding(
+                    get: { deck.cover },
+                    set: { newCover in
+                        deck.coverTemplate = newCover.rawValue
+                        deck.coverImageData = nil
+                        deck.updatedAt = .now
+                        modelContext.persistCustomDecks()
+                    }
+                ),
+                imageData: Binding(
+                    get: { deck.coverImageData },
+                    set: { data in
+                        deck.coverImageData = data
+                        deck.updatedAt = .now
+                        modelContext.persistCustomDecks()
+                    }
+                ),
+                onClose: { isPickingCover = false }
+            )
+            .environment(l10n)
+            .environment(subscription)
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -136,7 +129,7 @@ struct CustomDeckEditorView: View {
                     .minimumScaleFactor(0.7)
 
                 Text(l10n.t("customDeck.autosave"))
-                    .font(AppFont.ui(10.5))
+                    .font(AppFont.ui(12))
                     .foregroundStyle(AppColors.textMuted)
             }
             .frame(maxWidth: .infinity)
@@ -163,10 +156,39 @@ struct CustomDeckEditorView: View {
     }
 
 
+    private func identity(_ deck: CustomDeck) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Button {
+                Haptics.secondaryButton()
+                isNamingFocused = false
+                isPickingCover = true
+            } label: {
+                CustomDeckCard(deck: deck, isLocked: false)
+                    .frame(width: 118)
+                    .id("preview-\(deck.coverTemplate)-\(deck.coverImageData?.count ?? 0)")
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "paintbrush.pointed.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(AppColors.textOnAmber)
+                            .frame(width: 30, height: 30)
+                            .background(Circle().fill(AppColors.accentAmber))
+                            .overlay {
+                                Circle().strokeBorder(AppColors.bgFilmBlack.opacity(0.35), lineWidth: 1)
+                            }
+                            .offset(x: 6, y: 6)
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(l10n.t("customDeck.field.cover"))
+
+            nameField(deck)
+        }
+    }
+
     private func field(label: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("◆ \(label)")
-                .font(AppFont.ui(10, weight: .semibold))
+                .font(AppFont.ui(12, weight: .semibold))
                 .appTracking(1.6)
                 .textCase(.uppercase)
                 .foregroundStyle(AppColors.accentGold)
@@ -179,42 +201,33 @@ struct CustomDeckEditorView: View {
         @Bindable var deck = deck
 
         return field(label: l10n.t("customDeck.field.name")) {
-            VStack(alignment: .leading, spacing: 7) {
-                TextField(l10n.t("customDeck.name.placeholder"), text: $deck.name)
-                    .font(AppFont.display(16, weight: .medium))
-                    .foregroundStyle(AppColors.textCream)
-                    .textInputAutocapitalization(.words)
-                    .submitLabel(.done)
-                    .focused($isNamingFocused)
-
-
-                    .onChange(of: deck.name) { _, new in
-                        if new.count > CustomDeckLimits.maxNameLength {
-                            deck.name = String(new.prefix(CustomDeckLimits.maxNameLength))
-                            Haptics.stepperLimit()
+            TextField(l10n.t("customDeck.name.placeholder"), text: $deck.name)
+                .font(AppFont.display(18, weight: .medium))
+                .foregroundStyle(AppColors.textCream)
+                .textInputAutocapitalization(.words)
+                .submitLabel(.done)
+                .focused($isNamingFocused)
+                .onChange(of: deck.name) { _, new in
+                    if new.count > CustomDeckLimits.maxNameLength {
+                        deck.name = String(new.prefix(CustomDeckLimits.maxNameLength))
+                        Haptics.stepperLimit()
+                    }
+                    deck.updatedAt = .now
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 54)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(AppColors.bgFilmBlack.opacity(0.66))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12).strokeBorder(
+                                isNamingFocused
+                                    ? AppColors.accentAmber
+                                    : AppColors.accentGold.opacity(0.34),
+                                lineWidth: 1
+                            )
                         }
-                        deck.updatedAt = .now
-                    }
-                    .padding(.horizontal, 13)
-                    .frame(height: 46)
-                    .background {
-                        RoundedRectangle(cornerRadius: 11)
-                            .fill(AppColors.bgFilmBlack.opacity(0.66))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 11).strokeBorder(
-                                    isNamingFocused
-                                        ? AppColors.accentAmber
-                                        : AppColors.accentGold.opacity(0.34),
-                                    lineWidth: 1
-                                )
-                            }
-                    }
-
-                Text("\(deck.name.count) / \(CustomDeckLimits.maxNameLength)")
-                    .font(AppFont.ui(9.5))
-                    .monospacedDigit()
-                    .foregroundStyle(AppColors.textMuted)
-            }
+                }
         }
     }
 
@@ -230,34 +243,22 @@ struct CustomDeckEditorView: View {
 
 
     private func footer(_ deck: CustomDeck) -> some View {
-        VStack(spacing: 7) {
+        VStack(spacing: 8) {
             if projectedWordCount(for: deck) < CustomDeckLimits.minWordsToPlay {
                 Text(l10n.t("customDeck.needsMore", count: CustomDeckLimits.minWordsToPlay))
-                    .font(AppFont.ui(11))
+                    .font(AppFont.ui(13))
                     .foregroundStyle(AppColors.stateWarning)
             }
 
-            HStack(spacing: 10) {
-                Button {
-                    Haptics.primaryButton()
-                    finishEditing(playAfter: false)
-                } label: {
-
-
-                    Text(l10n.t("customDeck.save")).lineLimit(1)
-                }
-                .buttonStyle(SecondaryButtonStyle())
-
-                Button {
-                    finishEditing(playAfter: true)
-                } label: {
-                    Text(l10n.t("customDeck.saveAndPlay"))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
-                .buttonStyle(MarqueeButtonStyle())
-                .disabled(projectedWordCount(for: deck) < CustomDeckLimits.minWordsToPlay)
+            Button {
+                finishEditing(playAfter: true)
+            } label: {
+                Text(l10n.t("customDeck.saveAndPlay"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
+            .buttonStyle(MarqueeButtonStyle())
+            .disabled(projectedWordCount(for: deck) < CustomDeckLimits.minWordsToPlay)
         }
         .padding(.horizontal, 20)
         .padding(.top, 10)
