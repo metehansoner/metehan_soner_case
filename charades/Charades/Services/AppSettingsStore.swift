@@ -200,7 +200,7 @@ final class AppSettingsStore {
         filmEffectsEnabled = defaults.object(forKey: Key.filmEffects) as? Bool ?? true
         scanlinesEnabled = defaults.object(forKey: Key.scanlines) as? Bool ?? false
         favoriteDeckIDs = Set(defaults.stringArray(forKey: Key.favoriteDecks) ?? [])
-        gridColumns = defaults.object(forKey: Key.gridColumns) as? Int ?? 3
+        gridColumns = defaults.object(forKey: Key.gridColumns) as? Int ?? 2
         hapticsEnabled = defaults.object(forKey: Key.haptics) as? Bool ?? true
         soundEnabled = defaults.object(forKey: Key.sound) as? Bool ?? true
         prefersTouchAnswers = defaults.object(forKey: Key.touchAnswers) as? Bool ?? false
