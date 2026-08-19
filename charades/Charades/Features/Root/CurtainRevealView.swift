@@ -15,6 +15,7 @@ struct CurtainRevealView: View {
 
     private let total: TimeInterval = 2.2
     private let plaqueSide: CGFloat = 168
+    private var plaqueCornerRadius: CGFloat { plaqueSide * 0.2237 }
 
     var body: some View {
         GeometryReader { geometry in
@@ -95,7 +96,10 @@ struct CurtainRevealView: View {
 
     private var plaque: some View {
         Image("launch_plaque")
+            .resizable()
+            .scaledToFill()
             .frame(width: plaqueSide, height: plaqueSide)
+            .clipShape(RoundedRectangle(cornerRadius: plaqueCornerRadius, style: .continuous))
             .overlay {
                 BulbRing(
                     countPerSide: 8,
