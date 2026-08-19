@@ -255,41 +255,49 @@ struct DecksHomeView: View {
 
 
     private var sectionRow: some View {
-        HStack {
+        HStack(spacing: 10) {
             Text(l10n.t(filter == .all ? "decks.mine" : filter.titleKey))
-                .font(AppFont.ui(10.5, weight: .bold))
-                .appTracking(2.4)
+                .font(AppFont.display(16, weight: .semibold))
+                .appTracking(0.6)
                 .textCase(.uppercase)
-                .foregroundStyle(AppColors.accentGold)
+                .foregroundStyle(AppColors.textCream)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
 
-            Spacer()
+            Spacer(minLength: 8)
 
             gridToggle
         }
         .padding(.horizontal, 18)
-        .padding(.top, 19)
+        .padding(.top, 16)
         .padding(.bottom, 10)
     }
 
 
     private var gridToggle: some View {
         Button {
+            Haptics.selection()
             settings.gridColumns = settings.gridColumns == 2 ? 3 : 2
         } label: {
-            let side = settings.gridColumns
-            Grid(horizontalSpacing: 2.5, verticalSpacing: 2.5) {
-                ForEach(0..<side, id: \.self) { _ in
-                    GridRow {
-                        ForEach(0..<side, id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(AppColors.accentBrass)
-                                .frame(width: 5, height: 5)
+            Image(systemName: settings.gridColumns == 2 ? "square.grid.2x2.fill" : "square.grid.3x3.fill")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(AppColors.accentGold)
+                .frame(width: 40, height: 34)
+                .background {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [AppColors.surfaceCardRaised, AppColors.surfaceCard],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(AppColors.accentGold.opacity(0.5), lineWidth: 1.15)
                         }
-                    }
                 }
-            }
-            .frame(width: 34, height: 34)
-            .tapTarget()
+                .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l10n.t("decks.gridToggle"))
